@@ -24,6 +24,13 @@
   <script>
     let infos = ['Support Service Worker: ' + (navigator.serviceWorker ? true : false)];
     infos.push('userAgent: ' + navigator.userAgent);
+    let keys = [];
+    for (let key in navigator) {
+      if (key.toLocaleLowerCase().includes('storage')) {
+        keys.push(key)
+      }
+    }
+    infos.push('Keys of navigator: ' + keys.join());
     let appEl = document.querySelector('#app');
     try {
       navigator.storage.estimate().then((info) => {
