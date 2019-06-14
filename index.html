@@ -33,6 +33,11 @@
     infos.push('Keys of navigator: ' + keys.join());
     let appEl = document.querySelector('#app');
     try {
+      let keys = [];
+      for (let key in navigator.storage) {
+        keys.push(key)
+      }
+      infos.push('Keys of navigator.storage: ' + keys.join());
       navigator.storage.estimate().then((info) => {
         infos.push('quota: ' + Math.round(info.quota / 1024 / 1024) + 'M');
       }).finally(() => {
