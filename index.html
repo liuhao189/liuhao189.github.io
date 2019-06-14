@@ -12,12 +12,16 @@
 
 <body>
   <h2>test service-worker!</h2>
+  <div id="app">
+
+  </div>
   <script>
-    if (navigator.serviceWorker) {
-      alert('support service worker!')
-    } else {
-      alert('do not support service worker!')
-    }
+    let infos = ['Support Service Worker: ' + (navigator.serviceWorker ? true : false)]
+    let appEl = document.querySelector('#app');
+    navigator.storage.estimate().then((info) => {
+      infos.push(`quota: ${Math.round(info.quota / 1024 / 1024)}M`);
+      appEl.innerHTML = infos.join('<br/>');
+    });
   </script>
 </body>
 
