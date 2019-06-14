@@ -33,6 +33,8 @@
       });
     } catch (ex) {
       alert(ex.message);
+    } finally {
+      appEl.innerHTML = infos.join('<br/>');
     }
   </script>
 </body>
