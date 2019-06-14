@@ -8,6 +8,12 @@
   <meta http-equiv="X-UA-Compatible"
     content="ie=edge">
   <title>Test</title>
+  <style>
+    #app {
+      font-size: 18px;
+      line-height: 30px;
+    }
+  </style>
 </head>
 
 <body>
@@ -16,11 +22,13 @@
 
   </div>
   <script>
+    let infos = ['Support Service Worker: ' + (navigator.serviceWorker ? true : false)];
+    infos.push('userAgent: ' + navigator.userAgent);
+    let appEl = document.querySelector('#app');
     try {
-      let infos = ['Support Service Worker: ' + (navigator.serviceWorker ? true : false)]
-      let appEl = document.querySelector('#app');
       navigator.storage.estimate().then((info) => {
-        infos.push(`quota: ${Math.round(info.quota / 1024 / 1024)}M`);
+        infos.push('quota: ' + Math.round(info.quota / 1024 / 1024) + 'M');
+      }).finally(() => {
         appEl.innerHTML = infos.join('<br/>');
       });
     } catch (ex) {
