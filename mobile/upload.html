@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible"
+        content="ie=edge">
+    <title>Upload Html</title>
+    <script>
+        var pageConfig = { designWidth: 375 };
+        (function (designWidth) {
+            'use strict';
+            var docEl = document.documentElement;
+            var dpr = window.devicePixelRatio || 1;
+            var scale = 1 / dpr;
+            var $viewport = document.querySelector('meta[name="viewport"]');
+            var content = 'initial-scale=' + scale + ',minimum-scale=' + scale + ',maximum-scale=' + scale + ',user-scalable=no,width=device-width';
+            if ($viewport) {
+                $viewport.setAttribute('content', content);
+            } else {
+                document.write('<meta name="viewport" content="' + content + '">');
+            }
+            docEl.setAttribute('data-dpr', dpr);
+            function setBaseFontSize() {
+                var width = docEl.clientWidth || (screen.availWidth * dpr);
+                var fontSize = width / designWidth * 100;
+                docEl.style.fontSize = fontSize + 'px';
+            }
+            setBaseFontSize();
+            window.addEventListener('resize', setBaseFontSize);
+        })(pageConfig.designWidth);
+    </script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container .content {
+            flex: 1;
+            background-color: #f5f5f5;
+            padding: .1rem 0;
+        }
+
+        .container .actions {
+            flex: 0;
+            height: .77rem;
+            display: flex;
+            background-color: #fff;
+            padding: .18rem .2rem;
+        }
+
+        .actions button {
+            flex: 1;
+            background: #FFFFFF;
+            border: 1px solid #20A0FF;
+            box-shadow: 0 1px 4px 0 rgba(79, 113, 138, 0.20);
+            border-radius: 24.5px;
+            color: #20A0FF;
+            font-size: .18rem;
+            line-height: .18rem;
+            height: .4rem;
+        }
+
+        .actions button.primary {
+            background-color: #20A0FF;
+            color: white;
+        }
+
+        .actions button:not(:last-child) {
+            margin-right: .15rem;
+        }
+
+        .content .item {
+            background-color: #fff;
+            padding: .1rem;
+        }
+
+        .content .item>label {
+            display: block;
+            color: #222;
+            font-size: .16rem;
+            margin-bottom: .1rem;
+        }
+
+        .item .item-content {
+            display: flex;
+        }
+
+        .item .item-content .uploader {
+            width: .55rem;
+            height: .55rem;
+            background-color: #F6F6F6;
+            font-size: .3rem;
+            line-height: .55rem;
+            color: #BEC0C1;
+            text-align: center;
+        }
+
+        .item-content .uploader-tip {
+            margin-left: .1rem;
+            font-size: .14rem;
+            color: #999999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="content">
+            <div class="item">
+                <label>附件</label>
+                <div class="item-content">
+                    <div class="uploader">
+                        +
+                    </div>
+                    <div class="uploader-tip">
+                        支持jpg,jpeg,png等附件上传
+                    </div>
+                    <div style="display:none">
+                        <input type="file"
+                            name="fileToUpload"
+                            class="file-input"
+                            accept="*/*"
+                            capture="camera" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="default">上一步</button>
+            <button class="primary">确定</button>
+        </div>
+    </div>
+    <script>
+
+        function noop() { }
+
+        function uploadFile(_opts) {
+            let opts = Object.assign({
+                onProgress: noop,
+                uploadSuccess: noop,
+                uploadFailed: noop
+            }, _opts);
+            let xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener('progress', opts.onProgress, false);
+            xhr.addEventListener('load', opts.uploadSuccess, false);
+            xhr.addEventListener('error', opts.uploadFailed, false);
+            xhr.open("POST", '/upload');
+            xhr.send(opts.data);
+        }
+
+        let uploaderBtn = document.querySelector('.uploader');
+        let fileInput = document.querySelector(".file-input");
+        if (fileInput) {
+            fileInput.addEventListener('change', function (ev) {
+                let files = fileInput.files;
+                if (files && files.length) {
+                    let data = new FormData();
+                    data.append("file", fileInput.files[0]);
+                    uploadFile({
+                        data: data
+                    });
+                }
+            })
+        }
+        if (uploaderBtn) {
+            uploaderBtn.addEventListener('click', function (ev) {
+                if (fileInput) {
+                    fileInput.click ? fileInput.click() : ''
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
