@@ -33,6 +33,7 @@
     })(pageConfig.designWidth);
   </script>
   <script src="//g.alicdn.com/dingding/dingtalk-jsapi/2.6.41/dingtalk.open.js"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
   <script></script>
   <style>
     * {
@@ -64,6 +65,7 @@
     <ul id="fileList">
       <li>https://img-oss.stage.yunshanmeicai.com/cem/9037578672651-102352-337600</li>
       <li>https://img-oss.stage.yunshanmeicai.com/cem/0807345182651-102354-1176870</li>
+      <li>https://img-oss.stage.yunshanmeicai.com/cem/8823117182651-102354-1176870</li>
     </ul>
   </div>
   <script>
@@ -73,15 +75,29 @@
       window.isInDD = dd && dd.env && 'notInDingTalk' !== dd.env.platform
     });
 
+    function exportExcel(data, name) {
+      const blob = new Blob([data])
+      const downloadElement = document.createElement('a')
+      const href = window.URL.createObjectURL(blob)
+      downloadElement.href = href
+      downloadElement.download = `${name}.xls`
+      document.body.appendChild(downloadElement)
+      downloadElement.click()
+      document.body.removeChild(downloadElement)
+    }
+
     document.querySelector('#fileList').addEventListener('click', function (ev) {
       var srcEl = ev.srcElement;
       if (srcEl.tagName.toLowerCase() === 'li') {
         var url = srcEl.innerHTML;
-        if (window.isInDD) {
-          dd.biz.util.openLink({
-            url: url
-          });
-        }
+        axios.get(url, { responseType: 'blob' }).then(function (data) {
+          exportExcel(data);
+        })
+        // if (window.isInDD) {
+        //   dd.biz.util.openLink({
+        //     url: url
+        //   });
+        // }
       }
     });
 
