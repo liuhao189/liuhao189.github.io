@@ -90,14 +90,14 @@
       var srcEl = ev.srcElement;
       if (srcEl.tagName.toLowerCase() === 'li') {
         var url = srcEl.innerHTML;
-        axios.get(url, { responseType: 'blob' }).then(function (data) {
-          exportExcel(data);
-        })
-        // if (window.isInDD) {
-        //   dd.biz.util.openLink({
-        //     url: url
-        //   });
-        // }
+        // axios.get(url, { responseType: 'blob' }).then(function (data) {
+        //   exportExcel(data);
+        // })
+        if (window.isInDD) {
+          dd.biz.util.openLink({
+            url: url
+          });
+        }
       }
     });
 
