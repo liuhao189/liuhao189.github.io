@@ -61,17 +61,30 @@
     <div id="msg">
 
     </div>
+    <ul id="fileList">
+      <li>https://img-oss.stage.yunshanmeicai.com/cem/9037578672651-102352-337600</li>
+      <li>https://img-oss.stage.yunshanmeicai.com/cem/0807345182651-102354-1176870</li>
+    </ul>
   </div>
   <script>
     dd.ready(function () {
       let msgDiv = document.querySelector('#msg');
       msgDiv.innerHTML = JSON.stringify(dd);
+      window.isInDD = dd && dd.env && 'notInDingTalk' !== dd.env.platform
     });
 
-    setTimeout(() => {
-      window.isInDD = dd && dd.env && 'notInDingTalk' !== dd.env.platform
-      window.alert(window.isInDD);
-    }, 3000);
+    document.querySelector('#fileList').addEventListener('click', function (ev) {
+      var srcEl = ev.srcElement;
+      if (srcEl.tagName.toLowerCase() === 'li') {
+        var url = srcEl.innerHTML;
+        if (window.isInDD) {
+          dd.biz.util.openLink({
+            url: url
+          });
+        }
+      }
+    });
+
   </script>
 </body>
 
