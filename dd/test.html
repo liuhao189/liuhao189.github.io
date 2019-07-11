@@ -43,6 +43,7 @@
     .main-container {
       padding: .1rem;
       background-color: #f5f5f5;
+      font-size: .16rem;
     }
   </style>
 </head>
@@ -54,7 +55,7 @@
     </div>
   </div>
   <script>
-    dd.ready(() => {
+    dd.ready(function () {
       let msgDiv = document.querySelector('#msg');
       msgDiv.innerHTML = JSON.stringify(dd);
     });
