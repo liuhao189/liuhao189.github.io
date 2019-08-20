@@ -54,7 +54,10 @@
     var scrollCheck = document.querySelector("#useScroll");
     txtTest.addEventListener('blur', function (ev) {
       if (scrollCheck.checked) {
-        mainEl.scrollTo(0, 0);
+        setTimeout(() => {
+          mainEl.scrollTo(0, 0);
+          document.activeElement.scrollIntoViewIfNeeded(true)
+        }, 100);
       }
     });
     //
