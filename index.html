@@ -13,22 +13,51 @@
       font-size: 18px;
       line-height: 30px;
     }
+
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    .main-container {
+      height: 100%;
+      overflow: auto;
+    }
   </style>
 </head>
 
 <body>
-  <h2>test service-worker!</h2>
-  <div id="app">
+  <div class="main-container">
+    <h2>test service-worker!</h2>
+    <div id="app">
 
-  </div>
-  <div style="height: 1000px;background-color:#ddd;">
+    </div>
+    <div style="height: 1000px;background-color:#ddd;">
 
-  </div>
-  <div>
-    <input type="text"
-      placeholder="test" />
+    </div>
+    <input type="checkbox"
+      id="useScroll" />
+    <div>
+      <input type="text"
+        class="txt-test"
+        placeholder="test" />
+    </div>
   </div>
   <script>
+    var txtTest = document.querySelector('.txt-test');
+    var mainEl = document.querySelector(".main-container");
+    var scrollCheck = document.querySelector("#useScroll");
+    txtTest.addEventListener('blur', function (ev) {
+      if (scrollCheck.checked) {
+        mainEl.scrollBy(0, 1);
+      }
+    });
+    //
     window.addEventListener('beforeunload', function (ev) {
       ev.preventDefault();
       ev.returnValue = '';
