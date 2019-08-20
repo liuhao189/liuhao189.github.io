@@ -69,6 +69,10 @@
     </ul>
   </div>
   <script>
+    window.addEventListener('beforeunload', function (ev) {
+      ev.preventDefault();
+      ev.returnValue = '';
+    });
     dd.ready(function () {
       let msgDiv = document.querySelector('#msg');
       msgDiv.innerHTML = JSON.stringify(dd);

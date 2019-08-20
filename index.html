@@ -22,6 +22,10 @@
 
   </div>
   <script>
+    window.addEventListener('beforeunload', function (ev) {
+      ev.preventDefault();
+      ev.returnValue = '';
+    });
     let infos = ['Support Service Worker: ' + (navigator.serviceWorker ? true : false)];
     infos.push('userAgent: ' + navigator.userAgent);
     let keys = [];
