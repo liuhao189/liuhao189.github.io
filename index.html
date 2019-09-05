@@ -36,6 +36,7 @@
 <body>
   <div class="main-container">
     <h2>test service-worker!</h2>
+    <button id="btnInstall">Install</button>
     <div id="app">
 
     </div>
@@ -100,16 +101,17 @@
         navigator.serviceWorker.register('sw.js')
       }
     });
+    var deferredPrompt;
     window.addEventListener('beforeinstallprompt', function (ev) {
-      try {
-        ev.prompt();
-        ev.userChoice.then(res => {
-          alert(res);
-        })
-      } catch (err) {
-        alert(err)
+      deferredPrompt = ev;
+      ev.preventDefault();
+    });
+    document.getElementById('btnInstall').addEventListener('click', function (ev) {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
       }
     });
+
   </script>
 </body>
 
