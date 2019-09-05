@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible"
+    content="ie=edge">
+  <title>DD Test</title>
+  <script>
+    var pageConfig = { "designWidth": 375 };
+    (function (designWidth) {
+      'use strict';
+      var docEl = document.documentElement;
+      var dpr = window.devicePixelRatio || 1;
+      var scale = 1 / dpr;
+      var $viewport = document.querySelector('meta[name="viewport"]');
+      var content = 'initial-scale=' + scale + ',minimum-scale=' + scale + ',maximum-scale=' + scale + ',user-scalable=no,width=device-width';
+      if ($viewport) {
+        $viewport.setAttribute('content', content);
+      } else {
+        document.write('<meta name="viewport" content="' + content + '">');
+      }
+      docEl.setAttribute('data-dpr', dpr);
+      function setBaseFontSize() {
+        var width = docEl.clientWidth || (screen.availWidth * dpr);
+        var fontSize = width / designWidth * 100;
+        docEl.style.fontSize = fontSize + 'px';
+      }
+      setBaseFontSize();
+      window.addEventListener('resize', setBaseFontSize);
+    })(pageConfig.designWidth);
+  </script>
+  <script src="//g.alicdn.com/dingding/dingtalk-jsapi/2.6.41/dingtalk.open.js"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script></script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    .main-container {
+      width: 100%;
+      height: 100%;
+      padding: .1rem;
+      background-color: #f5f5f5;
+      font-size: .16rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-container">
+    <div id="msg">
+
+    </div>
+    <ul id="fileList">
+      <li>https://img-oss.stage.yunshanmeicai.com/cem/9037578672651-102352-337600</li>
+      <li>https://img-oss.stage.yunshanmeicai.com/cem/0807345182651-102354-1176870</li>
+      <li>https://img-oss.stage.yunshanmeicai.com/cem/8823117182651-102354-1176870</li>
+    </ul>
+  </div>
+  <script>
+    window.addEventListener('beforeunload', function (ev) {
+      ev.preventDefault();
+      ev.returnValue = '';
+    });
+    dd.ready(function () {
+      let msgDiv = document.querySelector('#msg');
+      msgDiv.innerHTML = JSON.stringify(dd);
+      window.isInDD = dd && dd.env && 'notInDingTalk' !== dd.env.platform
+    });
+
+    function exportExcel(data, name) {
+      const blob = new Blob([data])
+      const downloadElement = document.createElement('a')
+      const href = window.URL.createObjectURL(blob)
+      downloadElement.href = href
+      downloadElement.download = `${name}.xls`
+      document.body.appendChild(downloadElement)
+      downloadElement.click()
+      document.body.removeChild(downloadElement)
+    }
+
+    document.querySelector('#fileList').addEventListener('click', function (ev) {
+      var srcEl = ev.srcElement;
+      if (srcEl.tagName.toLowerCase() === 'li') {
+        var url = srcEl.innerHTML;
+        // axios.get(url, { responseType: 'blob' }).then(function (data) {
+        //   exportExcel(data);
+        // })
+        if (window.isInDD) {
+          dd.biz.util.openLink({
+            url: url
+          });
+        }
+      }
+    });
+
+  </script>
+</body>
+
+</html>

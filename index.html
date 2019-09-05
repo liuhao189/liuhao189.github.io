@@ -15,15 +15,58 @@
       font-size: 18px;
       line-height: 30px;
     }
+
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    .main-container {
+      height: 100%;
+      overflow: auto;
+    }
   </style>
 </head>
 
 <body>
-  <h2>test service-worker!</h2>
-  <div id="app">
+  <div class="main-container">
+    <h2>test service-worker!</h2>
+    <div id="app">
 
+    </div>
+    <div style="height: 1000px;background-color:#ddd;">
+
+    </div>
+    <input type="checkbox"
+      id="useScroll" />
+    <div>
+      <input type="text"
+        class="txt-test"
+        placeholder="test" />
+    </div>
   </div>
   <script>
+    var txtTest = document.querySelector('.txt-test');
+    var mainEl = document.querySelector(".main-container");
+    var scrollCheck = document.querySelector("#useScroll");
+    txtTest.addEventListener('blur', function (ev) {
+      if (scrollCheck.checked) {
+        setTimeout(() => {
+          mainEl.scrollTo(0, 0);
+          document.activeElement.scrollIntoViewIfNeeded(true)
+        }, 100);
+      }
+    });
+    //
+    window.addEventListener('beforeunload', function (ev) {
+      ev.preventDefault();
+      ev.returnValue = '';
+    });
     let infos = ['Support Service Worker: ' + (navigator.serviceWorker ? true : false)];
     infos.push('userAgent: ' + navigator.userAgent);
     let keys = [];
