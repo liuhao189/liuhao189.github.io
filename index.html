@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    content="initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
   <meta http-equiv="X-UA-Compatible"
     content="ie=edge">
   <title>Test</title>
@@ -40,8 +40,10 @@
     <div style="height: 1000px;background-color:#ddd;">
 
     </div>
-    <input type="checkbox"
-      id="useScroll" />
+    <p>Scroll:<input type="checkbox"
+        id="useScroll" /></p>
+    <p>ToView:<input type="checkbox"
+        id="toView" /></p>
     <div>
       <input type="text"
         class="txt-test"
@@ -52,13 +54,17 @@
     var txtTest = document.querySelector('.txt-test');
     var mainEl = document.querySelector(".main-container");
     var scrollCheck = document.querySelector("#useScroll");
+    var toView = document.querySelector('#toView');
     txtTest.addEventListener('blur', function (ev) {
-      if (scrollCheck.checked) {
-        setTimeout(() => {
+      setTimeout(() => {
+        if (scrollCheck.checked) {
           mainEl.scrollTo(0, 0);
-          document.activeElement.scrollIntoViewIfNeeded(true)
-        }, 100);
-      }
+          window.scrollTo(0, 0);
+        }
+        if (toView.checked) {
+          ev.srcElement.scrollIntoViewIfNeeded(true)
+        }
+      }, 50);
     });
     //
     window.addEventListener('beforeunload', function (ev) {

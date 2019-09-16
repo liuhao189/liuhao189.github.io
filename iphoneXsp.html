@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0,viewport-fit=cover,user-scalable=no">
+  <meta http-equiv="X-UA-Compatible"
+    content="ie=edge">
+  <title>IphoneX适配</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    header {
+      background-color: #ddd;
+      height: 40px;
+      line-height: 40px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+    }
+
+    footer {
+      background-color: #ddd;
+      height: 40px;
+      line-height: 40px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    #app {
+      box-sizing: border-box;
+      padding: 40px 0;
+      padding-left: env(safe-area-inset-left);
+      padding-bottom: calc( env(safe-area-inset-bottom) + 40px);
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <header>
+      I am header!
+    </header>
+    <div id="app">
+
+    </div>
+    <script>
+      let elNum = 100;
+      let html = '';
+      for (let i = 0; i < elNum; ++i) {
+        html += `<li>${i}</li>`;
+      }
+      let appEl = document.querySelector('#app');
+      html += `<input type="text">`;
+      appEl.innerHTML = html;
+    </script>
+    <footer>
+      I am footer!
+    </footer>
+  </div>
+</body>
+
+</html>
