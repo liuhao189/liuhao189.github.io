@@ -8,6 +8,8 @@
   <meta http-equiv="X-UA-Compatible"
     content="ie=edge">
   <title>Test</title>
+  <link rel="manifest"
+    href="/manifest.json">
   <style>
     #app {
       font-size: 18px;
@@ -34,6 +36,7 @@
 <body>
   <div class="main-container">
     <h2>test service-worker!</h2>
+    <button id="btnInstall">Install</button>
     <div id="app">
 
     </div>
@@ -97,6 +100,24 @@
     } finally {
       appEl.innerHTML = infos.join('<br/>');
     }
+  </script>
+  <script>
+    window.addEventListener('load', function () {
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.register('sw.js')
+      }
+    });
+    var deferredPrompt;
+    window.addEventListener('beforeinstallprompt', function (ev) {
+      deferredPrompt = ev;
+      ev.preventDefault();
+    });
+    document.getElementById('btnInstall').addEventListener('click', function (ev) {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+      }
+    });
+
   </script>
 </body>
 
