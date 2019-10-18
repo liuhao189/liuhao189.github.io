@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible"
+        content="ie=edge">
+    <title>CSS变量</title>
+    <style>
+        :root {
+            --main-bg-color: #eee;
+            --hi-str: 'Hello';
+            --hi-css-var: var(--hi-str)' CSS Var';
+            --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, .22);
+            --normal-space: 20;
+            --font-color: red;
+        }
+
+
+        .card {
+            --font-color: green;
+            padding: calc(var(--normal-space) * 1px);
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            color: var(--font-color);
+        }
+
+        span {
+            --large-font-size: 18px;
+        }
+
+        html {
+            background-color: var(--main-bg-color)
+        }
+
+        #mainContainer {
+            --font-color: blue;
+            position: relative;
+            min-height: 100px;
+        }
+
+        #mainContainer div {
+            color: var(--font-color);
+        }
+
+        #mainContainer::after {
+            position: absolute;
+            content: var(--hi-css-var);
+            font-size: var(--large-font-size);
+            color: var(--font-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mainContainer">
+        <div>main container content </div>
+        <div class="card">
+            I am card!
+        </div>
+    </div>
+</body>
+
+</html>

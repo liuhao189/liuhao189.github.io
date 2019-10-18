@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
+  <meta http-equiv="X-UA-Compatible"
+    content="ie=edge">
+  <title>Test</title>
+  <link rel="manifest"
+    href="/manifest.json">
+  <style>
+    #app {
+      font-size: 18px;
+      line-height: 30px;
+    }
+
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    .main-container {
+      height: 100%;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-container">
+    <h2>test service-worker!</h2>
+    <button id="btnInstall">Install</button>
+    <div id="app">
+
+    </div>
+    <div style="height: 1000px;background-color:#ddd;">
+
+    </div>
+    <p>Scroll:<input type="checkbox"
+        id="useScroll" /></p>
+    <p>ToView:<input type="checkbox"
+        id="toView" /></p>
+    <div>
+      <input type="text"
+        class="txt-test"
+        placeholder="test" />
+    </div>
+  </div>
+  <script>
+    var txtTest = document.querySelector('.txt-test');
+    var mainEl = document.querySelector(".main-container");
+    var scrollCheck = document.querySelector("#useScroll");
+    var toView = document.querySelector('#toView');
+    txtTest.addEventListener('blur', function (ev) {
+      setTimeout(() => {
+        if (scrollCheck.checked) {
+          mainEl.scrollTo(0, 0);
+          window.scrollTo(0, 0);
+        }
+        if (toView.checked) {
+          ev.srcElement.scrollIntoViewIfNeeded(true)
+        }
+      }, 50);
+    });
+    //
+    window.addEventListener('beforeunload', function (ev) {
+      ev.preventDefault();
+      ev.returnValue = '';
+    });
+    let infos = ['Support Service Worker: ' + (navigator.serviceWorker ? true : false)];
+    infos.push('userAgent: ' + navigator.userAgent);
+    let keys = [];
+    for (let key in navigator) {
+      if (key.toLocaleLowerCase().includes('storage')) {
+        keys.push(key)
+      }
+    }
+    infos.push('Keys of navigator: ' + keys.join());
+    let appEl = document.querySelector('#app');
+    try {
+      let keys = [];
+      for (let key in navigator.storage) {
+        keys.push(key)
+      }
+      infos.push('Keys of navigator.storage: ' + keys.join());
+      navigator.storage.estimate().then((info) => {
+        infos.push('quota: ' + Math.round(info.quota / 1024 / 1024) + 'M');
+      }).finally(() => {
+        appEl.innerHTML = infos.join('<br/>');
+      });
+    } catch (ex) {
+      alert(ex.message);
+    } finally {
+      appEl.innerHTML = infos.join('<br/>');
+    }
+  </script>
+  <script>
+    window.addEventListener('load', function () {
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.register('sw.js')
+      }
+    });
+    var deferredPrompt;
+    window.addEventListener('beforeinstallprompt', function (ev) {
+      deferredPrompt = ev;
+      ev.preventDefault();
+    });
+    document.getElementById('btnInstall').addEventListener('click', function (ev) {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+      }
+    });
+
+  </script>
+</body>
+
+</html>
