@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible"
+    content="ie=edge">
+  <title>预警监控大屏</title>
+  <script>
+    var pageConfig = { designWidth: 1920 };
+    (function (designWidth) {
+      'use strict';
+      var docEl = document.documentElement;
+      var dpr = window.devicePixelRatio || 1;
+      var scale = 1 / dpr;
+      var $viewport = document.querySelector('meta[name="viewport"]');
+      var content = 'initial-scale=' + scale + ',minimum-scale=' + scale + ',maximum-scale=' + scale + ',user-scalable=no,width=device-width,viewport-fit=cover';
+      if ($viewport) {
+        $viewport.setAttribute('content', content);
+      } else {
+        document.write('<meta name="viewport" content="' + content + '">');
+      }
+      docEl.setAttribute('data-dpr', dpr);
+      function setBaseFontSize() {
+        var width = docEl.clientWidth || (screen.availWidth * dpr);
+        var fontSize = width / designWidth * 100;
+        window.baseFontSize = fontSize;
+        docEl.style.fontSize = fontSize + 'px';
+      }
+      setBaseFontSize();
+      window.addEventListener('resize', setBaseFontSize);
+    })(pageConfig.designWidth);
+  </script>
+  <style>
+    :root {
+      --main-bg-color: #010218;
+      --header-height: .78rem;
+      --header-line-height: .73rem;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+
+    #app {
+      background-image: url("./imgs/bg.png");
+      background-repeat: no-repeat;
+      background-color: var(--main-bg-color);
+      background-size: contain;
+      background-position: center center;
+      height: 100vh;
+    }
+
+    .header {
+      width: 15.58rem;
+      height: var(--header-height);
+      margin: 0 auto;
+      line-height: var(--header-height);
+      box-sizing: border-box;
+      background-image: url("./imgs/topline.svg");
+      background-repeat: no-repeat;
+      background-size: contain;
+      display: flex;
+      user-select: none;
+    }
+
+    .header-left,
+    .header-right {
+      width: 4.85rem;
+      height: var(--header-height);
+    }
+
+    .header-center {
+      width: 5.89rem;
+      text-align: center;
+      line-height: .73rem;
+      font-size: 0.26rem;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-left"></div>
+      <div class="header-center">
+        <span>履约调指中心 - 异常监控预警</span>
+      </div>
+      <div class="header-right"></div>
+    </header>
+  </div>
+  <script>
+    try {
+      let headerCenterEl = document.querySelector(".header-center");
+      headerCenterEl.addEventListener('click', function (ev) {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.body.requestFullscreen();
+        }
+      });
+    } catch (ex) {
+      console.error(ex);
+    }
+  </script>
+</body>
+
+</html>

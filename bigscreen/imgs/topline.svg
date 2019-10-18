@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1557px" height="76px" viewBox="0 0 1557 76" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>编组 16</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <radialGradient cx="50%" cy="50%" fx="50%" fy="50%" r="998.717949%" gradientTransform="translate(0.500000,0.500000),scale(0.050064,1.000000),translate(-0.500000,-0.500000)" id="radialGradient-1">
+            <stop stop-color="#041A34" stop-opacity="0.137510927" offset="0%"></stop>
+            <stop stop-color="#21596E" stop-opacity="0.157998252" offset="100%"></stop>
+        </radialGradient>
+        <path d="M0,0 L1558,0 L1518,68 L1039.46632,68 L1034,78 C1020.94458,78 1014.27791,78 1014,78 C1013.72209,78 1010.76557,74.6666667 1005.13046,68 L555.195622,68 L545,78 L526,78 L519.01427,68 L30,68 L0,0 Z" id="path-2"></path>
+        <filter x="-4.1%" y="-82.1%" width="108.3%" height="264.1%" filterUnits="objectBoundingBox" id="filter-3">
+            <feGaussianBlur stdDeviation="63.5" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0.51372549   0 0 0 0 1  0 0 0 0.1426191 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <radialGradient cx="50%" cy="50%" fx="50%" fy="50%" r="382.467532%" gradientTransform="translate(0.500000,0.500000),scale(0.130730,1.000000),translate(-0.500000,-0.500000)" id="radialGradient-4">
+            <stop stop-color="#0076FF" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#00BBFF" stop-opacity="0.157998252" offset="100%"></stop>
+        </radialGradient>
+        <polygon id="path-5" points="485 1 1074 1 1034 78 1014.26272 78 1005.27979 68 555.394622 68 545.345073 78 525 78"></polygon>
+        <filter x="-0.7%" y="-4.5%" width="101.4%" height="109.1%" filterUnits="objectBoundingBox" id="filter-6">
+            <feGaussianBlur stdDeviation="1.5" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="2" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.342757375   0 0 0 0 0.469837751   0 0 0 0 0.980213995  0 0 0 0.55591674 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面-2" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="方案A" transform="translate(-181.000000, 0.000000)">
+            <g id="编组-15" transform="translate(181.000000, -3.000000)">
+                <g id="编组-16">
+                    <g id="矩形">
+                        <use fill="url(#radialGradient-1)" fill-rule="evenodd" xlink:href="#path-2"></use>
+                        <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                        <use stroke-opacity="0.646880463" stroke="#0068FF" stroke-width="1" xlink:href="#path-2"></use>
+                    </g>
+                    <g id="形状结合">
+                        <use fill="url(#radialGradient-4)" fill-rule="evenodd" xlink:href="#path-5"></use>
+                        <use fill="black" fill-opacity="1" filter="url(#filter-6)" xlink:href="#path-5"></use>
+                        <use stroke="#0060FF" stroke-width="2" xlink:href="#path-5"></use>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
