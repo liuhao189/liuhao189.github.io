@@ -28,7 +28,7 @@
 }
 .create-hair-style .hair-type-imgs {
   width: 400%;
-  height: 4rem;
+  height: 4.15rem;
   position: relative;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -40,7 +40,7 @@
 }
 .create-hair-style .hair-type-imgitem {
   width: 25%;
-  height: 4rem;
+  height: 100%;
 }
 .create-hair-style .hair-type-imgitem-img {
   height: 3.75rem;
