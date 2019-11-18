@@ -1041,7 +1041,7 @@ button.weui-vcode-btn {
   display: table;
   z-index: 5000;
   width: 80%;
-  max-width: 3rem;
+  /* max-width: 3rem; */
   top: 0;
   right: 0;
   bottom: 0;
