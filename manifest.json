@@ -8,10 +8,10 @@
       "sizes": "192x192 144x144 512x512"
     }
   ],
-  "start_url": "/web-fullscreen/self-service.html?from=desktop_shortcut",
+  "start_url": "/web-fullscreen/self-service.html?from=shotutcut",
   "background_color": "#01c675",
   "display": "fullscreen",
   "orientation": "landscape",
-  "scope": "/",
+  "scope": "/web-fullscreen/",
   "theme_color": "#3367D6"
 }
