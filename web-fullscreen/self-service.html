@@ -4,10 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    content="width=device-width, initial-scale=1.0,minimum-scale=1,maximum-scale=1,user-scalable=no,width=device-width,viewport-fit=cover">
   <meta http-equiv="X-UA-Compatible"
     content="ie=edge">
   <title>全屏测试</title>
+  <script src="./js/keyboard.js"></script>
+  <link rel="stylesheet"
+    href="./css/keyboard.css">
   <link rel="manifest"
     href="/manifest.json">
   <script>
@@ -78,11 +81,69 @@
     <a href="/"
       target="testIframe">iframe首页</a>
     <a href="#/parttwo">PartTwo</a>
-    <a href="./sub/sub.html" target="testIframe">Sub html</a>
+    <a href="./sub/sub.html"
+      target="testIframe">Sub html</a>
     <iframe style="width:1000px;height:400px"
       name="testIframe">
     </iframe>
   </div>
+  <input class="input"
+    name="yourCode"
+    readonly
+    placeholder="input some thing"
+    style="width: 300px;padding: 8px 12px;" />
+  <div class="simple-keyboard"></div>
+  <script>
+    let Keyboard = window.SimpleKeyboard.default;
+    let myKeyBoard = new Keyboard({
+      // inputPattern: /^[A-Za-z\d]+$/,
+      layout: {
+        default: [
+          "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
+          " q w e r t y u i o p [ ]",
+          "a s d f g h j k l ; ' {enter}",
+          "z x c v b n m , . / {shift}",
+        ],
+        shift: [
+          "1 2 3 4 5 6 7 8 9 0 - {bksp}",
+          "Q W E R T Y U I O P { }",
+          'A S D F G H J K L : " {enter}',
+          "Z X C V B N M < > ? {shift}"
+        ]
+      },
+      layoutName: 'shift',
+      stopMouseDownPropagation: true,
+      onChange: input => onChange(input),
+      onKeyReleased: button => onKeyReleased(button)
+    });
+
+    function onChange(input) {
+      document.querySelector(".input").value = input;
+      console.log("Input changed", input);
+    }
+
+    function onKeyReleased(button) {
+      if (button === "{shift}" || button === "{lock}") handleShift()
+      console.log("Button Released", button);
+    }
+
+    function handleShift() {
+      let currentLayout = myKeyBoard.options.layoutName;
+      let shiftToggle = currentLayout === "default" ? "shift" : "default";
+
+      myKeyBoard.setOptions({
+        layoutName: shiftToggle
+      });
+    }
+
+    document.querySelector(".input").addEventListener("input", event => {
+      myKeyBoard.setInput(event.target.value);
+    });
+
+    document.querySelector(".input").addEventListener('focus', (ev) => {
+      ev.srcElement.blur();
+    })
+  </script>
 </body>
 
 </html>
