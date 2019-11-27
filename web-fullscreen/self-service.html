@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible"
+    content="ie=edge">
+  <title>全屏测试</title>
+  <link rel="manifest"
+    href="/manifest.json">
+  <script>
+    function registerSw() {
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.register('./sw.js');
+      }
+    }
+    window.onload = function () {
+      registerSw();
+      let btnAdd = document.querySelector('#btnAddShortcut');
+      btnAdd.addEventListener('click', (ev) => {
+        if (installEv) {
+          installEv.prompt().then(result => {
+            if (result.outcome = "accepted") {
+              console.log('accepted')
+            }
+          })
+        }
+      })
+
+      let btnFullScreen = document.querySelector('#btnFullScreen');
+      btnFullScreen.addEventListener('click', (ev) => {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.documentElement.requestFullscreen();
+        }
+      })
+      //
+
+    }
+
+    let installEv;
+
+    window.addEventListener('beforeinstallprompt', (ev) => {
+      installEv = ev;
+    })
+  </script>
+  <style>
+    body {
+      background-color: white;
+    }
+
+    @media all and (display-mode: standalone),
+    (display-mode: fullscreen) {
+      body {
+        background-color: #01c675;
+      }
+
+      #requestShortcutDialog {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="requestShortcutDialog">
+    <button id="btnAddShortcut">添加到桌面</button>
+  </div>
+  <div id="fullscreenRequestDialog">
+    <button id="btnFullScreen">全屏</button>
+  </div>
+  <div id="app">
+    测试全屏页面
+    <a href="/">首页</a>
+    <a href="/"
+      target="testIframe">iframe首页</a>
+    <a href="#/parttwo">PartTwo</a>
+    <a href="./sub/sub.html" target="testIframe">Sub html</a>
+    <iframe style="width:1000px;height:400px"
+      name="testIframe">
+    </iframe>
+  </div>
+</body>
+
+</html>
