@@ -1,0 +1,23 @@
+{
+  "name": "liuhao189.github.io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuhao189/liuhao189.github.io.git"
+  },
+  "keywords": [],
+  "author": "liuhao189 <liuhao189@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/liuhao189/liuhao189.github.io/issues"
+  },
+  "homepage": "https://github.com/liuhao189/liuhao189.github.io#readme",
+  "devDependencies": {
+    "markdown-to-html": "0.0.13"
+  }
+}
