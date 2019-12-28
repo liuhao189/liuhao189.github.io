@@ -102,9 +102,17 @@
       return false;
     }
     let newVal = '';
+    let inputStrArr = [];
+    let checkTimer;
     //
     document.documentElement.addEventListener('keydown', (ev) => {
       let srcEl = ev.srcElement;
+      inputStrArr.push(ev.key);
+      if (!checkTimer) {
+        checkTimer = setTimeout(() => {
+          checkInput();
+        }, 1000);
+      }
       if (srcEl.tagName === "INPUT" || srcEl.tagName === "TEXTAREA") return;
       ev.preventDefault();
       ev.stopPropagation();
@@ -114,6 +122,19 @@
       msgEl.innerHTML = msgEl.innerHTML + `<br/>KeyCode: ${ev.keyCode}, Key: ${ev.key}, TimeStamp: ${ev.timeStamp}`;
       return false;
     })
+
+    function checkInput() {
+      console.log(inputStrArr);
+      if (inputStrArr && inputStrArr.length) {
+        if (inputStrArr.length > 4) {
+          clearTimeout(checkTimer);
+          let inputVal = inputStrArr.join('').replace(/Enter$/, '');
+          document.querySelector("#codeInput").value = inputVal;
+          inputStrArr = [];
+          checkTimer = null;
+        }
+      }
+    }
 
     window.onload = function (ev) {
       let btnFullScreen = document.querySelector('#btnFullScreen');
@@ -145,6 +166,11 @@
               class="note-item-title">测试标题</a>
             <div class="note-item-summary break-all">
               测试描述信息
+            </div>
+            <div>
+              <input style="padding:8px 12px; width: 200px;"
+                id="codeInput"
+                readonly />
             </div>
           </li>
         </ul>
