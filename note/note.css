@@ -7,129 +7,146 @@ body {
   width: 80%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 20px 20px;
+  box-sizing: content-box;
 }
 
+:root {
+  --main-bg-color: #fefefe;
+  --title-color: #404040;
+  --context-color: #222;
+  --code-bg: #121212;
+  --normal-padding: 15px;
+  --samller-padding: 7px;
+  --normal-margin: 15px;
+  --larger-padding: 20px;
+  --code-color: rgb(241, 241, 241);
+  --blockquote-color: rgb(212, 212, 212);
+}
+
+html {
+  background-color: var(--main-bg-color);
+}
 
 h1,
 h2,
 h3,
 h4,
 h5,
-h6,
-p,
-blockquote {
-    margin: 0;
-    padding: 0;
-}
-table {
-    margin: 10px 0 15px 0;
-    border-collapse: collapse;
-}
-td,th { 
-    border: 1px solid #ddd;
-    padding: 3px 10px;
-}
-th {
-    padding: 5px 10px;  
+h6 {
+  color: var(--title-color);
+  margin-bottom: var(--normal-margin);
 }
 
-a {
-    color: #0069d6;
-}
-a:hover {
-    color: #0050a3;
-    text-decoration: none;
-}
-a img {
-    border: none;
-}
 p {
-    margin-bottom: 9px;
+  color: var(--context-color);
+  font-size: 16px;
+  line-height: 1.8em;
+  margin-bottom: var(--normal-margin);
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    color: #404040;
-    line-height: 36px;
-}
-h1 {
-    margin-bottom: 18px;
-    font-size: 30px;
-}
-h2 {
-    font-size: 24px;
-}
-h3 {
-    font-size: 18px;
-}
-h4 {
-    font-size: 16px;
-}
-h5 {
-    font-size: 14px;
-}
-h6 {
-    font-size: 13px;
-}
-hr {
-    margin: 0 0 19px;
-    border: 0;
-    border-bottom: 1px solid #ccc;
-}
-blockquote {
-    padding: 13px 13px 21px 15px;
-    margin-bottom: 18px;
-    font-family:georgia,serif;
-    font-style: italic;
-}
-blockquote:before {
-    content:"\201C";
-    font-size:40px;
-    margin-left:-10px;
-    font-family:georgia,serif;
-    color:#eee;
-}
-blockquote p {
-    font-size: 14px;
-    font-weight: 300;
-    line-height: 18px;
-    margin-bottom: 0;
-    font-style: italic;
-}
-code, pre {
-    font-family: Monaco, Andale Mono, Courier New, monospace;
-}
-code {
-    background-color: #fee9cc;
-    color: rgba(0, 0, 0, 0.75);
-    padding: 1px 3px;
-    font-size: 12px;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-}
+
 pre {
-    display: block;
-    padding: 14px;
-    margin: 0 0 18px;
-    line-height: 16px;
-    font-size: 11px;
-    border: 1px solid #d9d9d9;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+  background-color: var(--code-bg);
+  margin-bottom: var(--normal-margin);
+  padding: var(--larger-padding) var(--normal-padding);
+  color: var(--code-color);
+  font-size: 16px;
+  border-radius: 5px;
+  white-space: normal;
 }
-pre code {
-    background-color: #fff;
-    color:#737373;
-    font-size: 11px;
-    padding: 0;
+
+pre pre {
+  padding: 0;
+  margin-bottom: 0;
+  border: none;
+  white-space: pre;
 }
-sup {
-    font-size: 0.83em;
-    vertical-align: super;
-    line-height: 0;
+
+.highlight .kd {
+  color: rgb(86, 156, 214);
+}
+
+.highlight .nx {
+  color: rgb(220, 220, 220);
+}
+
+.highlight .s1 {
+  color: rgb(214, 157, 133);
+}
+
+p a {
+  color: rgb(53, 142, 245);
+  text-decoration: none;
+}
+p a:hover {
+  text-decoration: underline;
+}
+
+p img {
+  width: 100%;
+  border-radius: 5px;
+}
+
+blockquote {
+  position: relative;
+  padding: var(--samller-padding) var(--normal-padding);
+  background-color: rgb(40, 40, 40);
+  border-radius: 5px;
+  margin-bottom: var(--normal-margin);
+}
+
+blockquote p {
+  margin-bottom: 0;
+  color: var(--blockquote-color);
+}
+
+blockquote::before {
+  content: " ";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background-color: rgb(20, 81, 122);
+}
+
+hr {
+  margin: var(--samller-padding) 0;
+}
+
+ul {
+  list-style-position: inside;
+}
+
+li p {
+  display: inline;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  font-size: 18px;
+  line-height: 2em;
+  padding: 0 12px;
+  text-align: left !important;
+  color: #909399;
+  font-weight: 500;
+}
+
+td,
+th {
+  border: 1px solid #ebeef5;
+}
+
+td {
+  text-align: left !important;
+  padding: 8px 12px;
+  color: var(--context-color);
+}
+
+tbody tr:hover {
+  background-color: #f5f7fa;
 }
