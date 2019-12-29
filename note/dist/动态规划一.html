@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>'动态规划一'</title>
+  <link rel="stylesheet" href="/note/note.css">
+</head>
+<body>
+<h1 id="-">动态规划一</h1>
+<h1 id="-">定义</h1>
+<p>动态规划的英文名为Dynamic Programming，是一种分阶段求解策略问题的数学思想。它不止用于编程领域，也应用于管理学、经济学、生物学。</p>
+<h1 id="-">问题</h1>
+<h2 id="-">台阶走法</h2>
+<p>有一座高度是10级台阶的楼梯，从下往上走，每跨一步只能向上1级或者2级台阶。要求用程序来求出一共有多少种走法？</p>
+<h3 id="-">推理</h3>
+<p>最后一步必然是从8级或9级开始，所以总的走法是8级+9级的走法。即F(10)=F(9)+F(8)，以此类推。</p>
+<pre><code><div class="highlight"><pre><span class="err">把一个复杂的问题分阶段进行简化，逐步简化成简单的问题，这就是动态规划的思想。</span>
+</pre></div>
+
+</code></pre><p>动态规划包含三个重要的概念：最优子结构、边界、状态转移公式。F(9)和F(8)是F(10)的最优子结构。<br>当只有一级台阶或二级台阶时，我们可以直接得出结果，无需继续简化。F(1)和F(2)是问题的边界。<br>F(n)=F(n-1)+F(n-2)是阶段与截断之间的状态转移方程。动态规划的核心，决定了问题的每一个阶段和下一阶段的关系。</p>
+<pre><code><div class="highlight"><pre><span class="err">先找出最优子结构，然后定义状态转移方程，最后寻找问题边界。</span>
+</pre></div>
+
+</code></pre><h3 id="-">普通递归</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// 二叉树，时间复杂度接近2的N次方</span>
+<span class="kd">function</span> <span class="nx">findWalkWays</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">===</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">===</span> <span class="mi">2</span><span class="p">)</span> <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">findWalkWays</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nx">findWalkWays</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">备忘录法</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//时间复杂度和空间复杂度都是o(N)</span>
+<span class="kd">let</span> <span class="nx">cache</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="kd">function</span> <span class="nx">findWalkWays</span><span class="p">(</span><span class="nx">stairsCount</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">===</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">===</span> <span class="mi">2</span><span class="p">)</span> <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">cache</span><span class="p">[</span><span class="nx">n</span><span class="p">])</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">cache</span><span class="p">[</span><span class="nx">n</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="kd">let</span> <span class="nx">res</span> <span class="o">=</span> <span class="nx">findWalkWays</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nx">findWalkWays</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="nx">cache</span><span class="p">[</span><span class="nx">n</span><span class="p">]</span> <span class="o">=</span> <span class="nx">res</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">res</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">自底向上求解</h3>
+<p>利用简洁的自底向上的递推方式，实现了时间和空间上的最优化。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// 时间复杂度o(N)，空间复杂度o(1)</span>
+<span class="kd">function</span> <span class="nx">findWalkWays</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">===</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">===</span> <span class="mi">2</span><span class="p">)</span> <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">prev2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">prev1</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">temp</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">n</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">temp</span> <span class="o">=</span> <span class="nx">prev1</span> <span class="o">+</span> <span class="nx">prev2</span><span class="p">;</span>
+        <span class="nx">prev2</span> <span class="o">=</span> <span class="nx">prev1</span><span class="p">;</span>
+        <span class="nx">prev1</span> <span class="o">=</span> <span class="nx">temp</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">temp</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">台阶问题总结</h3>
+<p>主要找最优子结构、状态转移公式和边界。台阶动态规划领域最简单的问题，因为它只有一个变化维度，还有许多问题比这要复杂得多。</p>
+<h2 id="-">国王和金矿</h2>
+<p>有一个国家发现了5座金矿，每座金矿的黄金储量不同，需要参与挖掘的工人数也不同。参与挖矿工人的总数是10人。每座金矿要么全挖，要么不挖，不能派出一半人挖取一半金矿。要求用程序求解出，要想得到尽可能多的黄金，应该选择挖取哪几座金矿？</p>
+<table>
+<thead>
+<tr>
+<th>金矿</th>
+<th>黄金储量</th>
+<th>人工数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>500</td>
+<td>5</td>
+</tr>
+<tr>
+<td>B</td>
+<td>200</td>
+<td>3</td>
+</tr>
+<tr>
+<td>C</td>
+<td>300</td>
+<td>4</td>
+</tr>
+<tr>
+<td>D</td>
+<td>350</td>
+<td>3</td>
+</tr>
+<tr>
+<td>E</td>
+<td>400</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-">推理</h3>
+<p>5个金矿的最优选择，就是前4个金矿10工人的挖金数量和前4个金矿7工人的挖金数量+第5个金矿的挖金数量的最大值。</p>
+<p>金矿数量设为Golds，工人数量Workers，金矿的黄金量设为数组GoldReserves，金矿的用工数设为数组GoldWorkers。</p>
+<p>F(Golds,Workers)=MAX(F(Golds-1,Workers),F(Golds-1,Workers-GoldWorkers[Golds])+GoldReserves[Golds]);</p>
+<p>eg: F(5,10)=MAX(F(4,10),F(4,7)+300)</p>
+<p>问题的边界：有1个金矿，如果工人数大于金矿需要工人数，则得到的黄金是GoldReserves[0]，如果工人数小于金矿需要工人数，则得到的黄金是0。</p>
+<h3 id="-">解法</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//时间复杂度O(N*W),空间复杂度O(W)</span>
+<span class="cm">/**</span>
+<span class="cm"> * </span>
+<span class="cm"> * @param {*} n 金矿数量</span>
+<span class="cm"> * @param {*} w 工人数量</span>
+<span class="cm"> * @param {*} g []数组，黄金存储量</span>
+<span class="cm"> * @param {*} p []数组，金矿需要的工人数</span>
+<span class="cm"> */</span>
+<span class="kd">function</span> <span class="nx">findMostGold</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">g</span><span class="p">,</span> <span class="nx">p</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">preRow</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="kd">let</span> <span class="nx">currRow</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">w</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">{</span>
+            <span class="nx">preRow</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">preRow</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">g</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nx">currRow</span> <span class="o">=</span> <span class="nx">preRow</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">n</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;=</span> <span class="nx">w</span><span class="p">;</span> <span class="o">++</span><span class="nx">j</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">p</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="p">{</span>
+                <span class="nx">currRow</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">=</span> <span class="nx">preRow</span><span class="p">[</span><span class="nx">j</span><span class="p">];</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">currRow</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">preRow</span><span class="p">[</span><span class="nx">j</span><span class="p">],</span> <span class="nx">preRow</span><span class="p">[</span><span class="nx">j</span> <span class="o">-</span> <span class="nx">p</span><span class="p">[</span><span class="nx">i</span><span class="p">]]</span> <span class="o">+</span> <span class="nx">g</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="nx">preRow</span> <span class="o">=</span> <span class="nx">currRow</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">currRow</span><span class="p">[</span><span class="nx">w</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>
