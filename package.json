@@ -1,7 +1,7 @@
 {
   "name": "liuhao189.github.io",
   "version": "1.0.0",
-  "description": "",
+  "description": "personal website",
   "main": "sw.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/liuhao189/liuhao189.github.io#readme",
   "devDependencies": {
+    "chalk": "^3.0.0",
     "glob": "^7.1.6",
     "markdown-to-html": "0.0.13"
   }

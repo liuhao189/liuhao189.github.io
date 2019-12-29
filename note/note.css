@@ -22,6 +22,7 @@ body {
   --larger-padding: 20px;
   --code-color: rgb(241, 241, 241);
   --blockquote-color: rgb(212, 212, 212);
+  --code-green-color: #519a46;
 }
 
 html {
@@ -62,7 +63,8 @@ pre pre {
   white-space: pre;
 }
 
-.highlight .kd {
+.highlight .kd,
+.highlight .k {
   color: rgb(86, 156, 214);
 }
 
@@ -70,14 +72,24 @@ pre pre {
   color: rgb(220, 220, 220);
 }
 
-.highlight .s1 {
+.highlight .s1,
+.highlight .err,
+.highlight .mi {
   color: rgb(214, 157, 133);
+}
+
+.highlight .c,
+.highlight .c1,
+.highlight .cm,
+.highlight .nb {
+  color: var(--code-green-color);
 }
 
 p a {
   color: rgb(53, 142, 245);
   text-decoration: none;
 }
+
 p a:hover {
   text-decoration: underline;
 }
