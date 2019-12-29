@@ -1,0 +1,159 @@
+# 我理解的PWA
+
+# 简介
+
+PWA是三个英文单词的简称，全称为Progressive web apps(渐进式网络应用)。
+
+PWA的概念第一次出现在Googler Alex Russell的文章[《progressive-apps-escaping-tabs-without-losing-our-soul》](https://infrequently.org/2015/06/progressive-apps-escaping-tabs-without-losing-our-soul/) 。
+
+上文主要观点是：Web应该在保留灵魂的基础上渐进增强，而非现有大行其道的Hybrid App方向。如果用户需要，网页可以渐进式地变成App。eg：被添加到主屏幕，全屏方式运行，离线工作，推送通知，但它是Web，不会放到应用商店。
+
+思考和总结：
+
+1、PWA是一类技术的总称，包含的技术是动态发展的。有助于Web体验和功能增强的技术都可以包含进来。
+
+2、14-15年移动应用处于风口浪尖，Web App需要和Native App的竞争。既然要竞争，应该补齐自身短板。
+
+3、PWA现阶段主要包括的功能：添加到主屏幕 ，消息通知，离线工作，全屏运行。
+
+4、移动系统主要有Android和IOS。苹果从Web App中获取的利益小于App store。苹果不喜欢Web App和Hybrid App。所以Mobile Safari支持该类技术比较晚。
+
+# 主要功能
+
+## 资源缓存
+
+用户打开Web App时需要下载HTML，CSS，JS，IMG等资源。在弱网环境下，下载过程比较费时，影响用户使用体验。
+
+随着无线通信技术的发展，这一点可能越来越不重要。
+
+    弱网环境：地铁、偏远景点，农村、印度非洲等发展中家、美国欧洲等发达国家
+
+PWA的资源缓存主要通过Service-Worker和CacheStorage来实现。
+
+### Service Worker
+
+Service Worker的特点：
+
+1、Service Worker首先是一个Worker，独立于主页面。无法直接操作DOM，通过postMessage与页面通信。
+
+2、Service Worker可以代理其所控制页面的任何网络请求。
+
+3、需要HTTPS协议。
+
+### CacheStorage
+
+CacheStorage是Web Storage的一种。Storage我们不需要关心太多，只需要关心三点：1、存什么，数据的保存期限？；2、怎么存；3、怎么取。
+
+第一个问题：主要存储Response，理论上持久性类似于LocalStorage除非手动删除，否则数据不会丢失。
+
+第二个问题&&第三个问题略。主要是API层面的操作。
+
+### 网络请求代理
+
+![Service Worker网页网络代理](/note/assets/imgs/serviceWorkerProxy.png)
+
+## 添加到主屏幕
+
+### web app manifest
+
+为了将你的应用添加到主屏幕，浏览器需要知道更多关于Web App的信息。这些信息主要通过 web app manifest提供。
+
+``` js
+{
+    "short_name": "Maps",
+    "name": "Google Maps",
+    "icons": [{
+            "src": "/images/icons-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/images/icons-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": "/maps/?source=pwa",
+    "background_color": "#3367D6",
+    "display": "standalone", // fullscreen全屏，standalone，非常像原生应用
+    "orientation": "landscape", //横屏竖屏展示
+    "scope": "/maps/",
+    "theme_color": "#3367D6"
+}
+```
+
+``` html
+<link rel="manifest" href="/manifest.json">
+```
+
+### 安装弹框
+
+如果你应用符合添加到桌面的标准，浏览器会触发beforeinstallprompt事件来让开发者弹出“安装弹框”, 用户选择是否安装你的Web App。
+
+![安装弹框](/note/assets/imgs/webAppInstallDialog.png)
+
+标准（截止2019年11月22日）如下：
+
+1、Web App未被安装过。
+
+2、用户在该网站上有过交互。(之前要求用户需要在该domain下交互30s以上)。
+
+3、包含一个web app manifest。manifest包含short_name或name，icons，start_url，display，且prefer_related_application不设置为true。
+
+4、注册过一个包含fetch事件处理器的Service Worker。
+
+### 拓展阅读
+
+[webapks](https://developers.google.com/web/fundamentals/integration/webapks) 
+[app-window](https://developers.google.com/web/progressive-web-apps/desktop#app-window)
+
+## 推送通知
+
+### 实现原理
+
+推送消息涉及两个步骤：1、push，服务器将数据推送给service-worker；2、notification，JS脚本展示消息给用户。
+
+跟客户端的推送通知类似，总共需要三个步骤。
+
+1、用户向推送服务器订阅推送服务，并将服务码保存到应用服务器。
+
+![image.png](/note/assets/imgs/subscribeNotice.png)
+
+2、应用服务器在特定事件后，将该事件消息发送给推送服务器。eg：电商上买东西，物流信息更新。
+
+![image.png](/note/assets/imgs/pushNotice.png)
+
+3、推送消息到达客户端，浏览器唤醒Service Worker，然后执行Service Worker的Push事件。
+
+![image.png](/note/assets/imgs/clientProcessNotice.png)
+
+### 大陆地区应用
+
+由于法律和政策原因，大陆地区Chrome的推送通知暂不可用.
+
+## 后台同步
+
+资源缓存主要加快浏览器从服务器获取数据速度, 后台同步主要方便从浏览器发送数据数据到服务器.
+
+场景举例: 
+
+用户拿出手机，浏览着我们的网站，发现了一个很有趣的信息，点击了“提交”按钮。然而不幸的是，这时用户到了一个网络环境极差的地方，或者是根本没有网络。他能够做的只有看着页面上的提示框和不断旋转的等待小圆圈。1s、5s、30s、1min……无尽的等待后，用户将手机放回了口袋，而这一次的请求也被终止了——由于当下极差的网络终止在了客户端。
+
+上面的场景其实暴露了两个问题：
+
+1. 普通的页面发起的请求会随着浏览器进程的结束/或者Tab页面的关闭而终止；
+
+2. 无网环境下，没有一种机制能“维持”住该请求，以待有网情况下再进行请求。
+
+后台同步用于解决以上问题。
+
+# 参考文献
+
+[https://developers.google.com/web/fundamentals/primers/service-workers](https://developers.google.com/web/fundamentals/primers/service-workers)
+[https://developers.google.com/web/fundamentals/push-notifications](https://developers.google.com/web/fundamentals/push-notifications)
+[https://developer.mozilla.org/zh-CN/docs/Web/API/Cache](https://developer.mozilla.org/zh-CN/docs/Web/API/Cache)
+[https://infrequently.org/2015/06/progressive-apps-escaping-tabs-without-losing-our-soul/](https://infrequently.org/2015/06/progressive-apps-escaping-tabs-without-losing-our-soul/)
+[https://developers.google.com/web/fundamentals/web-app-manifest](https://developers.google.com/web/fundamentals/web-app-manifest)
+[https://developers.google.com/web/fundamentals/push-notifications/how-push-works](https://developers.google.com/web/fundamentals/push-notifications/how-push-works)
+[http://www.imooc.com/article/76437](http://www.imooc.com/article/76437)
+

@@ -7,7 +7,7 @@
         content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible"
         content="ie=edge">
-    <title>liuhao189个人网站</title>
+    <title>刘浩的个人网站</title>
     <link rel="stylesheet"
         href="./style/main.css">
     <script>
@@ -63,7 +63,23 @@
 
 <body>
     <div id="app">
-
+        <h2 class="note-part-title">读书笔记</h2>
+        <ul id="noteList">
+        </ul>
+        <script>
+            fetch('/note/notes.json').then(res => {
+                res.json().then(list => {
+                    let noteList = list || [];
+                    let notesHtmlStr = noteList.map((noteItem) => {
+                        return `<li><a href="${noteItem.link}">${noteItem.name}</a></li>`
+                    }).join('');
+                    let notesListEl = document.querySelector('#noteList');
+                    if (notesListEl) {
+                        notesListEl.innerHTML = notesHtmlStr;
+                    }
+                })
+            })
+        </script>
     </div>
 </body>
 

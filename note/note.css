@@ -11,6 +11,10 @@ body {
   box-sizing: content-box;
 }
 
+body>h1:first-child {
+  text-align: center;
+}
+
 :root {
   --main-bg-color: #fefefe;
   --title-color: #404040;
@@ -64,6 +68,7 @@ pre pre {
 }
 
 .highlight .kd,
+.highlight .nt,
 .highlight .k {
   color: rgb(86, 156, 214);
 }
@@ -73,6 +78,8 @@ pre pre {
 }
 
 .highlight .s1,
+.highlight .s,
+.highlight .s2,
 .highlight .err,
 .highlight .mi {
   color: rgb(214, 157, 133);
@@ -126,7 +133,8 @@ hr {
   margin: var(--samller-padding) 0;
 }
 
-ul {
+ul,
+ol {
   list-style-position: inside;
 }
 

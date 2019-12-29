@@ -10,14 +10,18 @@ function log(msg) {
 
 const fileEncoding = 'utf8';
 
+function getBasePath() {
+    return path.join(__dirname, './../note');
+}
+
 function getBuildPath() {
-    let basePath = path.join(__dirname, './../note');
+    let basePath = getBasePath();
     let distPath = path.join(basePath, 'dist');
     return distPath;
 }
 
 function getSourceFiles() {
-    let files = glob.sync(path.join(__dirname, './../note') + '/**/*.md');
+    let files = glob.sync(getBasePath() + '/**/*.md');
     log(`Files:${files.join('\r\n')}`);
     return files;
 }
@@ -46,11 +50,16 @@ function getMarkDownTitle(filePath) {
     }
 }
 
-function buildFile(filePath) {
+function buildFile(filePath, noteList) {
     log(`Start to build '${filePath}'...`);
     let fileInfo = getFileNameInfo(filePath);
     let fileName = fileInfo && fileInfo.fileName || 'note';
     let fileTitle = getMarkDownTitle(filePath);
+    noteList.push({
+        sourceFilePath: filePath,
+        link: `/note/dist/${fileName}.html`,
+        name: fileTitle
+    });
     let cmdStr = `npx markdown ${filePath} -f gfm --highlight -t '${fileTitle}' -s /note/note.css`;
     log(`Build command is ${cmdStr}`);
     let result = childProcess.execSync(cmdStr);
@@ -62,9 +71,18 @@ function buildFile(filePath) {
 
 function build() {
     let files = getSourceFiles();
+    const noteList = [];
     files.forEach((file) => {
-        buildFile(file);
-    })
+        buildFile(file, noteList);
+    });
+    if (noteList && noteList.length) {
+        let listStr = JSON.stringify(noteList);
+        let basePath = getBasePath();
+        fs.writeFileSync(basePath + '/notes.json', listStr, {
+            encoding: fileEncoding
+        });
+        log('Write notelist Successfully!')
+    }
 }
 
 build();
