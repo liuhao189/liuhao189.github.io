@@ -1,4 +1,4 @@
-# Service Worker缓存实践
+# Service-Worker缓存实践
 # 背景
 
 开发的Web App的首字节时间(TP90)，可交互时间(TP90)，完全加载时间(TP90)比较长，严重影响用户体验。

@@ -60,7 +60,7 @@ function buildFile(filePath, noteList) {
         link: `/note/dist/${fileName}.html`,
         name: fileTitle
     });
-    let cmdStr = `npx markdown ${filePath} -f gfm --highlight -t '${fileTitle}' -s /note/note.css`;
+    let cmdStr = `npx markdown ${filePath} -f gfm --highlight -t ${fileTitle} -s /note/note.css`;
     log(`Build command is ${cmdStr}`);
     let result = childProcess.execSync(cmdStr);
     fs.writeFileSync(getBuildPath() + `/${fileName}.html`, result, {
