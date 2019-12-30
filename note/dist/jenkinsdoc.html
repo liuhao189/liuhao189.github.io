@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jenkins官方文档笔记</title>
+  <link rel="stylesheet" href="/note/note.css">
+</head>
+<body>
+<h1 id="jenkins-">Jenkins官方文档笔记</h1>
+<h1 id="-">准备工作</h1>
+<p>机器要求：256RAM，推荐512RAM。</p>
+<p>依赖软件：Java8，Docker。</p>
+<h1 id="-jenkis">下载并运行 Jenkis</h1>
+<p>1、下载 <a href="https://mirrors.jenkins.io/war-stable/latest/jenkins.war">Jenkins</a></p>
+<p>2、终端执行 java -jar jenkins.war --httpPort=8080</p>
+<p>3、打开浏览器进入链接 <a href="http://localhost:8080，完成安装。">http://localhost:8080，完成安装。</a></p>
+<h1 id="-pipeline">第一个 Pipeline</h1>
+<h2 id="-jenkins-pipeline">什么是Jenkins Pipeline</h2>
+<p>Jenkins Pipeline 是一套插件，将持续交付的实现和实施集成到 Jenkins中。</p>
+<p>持续交付 Pipeline 自动化的表达了这样一种流程，将基于版本控制管理的软件持续的交付到您的用户和消费者手中。</p>
+<p>Jenkins Pipeline 提供一套可扩展的工具，用于将“简单到复杂”的交付流程实现为“持续交付即代码”。Jenkins Pipeline 的定义通常被写入一个文本文件中（Jenkinsfile）。该文件可以被放入项目的源代码控制库中。</p>
+<h2 id="-">执行多个步骤</h2>
+<p>Pipelines 由多个步骤组成，允许你构建、测试和部署应用。Jenkins Pipeline 允许您使用一种简单的方式组合多个步骤，以帮助您实现多种类型的自动化构建过程。</p>
+<p>把步骤看作一个执行单一动作的单一的命令，当一个步骤运行成功时继续运行下一个步骤，当任何一个步骤失败时，Pipeline 的执行结果也为失败。当所有的步骤都执行完成并且为成功时，pipeline 的执行结果为成功。</p>
+<p>Jenkinsfile</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">pipeline</span> <span class="p">{</span>
+  <span class="nx">agent</span> <span class="nx">any</span>
+  <span class="nx">stages</span> <span class="p">{</span>
+    <span class="nx">stage</span><span class="p">(</span><span class="s1">&#39;Build&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">steps</span> <span class="p">{</span>
+        <span class="nx">sh</span> <span class="s1">&#39;echo &quot;Hello World&quot;&#39;</span>
+        <span class="nx">sh</span> <span class="s1">&#39;exit 0&#39;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">超时&amp;&amp;重试</h3>
+<p>Jenkins Pipeline提供了很多的步骤，这些步骤可以相互组合嵌套，方便地解决像重复执行步骤直到成功和如果一个步骤执行花费的时间太长则退出等问题。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">pipeline</span> <span class="p">{</span>
+  <span class="nx">agent</span> <span class="nx">any</span>
+  <span class="nx">stages</span> <span class="p">{</span>
+    <span class="nx">stage</span><span class="p">(</span><span class="s1">&#39;Depoly&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">steps</span> <span class="p">{</span>
+        <span class="nx">retry</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">sh</span> <span class="s1">&#39;./deploy.sh&#39;</span>
+        <span class="p">}</span>
+        <span class="nx">timeout</span><span class="p">(</span><span class="nx">time</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span> <span class="nx">units</span><span class="o">:</span> <span class="s1">&#39;MINUTES&#39;</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">sh</span> <span class="s1">&#39;./health-check.sh&#39;</span>
+        <span class="p">}</span> 
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">完成时动作</h3>
+<p>当 pipeline运行完成时，需要做一些清理或者基于 pipeline 的运行结果执行不同的操作。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">pipeline</span> <span class="p">{</span>
+  <span class="nx">agent</span> <span class="nx">any</span>
+  <span class="nx">stages</span> <span class="p">{</span>
+    <span class="nx">stage</span><span class="p">(</span><span class="s1">&#39;Test&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">steps</span> <span class="p">{</span>
+        <span class="nx">sh</span> <span class="s1">&#39;echo &quot;Fail!&quot;;exit 1&#39;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nx">post</span> <span class="p">{</span>
+      <span class="nx">always</span> <span class="p">{</span>
+        <span class="nx">echo</span> <span class="s1">&#39;This will always run&#39;</span>
+      <span class="p">}</span>
+      <span class="nx">success</span> <span class="p">{</span>
+        <span class="nx">echo</span> <span class="s1">&#39;This will run only if successful&#39;</span>
+      <span class="p">}</span>
+      <span class="nx">failure</span> <span class="p">{</span>
+        <span class="nx">echo</span> <span class="s1">&#39;This will run only if failed&#39;</span>
+      <span class="p">}</span>
+      <span class="nx">unstable</span> <span class="p">{</span>
+        <span class="nx">echo</span> <span class="s1">&#39;This will run only if the run was marked as unstable&#39;</span>
+      <span class="p">}</span>
+      <span class="nx">changed</span> <span class="p">{</span>
+        <span class="nx">echo</span> <span class="s1">&#39;This will run only if the state of the Pipeline has changed&#39;</span>
+        <span class="nx">echo</span> <span class="s1">&#39;Fox example, if the pipeline was previously failing but is now successful&#39;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">定义执行环境</h2>
+<p>agent 指令告诉 Jenkins 在哪里以及如何执行Pipeline 或Pipeline 的子集。</p>
+<p>在执行引擎中，agent 指令会引起一下操作的执行：</p>
+<p>1、所有在块 block 中的步骤 steps 会被 Jenkins 保存在一个执行队列中。一旦一个执行器 executor 是可以利用的，这些步骤将会开始执行。</p>
+<p>2、一个工作空间 workspace将会被分配，工作空间中包含来自远程仓库的文件和一些用于 Pipeline 的工作文件。</p>
+<p>在 Pipeline 中可以很容易地运行 Docker 镜像和容器，Pipeline 可以定义命令或者应用运行需要的环境和工具，不需要执行代理中手动去配置各种各样的系统工具和依赖。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">Jenkinsfile</span> <span class="p">(</span><span class="nx">Declarative</span> <span class="nx">Pipeline</span><span class="p">)</span>
+<span class="nx">pipeline</span> <span class="p">{</span>
+  <span class="nx">agent</span> <span class="p">{</span>
+    <span class="nx">docker</span> <span class="p">{</span> <span class="nx">image</span> <span class="s1">&#39;node&#39;</span> <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nx">stages</span> <span class="p">{</span>
+    <span class="nx">stage</span><span class="p">(</span><span class="s1">&#39;Test&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">steps</span><span class="o">:</span><span class="p">{</span>
+        <span class="nx">sh</span> <span class="s2">&quot;node --version&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>当执行 Pipeline 时，Jenkins 将会自动运行指定的容器，并执行 Pipeline 中已经定义好的步骤 Steps。</p>
+<h2 id="-">使用环境变量</h2>
+<p>环境变量可以像下面的示例设置为全局的，也可以是阶段级别的。阶段级别的环境变量只能在定义变量的阶段 stage 使用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">Jenkinsfile</span><span class="p">(</span><span class="nx">Declarative</span> <span class="nx">Pipeline</span><span class="p">)</span>
+<span class="nx">pipeline</span> <span class="p">{</span>
+  <span class="nx">agent</span> <span class="nx">any</span>
+  <span class="nx">environment</span> <span class="p">{</span>
+    <span class="nx">DISABLE_AUTH</span> <span class="o">=</span> <span class="s1">&#39;true&#39;</span>
+    <span class="nx">DB_ENIGINE</span> <span class="o">=</span> <span class="s1">&#39;sqllite&#39;</span>
+  <span class="p">}</span>
+  <span class="nx">stages</span> <span class="p">{</span>
+    <span class="nx">stage</span><span class="p">(</span><span class="s1">&#39;Build&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">steps</span> <span class="p">{</span>
+        <span class="nx">sh</span> <span class="s1">&#39;printenv&#39;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>这种在 Jenkinsfile 中定义环境变量的方法对于指令性的脚本定义非常有用和方便。可以在 pipeline 中配置构建或者测试的环境，然后再 Jenkins 中运行。</p>
+<p>环境变量的另一个常见的用途是设置或覆盖构建或测试脚本的凭证。</p>
+</body>
+</html>
