@@ -56,7 +56,7 @@ function buildFile(filePath, noteList) {
     let fileName = fileInfo && fileInfo.fileName || 'note';
     let fileTitle = getMarkDownTitle(filePath);
     noteList.push({
-        sourceFilePath: path.resolve(path.resolve(__dirname, '..'), filePath),
+        sourceFilePath: path.relative(path.resolve(__dirname, '..'), filePath),
         link: `/note/dist/${fileName}.html`,
         name: fileTitle
     });
