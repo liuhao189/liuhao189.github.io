@@ -140,3 +140,60 @@ function findMostGold(n, w, g, p) {
 
 给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
 
+### 推理
+
+最大子序和，我们想让一个子序中正数越多越好，负数越少越好。
+
+定义一个数组dp，dp[i]是以第i个元素为结尾的一段最大子序和。求dp[i]时，if dp[i-1]小于0，则dp[i]加上前面的任意长度的序列都会小于前面的序列。
+
+```js
+function maxSubArray(nums) {
+    if (nums.length === 0) return 0;
+    if (nums.length === 1) return nums[0];
+    let resArr = [];
+    resArr[0] = nums[0];
+    let max = dp[0];
+    for (let i = 1; i < nums.length; ++i) {
+        if (resArr[i - 1] > 0) {
+            resArr[i] = resArr[i - 1] + nums[i];
+        } else {
+            resArr[i] = nums[i];
+        }
+        max = Math.max(resArr[i], max);
+    }
+    return max;
+}
+```
+
+## 大家劫舍
+
+你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你在不触动警报装置的情况下，能够偷窃到的最高金额。
+
+### 推理
+
+nums代表屋内财产价值的数组。sNums是最高偷窃额的数组。sNums[i]代表i个房屋的最高偷窃额。
+
+sNums[i]和sNums[i-1]的关系。如果偷i，肯定不偷i-1。所以关系是sNums[i]=Max(sNums[i-2]+nums[i],sNums[i-1])。
+
+```js
+function getMaxMoney(moneys) {
+    if (moneys.length === 0) return 0;
+    if (moneys.length === 1) return moneys[0];
+    let maxMoneys = [];
+    maxMoneys.push(moneys[0]);
+    if (moneys.length >= 2) {
+        maxMoneys.push(Math.max(moneys[1], moneys[0]));
+    }
+    for (let i = 2; i < moneys.length; ++i) {
+        maxMoneys.push(Math.max(maxMoneys[i - 2] + moneys[i], maxMoneys[i - 1]));
+    }
+    return maxMoneys[moneys.length - 1];
+}
+```
+
+## 总结
+
+在利用动态规划求解问题的过程中，比较难的是找到状态转移方程，状态转移方程式第N项与前若干项之间的关系。求动态规划时的第i项时可以假设前面的若干项都是已知的。找到这种关系后，需要转化思路，自底向上编写程序，这样才能降低时间复杂度，才是真正的动态规划。
+
