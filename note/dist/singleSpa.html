@@ -7,17 +7,151 @@
 <body>
 <h1 id="single-spa-">single-spa学习笔记</h1>
 <h1 id="js-">JS微前端框架</h1>
-<p>single-spa是一个可以将多个前端应用整合到一个前端应用的框架。有一下收益：</p>
-<p>1、不刷新的情况下使用多种框架(React、AngularJS、Angular、Vue...)</p>
+<p>single-spa是一个可以将多个前端应用整合到一个前端应用的框架。有以下收益：</p>
+<p>1、不刷新的情况下使用多种框架(React、AngularJS、Angular、Vue... )</p>
 <p>2、单独部署你的前端应用</p>
 <p>3、单独升级你的前端应用</p>
 <p>4、代码懒加载</p>
 <h2 id="examples">Examples</h2>
 <p><a href="https://github.com/joeldenning/simple-single-spa-webpack-example">simple-single-spa-webpack-example</a></p>
 <h2 id="-">架构概览</h2>
-<p>single-spa受到现代组件系统启发，整个应用应用生命周期。考虑到JS 的框架众多，single-spa可以让您使用任何框架。</p>
+<p>single-spa受到现代组件系统启发，整个应用有自己单独的生命周期。考虑到JS的框架众多，single-spa可以让您使用任何框架。</p>
 <p>Applications，每一个都是一整个 SPA。每个应用需要对url 改变进反应，同时暴露bootstrap，mount 和 unmount 生命周期方法。传统的 SPA 和 single-spa 的 SPA 的主要区别在于：single-spa 的 spa 必须和其它应用共存；single-spa的应用没有自己的HTML页面。</p>
-<p>single-spa主页面，包括 HTML页面和注册应用的 JS 脚本。每一个应用注册三种类型：名称；加载应用代码的函数；应用是否是活跃状态的函数。</p>
-<p>single-spa 可以工作在几乎构建框架和应用框架上。可以使用 npm安装，可以使用 script 标签引用。</p>
+<p>single-spa主页面，包括 HTML页面和注册应用的JS脚本。每一个应用注册三种类型：名称；加载应用代码的函数；应用是否是活跃状态的函数。</p>
+<p>single-spa 可以工作在几乎构建框架和应用框架上。可以使用 npm安装，可以使用script标签引用。</p>
+<h2 id="single-spa-">single-spa配置</h2>
+<p>single-spa配置有两部分构成：1、被所有single-spa-application公用的HTML文件。2、通过注册的singleSpa.registerApplication()。</p>
+<h3 id="index-html-">index.html文件</h3>
+<p>index.html一般没有divs和buttons，只注册resgiterApplication。</p>
+<h3 id="-">注册应用</h3>
+<p>为了让single-spa知道什么时候初始化，加载，mount 和 unmount，你必须注册应用程序。</p>
+<p>第二个参数loadingFunction需要是一个返回的 promise 的函数，或者直接返回 app 对象。</p>
+<p>第三个参数activityFunction必须是一个同步函数，该函数返回布尔值，第一个参数为window.location。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//registerApplication(name,howToLoad,activityFunction)</span>
+<span class="nx">singleSpa</span><span class="p">.</span><span class="nx">registerApplication</span><span class="p">(</span><span class="s1">&#39;app1&#39;</span><span class="p">,</span> <span class="nx">loadingFunction</span><span class="p">,</span> <span class="nx">activityFunction</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>single-spa是一个的顶层的 Router。相应的 URL 激活不同的子应用。</p>
+<p>single-spa 会在以下场景调用 activityFunction：</p>
+<p>1、hashchange、popstate事件</p>
+<p>2、pushstate、replaceState被调用</p>
+<p>3、triggerAppChange 被调用</p>
+<p>4、checkActivityFunctions 被调用</p>
+<h3 id="singlespa-start-">singleSpa.start()</h3>
+<p>start是为了给用户更精细的控制。start 调用之前子应用会被下载，但是不会被 bootstrap，mounted和 unmounted。</p>
+<h3 id="-">子应用</h3>
+<p>子应用就是传统的SPA应用，只是没有HTML页面。</p>
+<h3 id="-">子应用生命周期</h3>
+<p>生命周期必须包括bootstrap、mount和unmount。unload 是可选的。</p>
+<p>每一个生命周期方法必须返回Promise。</p>
+<p>如果生命周期属性是一个返回 Promise 的函数数组，函数会被依次调用。</p>
+<p>如果 single-spa 没有被启动，应用会被下载，但是不会被 bootstrapped、mounted 和 unmounted。</p>
+<h3 id="-">子应用生命周期参数</h3>
+<p>包含一个 props 对象，该对象包含name，singleSpa，mountParcel，customerProps属性。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">bootstrap</span><span class="p">(</span><span class="nx">props</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span>
+        <span class="nx">name</span><span class="p">,</span>
+        <span class="nx">singleSpa</span><span class="p">,</span>
+        <span class="nx">mountParcel</span><span class="p">,</span>
+        <span class="nx">customProps</span>
+    <span class="p">}</span> <span class="o">=</span> <span class="nx">props</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>name，子应用名称。</p>
+<p>singleSpa，singleSpa的引用。</p>
+<p>mountParcel，mountParcel function。</p>
+<p>customProps，在registerApplication的第四个参数中传递的自定义属性。</p>
+<h3 id="-">生命周期方法执行时间</h3>
+<p>子应用是懒加载的。如果要在 load 时执行代码，只需写在应用主入口即可。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;application A loading....&#39;</span><span class="p">);</span>
+<span class="c1">//....</span>
+</pre></div>
+
+</code></pre>
+<h4 id="bootstrap">Bootstrap</h4>
+<p>bootstrap只会被调用一次，在 mount之前。</p>
+<h4 id="mount">Mount</h4>
+<p>子应用的 activity function 返回 true，但当前应用没有mount，该方法会被执行。</p>
+<h4 id="unmount">UnMount</h4>
+<p>子应用的 activity function 返回 false，但当前应用已mount，该方法会被执行。</p>
+<h4 id="unload">unLoad</h4>
+<p>unload是一个可选的生命周期函数。显式调用 unloadApplication 会调用 unload 生命周期函数。</p>
+<p>一旦调用unloadApplication，应用的状态会变为 NOT_LOADED，应用激活时会re-bootstrap。</p>
+<h4 id="timeouts">timeouts</h4>
+<p>默认，子应用应用全局的 dieOnTimeout 配置。也可以通过导出 timeouts 对象以设置子应用维度的超时时间。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kr">const</span> <span class="nx">timeouts</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">bootstrap</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">mills</span><span class="o">:</span> <span class="mi">5000</span><span class="p">,</span>
+    <span class="nx">dieOnTimeout</span><span class="o">:</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">应用间切换</h4>
+<p>你可以通过 bootstrap, mount和 unmount 生命周期方法来设置应用间切换动画。</p>
+<h3 id="-">应用分割</h3>
+<p>逻辑上来区分子应用，使得不同的开发团队尽可能独立的工作。</p>
+<p>大多数应用微前端的团队将代码放到不同的代码仓库，每个代码仓库有自己单独的构建，发布操作。</p>
+<h3 id="-">三种代码组织方式</h3>
+<p>1、最简单的方式是使用一个代码仓库，一个 build。</p>
+<p>优点：设置简单、基础代码复用方便；</p>
+<p>缺点：对于子应用不够灵活；build 时间长；不能单独部署。</p>
+<p>2、NPM包，子应用打包进 npm 包中，主应用引用各个子应用的npm 包。子应用更新时，需要重新安装，编译和部署。</p>
+<p>优点：npm install比较容易设置；每个应用可以单独发布</p>
+<p>缺点：主应用更新子应用比较繁琐；设置环境较复杂。</p>
+<p>3、动态子应用加载</p>
+<p>需要创建一个 manifest 文件用来描述子程序的基本信息。子应用每次更新时需要更新这个 manifest 文件。</p>
+<h3 id="parcels">Parcels</h3>
+<p>一个 single-spa parcel 是一个框架无关的组件。parcel 必须手动调用方法加载。</p>
+<p>parcel是主应用维度的。一个 Parcel Config只是一个包含三四个生命周期的对象。</p>
+<h2 id="applications-api">Applications API</h2>
+<p>single-spa 导出各个方法和变量。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span><span class="nx">registerApplication</span><span class="p">,</span> <span class="nx">start</span><span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;single-spa&#39;</span><span class="p">;</span>
+<span class="c1">//or</span>
+<span class="kr">import</span> <span class="o">*</span> <span class="nx">as</span> <span class="nx">singleSpa</span> <span class="nx">from</span> <span class="s1">&#39;single-spa&#39;</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="registerapplication">registerApplication</h3>
+<p>注册应用的 API，主应用注册子应用的方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">registerApplication</span><span class="p">(</span><span class="nx">appName</span><span class="p">,</span> <span class="nx">applicationOrLoadingFn</span><span class="p">,</span> <span class="nx">activityFn</span><span class="p">,</span> <span class="nx">customerProps</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h3 id="start">start</h3>
+<p>主应用调用，在 start 调用之前，子应用会被下载，但是不会被 bootstrap，mount，unmounted。</p>
+<h3 id="triggerappchange">triggerAppChange</h3>
+<p>返回一个 Promise，主要用于测试。</p>
+<h3 id="navigatetourl">navigateToUrl</h3>
+<p>不同的应用之间的跳转。</p>
+<p>参数：navigationObj: string | context | DOMEvent</p>
+<p>url字符串；有href属性的对象；有 href 的标签上添加 onClick=&#39;singleSpaNavigate&#39;方法。</p>
+<h3 id="getmountedapps">getMountedApps</h3>
+<p>参数：无</p>
+<p>返回值：appNames: string[]</p>
+<h3 id="getappnames">getAppNames</h3>
+<p>参数：无</p>
+<p>返回值：appNames: string []</p>
+<h3 id="getappstatus">getAppStatus</h3>
+<p>参数：appName</p>
+<p>返回值：appStatus，NOT_LOADED、LOADING_SOURCE_CODE、NOT_BOOTSTRAPPED、BOOTSTRAPPING、NOT_MOUNTED、MOUNTING、MOUNTED、UNMOUNTING、UNLOADING、SKIP_BECAUSE_BROKEN、LOAD_ERROR。</p>
+<p>LOAD_ERROR后，重新进入该路由会重新下载。</p>
+<h3 id="unloadapplication">unloadApplication</h3>
+<p>unloadApplication 会把子应用状态设置为 NOT_LOADED 状态，下次进入时会 bootstrap 该子应用。</p>
+<p>参数：appName，options:{waitForUnmount:true}</p>
+<p>返回值：Promise</p>
+<p>函数执行路径：</p>
+<p>1、调用应用的 unload 生命周期函数。</p>
+<p>2、把应用状态设置为 NOT_LOADED</p>
+<p>3、触发reroute，single-spa可能会重新mount该子应用。</p>
+<h3 id="checkactivityfunctions">checkActivityFunctions</h3>
+<p>会调用每个子应用的 activity function。</p>
+<p>参数：mockWindowLocation: string|Object，代表windoww.location的字符串。</p>
+<p>返回：appNames，location 下应该活跃的应用。</p>
 </body>
 </html>
