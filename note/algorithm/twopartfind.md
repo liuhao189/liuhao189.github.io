@@ -45,5 +45,65 @@ Q、有啥缺陷？
 
 # 寻找左侧边界的二分搜索
 
+```js
+function findLeftIndex(nums, target) {
+    if (!nums || !nums.length) return -1;
+    if (nums.length === 1) {
+        return nums[0] === target ? 0 : -1;
+    }
+    let left = 0;
+    let right = nums.length - 1;
+    while (left < right) {
+        let mid = Number.parseInt((left + right) / 2);
+        let midVal = nums[mid];
+        if (midVal === target) {
+            right = mid;
+        } else if (target > midVal) {
+            left = mid + 1;
+        } else if (target < midVal) {
+            right = mid - 1;
+        }
+    }
+    return nums[left] === target ? left : -1;
+}
+```
 
+Q：为什么算法能够搜索左侧边界？
+
+关键在于对nums[mid]===target这种情况的处理, if(nums[mid]===target){right=mid;}。
+
+Q：为什么返回left而不是right？
+
+都是一样的，因为while的终止条件是left===right。
+
+# 寻找右侧边界的二分查找
+
+错误的。
+
+```js
+function findRightIndex(nums, target) {
+    if (!nums || !nums.length) return -1;
+    if (nums.length === 1) {
+        return nums[0] === target ? 0 : -1;
+    }
+    let left = 0;
+    let right = nums.length - 1;
+    while (left < right) {
+        let mid = Math.parseInt((left + right) / 2);
+        let midVal = nums[mid];
+        if (midVal === target) {
+            left = mid;
+        } else if (target > midVal) {
+            left = mid + 1;
+        } else if (target < midVal) {
+            right = mid - 1;
+        }
+    }
+    return nums[right - 1] === target ? right - 1 : -1;
+}
+```
+
+Q：为什么这个算法能够找到右侧边界？
+
+关键点在于if(nums[mid]===target){left=mid+1;}，不是立即返回，而是增大搜索区间的下界left，使得区间不断向右收缩。
 
