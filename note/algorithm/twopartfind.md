@@ -53,6 +53,7 @@ function findLeftIndex(nums, target) {
     }
     let left = 0;
     let right = nums.length - 1;
+    let resultIndex=-1;
     while (left < right) {
         let mid = Number.parseInt((left + right) / 2);
         let midVal = nums[mid];
@@ -78,9 +79,8 @@ Q：为什么返回left而不是right？
 
 # 寻找右侧边界的二分查找
 
-错误的。
-
 ```js
+//[1,2,2,2,3],2
 function findRightIndex(nums, target) {
     if (!nums || !nums.length) return -1;
     if (nums.length === 1) {
@@ -89,10 +89,10 @@ function findRightIndex(nums, target) {
     let left = 0;
     let right = nums.length - 1;
     while (left < right) {
-        let mid = Math.parseInt((left + right) / 2);
+        let mid = Number.parseInt((left + right) / 2);
         let midVal = nums[mid];
         if (midVal === target) {
-            left = mid;
+            left = mid + 1;
         } else if (target > midVal) {
             left = mid + 1;
         } else if (target < midVal) {
@@ -107,3 +107,48 @@ Q：为什么这个算法能够找到右侧边界？
 
 关键点在于if(nums[mid]===target){left=mid+1;}，不是立即返回，而是增大搜索区间的下界left，使得区间不断向右收缩。
 
+# 总结
+
+基本的二分查找算法：
+
+```js
+let left=0,right=nums.length-1;
+while(left<right){
+    if(nums[mid]>target){
+        right=mid-1;
+    }else if(nums[mid]<target){
+        left=mid+1;
+    }
+}
+```
+
+左侧边界&&右侧边界：
+
+```js
+while(left<right){
+    //左侧边界
+    if(nums[mid]===target){
+        right=mid;
+    }
+    //右侧边界
+    if(nums[mid]===target){
+        left=mid+1;
+    }
+}
+// 左侧边界
+return nums[left]===target?left:-1;
+// 右侧边界
+return nums[left-1]===target?left-1:-1;
+```
+
+注意：
+
+分支二分代码时，不要出现else，全部展开成else if方便理解。
+
+注意搜索区间和while的终止条件，如果存在漏掉的元素，记得在最后检查。
+
+搜索左右边界时，只要在nums[mid]===target时修改即可，搜索右侧时需要减一。
+
+# 参考文献
+
+https://zhuanlan.zhihu.com/p/79553968
