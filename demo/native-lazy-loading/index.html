@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible"
+    content="ie=edge">
+  <meta http-equiv="origin-trial"
+    content="hhhjjjjjhasjshahjashjsahjahj">
+  <title>Native-Lazy-Loading</title>
+  <style>
+    #imgList {
+      scroll-snap-type: y mandatory;
+    }
+
+    #imgList img {
+      display: block;
+      scroll-snap-align: center;
+      height: 1500px;
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <ul class="imgs"
+    id="imgList">
+    <img src="./../old/imgs/5120.jpg"
+      loading="lazy"
+      height="1000">
+    <img src="./../old/imgs/5121.jpg"
+      loading="lazy"
+      height="1000">
+    <img src="./../old/imgs/5122.jpg"
+      loading="lazy"
+      height="1000">
+    <img src="./../old/imgs/5123.jpg"
+      loading="lazy"
+      height="1000">
+    <img src="./../old/imgs/5124.jpg"
+      loading="lazy"
+      height="1000">
+  </ul>
+  <video id="myPlayer" ></video>
+  <iframe src="./sub.html"
+    loading="lazy"></iframe>
+</body>
+
+</html>
