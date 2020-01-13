@@ -16,7 +16,7 @@
 
 状态很明显，就是当前拥有的鸡蛋数K和需要测试的楼层数N。随着测试的进行，鸡蛋个数可能减少，楼层的搜索范围会减小，这就是状态的变化。
 
-选择其实就是去选择哪层楼扔鸡蛋。二分查找每次选择到楼层区间的中间去扔鸡蛋，线性扫描选择一层层先上测试。
+选择其实就是去选择哪层楼扔鸡蛋。二分查找每次选择到楼层区间的中间去扔鸡蛋，线性扫描选择一层层向上测试。
 
 ```js
 function dp(K,N){
@@ -49,12 +49,57 @@ function eggDrop(K, N) {
     for (let i = 1; i <= N; ++i) {
         res = min(res, max(
             eggDrop(K - 1, i - 1),
-            eggDrop(K, N - i))
+            eggDrop(K, N - i)+1)
         )
     }
     cache[key] = res;
     return res;
 }
 ```
-动态规划算法的时间复杂度就是子问题个数x函数本身的复杂度。
+动态规划算法的时间复杂度就是子问题个数x函数本身的复杂度。时间复杂度是O(K*N^2)，空间复杂度O(KN)。
+
+## 疑难解答
+
+有读者不理解代码为什么用一个for循环遍历楼层[1...N]，这不是线性扫描，只是在做一次选择。
+
+这个问题还有更好的解法，修改代码中的for循环为二分搜索，可以将时间复杂度将为O(K*N*logN)。
+
+能用二分搜索是因为状态转移方程函数图像具有单调性，可以快速找到最值。
+
+dp(K,N)数组的定义，K固定时，这个函数一定是单调递增的。
+
+dp(K-1,i-1)和dp(K,N-i)这两个函数，其中i是从1到N单增的，如果固定K和N，这个两个函数看作关于i的函数，前者随着i的增加应该是单调递增的，后者随着i的增加应该是单调递减的。
+
+```js
+/**
+ * 
+ * @param {*} k  k个鸡蛋
+ * @param {*} n  n层楼
+ */
+function dropEggs(k, n) {
+    if (k === 1) return n;
+    if (n === 0) return 0;
+    let key = `Egg${k}Floor${n}`;
+    if (mem[key] !== undefined) {
+        return mem[key];
+    }
+    let res = 0;
+    let left = 1, right = N;
+    while (left <= right) {
+        let mid = Number.parseInt(left + right / 2);
+        let broken = dropEggs(k - 1, mid - 1);
+        let notBroken = dropEggs(k, N - mid);
+        if (broken > notBroken) {
+            right = mid - 1;
+            res = min(res, broken + 1);
+        } else {
+            left = mid + 1;
+            res = min(res, notBroken + 1);
+        }
+    }
+    mem[key] = res;
+    return res;
+}
+```
+
 
