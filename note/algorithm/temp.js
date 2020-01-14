@@ -86,3 +86,39 @@ function isMatch(txt, pattern) {
         return firstMatch && isMatch(txt.substr(1), pattern.substr(1));
     }
 }
+
+function isMatch(txt, pattern) {
+    if (!txt || !pattern) return false;
+    if (txt === pattern) return true;
+    let i = 0;
+    let j = 0;
+    while (i < txt.length & j < pattern.length) {
+        let currVal = txt[i];
+        let currPatternChar = pattern[j];
+        let nextPatternChar;
+        if (j + 1 < pattern.length) {
+            nextPatternChar = pattern[j + 1];
+        }
+
+        if (nextPatternChar === '*') {
+            if (currVal === currPatternChar || currPatternChar === '.') {
+                i++;
+                continue;
+            } else {
+                j = j + 2;
+                continue;
+            }
+        } else {
+            if (currVal === currPatternChar || currPatternChar === '.') {
+                i++;
+                j++;
+                continue;
+            } else {
+                break;
+            }
+        }
+    }
+    //
+    let patternEnd = j >= pattern.length || (j + 1 === pattern.length - 1 && pattern[j + 1] === '*');
+    return i >= txt.length && patternEnd;
+}
