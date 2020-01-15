@@ -1,124 +1,83 @@
-let cache = {};
-function eggDrop(K, N) {
-    if (K === 1) return N;
-    if (N === 0) return 0;
-    let key = `Egg${K}Floor${N}`;
-    if (cache[key] !== undefined) {
-        return key;
-    }
-    let res = 0;
-    for (let i = 0; i <= N; ++i) {
-        res = min(res, max(
-            eggDrop(K - 1, i - 1),
-            eggDrop(K, N - i))
-        )
-    }
-    cache[key] = res;
-    return res;
-}
-
-
-let mem = {};
-
 /**
  * 
- * @param {*} k  k个鸡蛋
- * @param {*} n  n层楼
+ * @param {*} nums 最长上升子序列 
  */
-function dropEggs(k, n) {
-    if (k === 1) return n;
-    if (n === 0) return 0;
-    let key = `Egg${k}Floor${n}`;
-    if (mem[key] !== undefined) {
-        return mem[key];
-    }
-    let res = 0;
-    let left = 1, right = N;
-    while (left <= right) {
-        let mid = Number.parseInt(left + right / 2);
-        let broken = dropEggs(k - 1, mid - 1);
-        let notBroken = dropEggs(k, N - mid);
-        if (broken > notBroken) {
-            right = mid - 1;
-            res = min(res, broken + 1);
-        } else {
-            left = mid + 1;
-            res = min(res, notBroken + 1);
-        }
-    }
-    mem[key] = res;
-    return res;
-}
-
-/**
- * 
- * @param {*} txt 
- * @param {*} pattern 
- */
-function isMatch(txt, pattern) {
-    if (!pattern) return txt === pattern;
-    let firstMatch = txt[0] === pattern[0];
-    return firstMatch && isMatch(txt.substr(1), pattern.substr(1));
-}
-
-/**
- * 
- * @param {*} txt 
- * @param {*} pattern 
- */
-function isMatch(txt, pattern) {
-    if (!pattern) return txt === pattern;
-    let firstMatch = (txt[0] === pattern[0] || pattern[0] === '.');
-    return firstMatch && isMatch(txt.substr(1), pattern.substr(1));
-}
-
-/**
- * 
- * @param {*} txt 
- * @param {*} pattern 
- */
-function isMatch(txt, pattern) {
-    if (!pattern) return txt === pattern;
-    let firstMatch = (txt[0] === pattern[0] || pattern[0] === '.');
-    if (pattern.length >= 2 && pattern[1] === '*') {
-        return firstMatch ? isMatch(txt, pattern.substr(2)) : isMatch(txt.substr(1), pattern);
-    } else {
-        return firstMatch && isMatch(txt.substr(1), pattern.substr(1));
-    }
-}
-
-function isMatch(txt, pattern) {
-    if (!txt || !pattern) return false;
-    if (txt === pattern) return true;
-    let i = 0;
-    let j = 0;
-    while (i < txt.length & j < pattern.length) {
-        let currVal = txt[i];
-        let currPatternChar = pattern[j];
-        let nextPatternChar;
-        if (j + 1 < pattern.length) {
-            nextPatternChar = pattern[j + 1];
-        }
-
-        if (nextPatternChar === '*') {
-            if (currVal === currPatternChar || currPatternChar === '.') {
-                i++;
-                continue;
-            } else {
-                j = j + 2;
-                continue;
-            }
-        } else {
-            if (currVal === currPatternChar || currPatternChar === '.') {
-                i++;
-                j++;
-                continue;
-            } else {
-                break;
+function findLIS(nums) {
+    if (!nums || !nums.length) return;
+    let dp = [];
+    for (let i = 0; i < nums.length; ++i) {
+        dp.push(1);
+        for (let j = 0; i < i; ++j) {
+            if (nums[j] < nums[i]) {
+                dp[i] = Math.max(dp[i], dp[j] + 1);
             }
         }
     }
-    //
-    let patternEnd = j >= pattern.length || (j + 1 === pattern.length - 1 && pattern[j + 1] === '*');
-    return i >= txt.length && patternEnd;
+    let max = -1;
+    for (let i = 0; i < nums.length; ++i) {
+        max = Math.max(dp[i], max);
+    }
+    return max;
+}
+/**
+ * 
+ * @param {*} nums 
+ */
+function findLCIS(nums) {
+    if (!nums || !nums.length) return 0;
+    let dp = [];
+    for (let i = 0; i < nums.length; ++i) {
+        let arr = [];
+        let currArr = [nums[0]];
+        let prev = nums[0];
+        for (let j = 1; j < i; ++j) {
+            let curr = nums[j];
+            if (curr > prev) {
+                currArr.push(curr);
+            } else {
+                arr.push(currArr);
+                currArr = [curr];
+            }
+            prev = curr;
+        }
+        let maxIndex = -1;
+        let maxLen = -1;
+        arr.forEach((arr, inx) => {
+            let len = arr.length;
+            if (len > maxLen) {
+                maxIndex = inx;
+                maxLen = len;
+            }
+        });
+        dp.push(arr[maxIndex]);
+    }
+    return dp[nums.length - 1];
+}
+
+function findLCIS(nums) {
+    if (!nums || !nums.length) return 0;
+    let prev = nums[0];
+    let arr = [];
+    let currArr = [nums[0]];
+    for (let i = 1; i < nums.length; ++i) {
+        let curr = nums[i];
+        if (curr > prev) {
+            currArr.push(curr);
+        } else {
+            arr.push(currArr);
+            currArr = [curr];
+        }
+        prev = curr;
+    }
+    arr.puysh(currArr);
+    let maxIndex = 0;
+    let maxLen = -1;
+    arr.forEach((arr, inx) => {
+        let len = arr.length;
+        if (len > maxLen) {
+            maxLen = len;
+            maxIndex = inx;
+        }
+    });
+    return arr[maxIndex];
 }
