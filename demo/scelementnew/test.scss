@@ -1,0 +1,74 @@
+// $color: red;
+
+// .msg {
+//   $color: green !global;
+//   color: $color;
+// }
+
+// .link {
+//   color: $color;
+// }
+
+// @mixin testMixin($prefix) {
+//   $name: $prefix+'-'+ 'el';
+
+//   .#{$name} {
+//     @content;
+//   }
+// }
+
+// @include testMixin(contauiner) {
+//   position: relative;
+// }
+
+// @each $animal in cat,
+// dog,
+// snake {
+//   .#{$animal}-icon {
+//     background-color: url('/images/#{$animal}.png');
+//   }
+// }
+
+
+// @function selectorToString($selector) {
+//   @debug '这个是'+$selector;
+//   $selector: inspect($selector);
+//   @debug 'After inspect '+$selector;
+//   $selector: str-slice($selector, 2, -2);
+//   @debug 'After str-slice '+$selector;
+//   @return $selector;
+// }
+
+// @mixin e($element) {
+//   $selector: &;
+
+//   @if selectorToString($selector) {
+//     @content;
+//   }
+// }
+
+// @mixin b($block) {
+//   .#{$block} {
+//     @content;
+//   }
+
+// }
+
+// @include b(block) {
+//   background-color: red;
+
+//   @include e(kindlebook) {
+//     background-color: gray;
+//   }
+// }
+
+// @debug 10em+12em;
+
+// $str: 'Hello World';
+// @debug str-slice($str, 2, -3);
+// @debug str-index($str, 'WEorld');
+
+.one,
+.two {
+  color: red;
+}
