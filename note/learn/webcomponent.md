@@ -189,7 +189,7 @@ template中的:host 伪类，指代自定义元素本身。
 
 1、独立的元素，define 时第三个参数为空，可以直接把它们写成 HTML 标签的形式。eg：<cus-tag></cus-tag>或 document.createElement('cus-tag')。
 
-2、继承自基本的 HTML 元素，define 时，必须指定所需扩展的元素，使用时，需要先写出基本的元素标签，并通过 is 属性指定 custome element 的名称。eg：<p is="cus-tag"></p>，document.createElement('p', {is:'cus-tag'})。
+2、继承自基本的 HTML 元素，define 时，必须指定所需扩展的元素，使用时，需要先写出基本的元素标签，并通过 is 属性指定 custom  element 的名称。eg：<p is="cus-tag"></p>，document.createElement('p', {is:'cus-tag'})。
 
     createElement的第二个参数目前只支持一个包含 is 属性的对象。
 
@@ -199,7 +199,7 @@ template中的:host 伪类，指代自定义元素本身。
 
 ### 生命周期回调函数
 
-在 custome element 的构造函数中，可以指定多个不同的回调函数，它们将会在元素的不同生命时期被调用。
+在 custom element 的构造函数中，可以指定多个不同的回调函数，它们将会在元素的不同生命时期被调用。
 
 connectedCallback，当 custom element 首次被插入文档 DOM 时，被调用。
 
@@ -207,9 +207,9 @@ disconnectedCallback，当 custom element 从文档 DOM 中删除时，被调用
 
 apoptedCallbacck，当 custom element 被移动到新的文档时，被调用。
 
-attributeChangedCallback，当 custom element 增加，删除不，修改自身属性时，被调用。
+attributeChangedCallback，当 custom element 增加，删除，修改自身属性时，被调用。
 
-如果需要使用attributeChangedCallback 回调函数，必须监听这个属性，可以通过observedAttribites get 函数来实现。返回一个需要监听的属性数组。
+如果需要使用attributeChangedCallback 回调函数，必须通知浏览器监听这个属性，可以通过observedAttribites get 函数来实现。返回一个需要监听的属性数组。
 
 ``` html
 <div>
@@ -256,6 +256,114 @@ attributeChangedCallback，当 custom element 增加，删除不，修改自身�
         window.customElements.define('custom-square', CustomeSquare);
     </script>
 </div>
+```
+
+## shadow DOM
+
+Web Components 的一个重要属性是封装，可以将独立结构，样式和行为隐藏起来，并与页面上的其它代码相隔离，保证不同的部分不会混在一起，可使代码更加干净，整洁。
+
+Shadow DOM 接口是关键所在，Shadow DOM 可以将一个隐藏的、独立的 DOM 附加到一个元素上。
+
+Shadow host：一个常规 DOM 节点，Shadow DOM 会被附加到这个节点上。
+
+Shadow tree：Shadow DOM 内部的 DOM 树。
+
+Shadow Root：Shadow tree 的根节点。
+
+可以使用和常规 DOM 一样的方法类操作 Shadow DOM，不同的是，Shadow DOM 内部的元素始终不会影响到它外部的元素，这为封装提供了便利。
+
+Shadow DOM 不是一个新事物，浏览器早就用它来封装一些元素的内部结构，eg：video 元素，一系列的按钮和其它控制器。
+
+### 基本用法
+
+使用 Element.attachShadow()方法将一个 shadow root 附加到任何一个元素上。
+
+接受一个配置对象作为参数，该对象有一个 mode 属性，值可以是 open 或 closed。
+
+open 表示可以通过页面内的 JS 方法来获取 Shadow DOM。eg：element.shadowRoot。
+
+closed，不可以从外部获取 Shadow DOM。
+
+``` html
+  <script>
+      let appEl = document.querySelector('#app');
+      let shadowRoot = appEl.attachShadow({
+          mode: 'closed'
+      });
+      //
+      let p = document.createElement('p');
+      p.innerText = "I am in shadow dom!";
+      shadowRoot.appendChild(p);
+  </script>
+```
+
+## 关于模板
+
+template 元素及其内容不会在 DOM 中呈现，但仍可使用 JS 去引用它。
+
+可以在 template 中引用 link 或添加 style 标签，该标签内容不会影响外部元素。
+
+``` html
+  <template id="myParagraph">
+      <link rel="stylesheet" href="https://xxxx.github.io/note/note.css">
+      <style>
+          p {
+              color: white;
+              background-color: #666;
+              padding: 5px;
+          }
+      </style>
+      <p>My paragraph!</p>
+  </template>
+  <my-paragraph></my-paragraph>
+  <script>
+      class MyParagraph extends HTMLElement {
+          constructor() {
+              super();
+              let shadowRoot = this.attachShadow({
+                  mode: 'open'
+              });
+              let templateContent = document.querySelector('#myParagraph').content;
+              shadowRoot.appendChild(templateContent.cloneNode(true));
+          }
+      }
+      window.customElements.define('my-paragraph', MyParagraph);
+  </script>
+```
+
+## 使用 slots 添加灵活度
+
+插槽由其 name 属性标识，并且允许您在模板中定义占位符。
+
+要定义插槽内容，需要在自定义元素内包括一个 HTML 结构，该结构具有 slot 属性。
+
+``` html
+ <template id="slotDemo">
+     <h2>Text Title</h2>
+     <p>
+         <slot name="myText">My default text!</slot>
+     </p>
+     <div>
+         <slot name="textTip">Default tip here!</slot>
+     </div>
+ </template>
+ <script>
+     class SlotDemo extends HTMLElement {
+         constructor() {
+             super();
+             let shadowRoot = this.attachShadow({
+                 mode: "open"
+             });
+             let templateContext = document.querySelector('#slotDemo').content;
+             shadowRoot.appendChild(templateContext.cloneNode(true));
+         }
+     }
+     window.customElements.define('my-slot-demo', SlotDemo);
+ </script>
+ <my-slot-demo>
+     <span slot="textTip">Here is the tip!</span>
+     <span slot="myText">Let us have some different text!</span>
+ </my-slot-demo>
 ```
 
 # 参考文献
