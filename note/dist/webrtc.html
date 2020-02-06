@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebRTC协议简介</title>
+  <link rel="stylesheet" href="/note/note.css">
+</head>
+<body>
+<h1 id="webrtc-">WebRTC协议简介</h1>
+<h1 id="ice">ICE</h1>
+<p>ICE是 Interactive Connectivity Establishment的简称。ICE 是一个可以让 web 浏览器互相通信的框架。</p>
+<p>不能创建 Peer A 到 Peer B 直接连接的原因：</p>
+<p>1、防火墙不允许</p>
+<p>2、一般节点没有固定的public IP</p>
+<p>ICE 使用 STUN 和 TURN 服务器来达到点对点通信。</p>
+<h1 id="stun">STUN</h1>
+<p>STUN 是 Session Traversal Utilities for NAT的简称。它允许位于 NAT 后的客户端找出自己的公网地址，查找出自己位于哪种类型的 NAT 之后以及 NAT 为某一个本地端口所绑定的 internet端端口。这些信息被用来在两个同时处于 NAT 路由器之后的主机之间创建 UDP 通信。</p>
+<p>STUN是一个可以发现你的对外 IP，发现路由器限制（阻止点对点连接的限制）。</p>
+<p>首先客户端会向 STUN 服务器发起请求，STUN 服务器会回复客户端对外 IP和是否可以进行下一步通信。</p>
+<h1 id="nat">NAT</h1>
+<p>NAT 是 NetWork Address Translation，网络地址转换的简称。当在专用网内部的一些主机本来已经分配了本地 IP 地址，但现在又想和因特网上的主机通信时，可使用 NAT 方法。这样，所有使用本地地址的主机和外界通信时，都要在 NAT 路由器上将其本地地址转换成全球 IP 地址，才能和因特网链接。</p>
+<p>NAT 主要给你的设备一个公网 IP。连接到路由器的设备IP会被转换成路由器公网IP加一个独特的端口。 这种方式每一个设备不需要公网 IP也可被发现。</p>
+<p>一些路由器会有一些限制连接措施，这意味着即使我们通过 STUN 服务器发现了公网 IP 和端口，也无法直接与设备建立连接。</p>
+<h1 id="turn">TURN</h1>
+<p>一些路由器使用一种叫做“Symmetric NAT”的策略，这意味着路由器只接受之前连接的节点的连接。</p>
+<p>TURN 是 Traversal Using Relays around NAT 的简称。主要用于绕过“Symmetric NAT”的限制。</p>
+<p>TURN 服务器作为信息的中介。这会带来额外的资源支出，一般没有其它策略时才选择此种模式。</p>
+<h1 id="sdp">SDP</h1>
+<p>SDP 是 Session Description Protocal 的简称，SDP 是一个描述信息元数据的一个标准。</p>
+<p>SDP 一般包含多行 UTF-8 文本。每一行的开始是一个单字符类型，然后是‘=’，然后是类型的值和描述。</p>
+<h1 id="webrtc">WebRTC</h1>
+<p>WebRTC 可以实时的，点对点的在两个设备之间进行媒体交换。连接是通过一个发现和协商过程创建的。</p>
+<p>WebRTC 可以传输视频，音频和数据。设备发现服务需要设备首先连接到一个服务器，然后协商通信规则。</p>
+<h1 id="singaling-server">Singaling Server</h1>
+<p>Singaling Server 主要帮助两台通信设备连接。Singaling Server充当两台设备连接的中介，既向外暴露了连接的必要信息，又避免了多余信息的泄漏。</p>
+<p>WebRTC 没有规定设备与Singaling Server的通信机制。你可以选择 WebSocket，XMLHTTPRequest，JSONP 等通信方式传递信令信息。</p>
+<p>Singaling Server传输的内容格式没有规定，你可以随意定制规则。</p>
+<h1 id="-singaling-">设计 Singaling 协议</h1>
+<p>只要包含了特定的信息，协议可以随便创建。</p>
+</body>
+</html>

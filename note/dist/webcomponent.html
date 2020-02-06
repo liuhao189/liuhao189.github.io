@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Web</title>
+  <link rel="stylesheet" href="/note/note.css">
+</head>
+<body>
+<h1 id="web-components-">Web Components 入门实例教程</h1>
+<h1 id="-">前言</h1>
+<p>组件是前端的发展方向，现在流行的 React 和 Vue 都是组件框架。</p>
+<p>谷歌公司由于掌握了 Chrome 浏览器，一直在推动浏览器的原生组件，即Web Components API。原生组件简单直接，符合直觉，不用加载任何外部模块，代码量小。目前还在不断发展，但已经可用于生产环境。</p>
+<h2 id="-">自定义元素</h2>
+<p>自定义的 HTML 标签，称为自定义元素。根据规范，自定义元素的名称必须包含连词线，用与区别原生的 HTML 元素。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;user-card&gt;&lt;/user-card&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="customelements-define">customElements.define</h2>
+<p>自定义元素需要使用 JS 定义一个类，所有自定义标签都是这个类的实例。</p>
+<h2 id="-">自定义元素的内容</h2>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="kr">class</span> <span class="nx">UserCard</span> <span class="kr">extends</span> <span class="nx">HTMLElement</span> <span class="p">{</span>
+        <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+            <span class="kr">super</span><span class="p">();</span>
+            <span class="kd">let</span> <span class="nx">shadow</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+                <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;open&#39;</span>
+            <span class="p">});</span>
+            <span class="c1">//</span>
+            <span class="kd">let</span> <span class="nx">img</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;img&#39;</span><span class="p">);</span>
+            <span class="nx">img</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="s1">&#39;https://semantic-ui.com/images/avatar2/large/kristy.png&#39;</span><span class="p">;</span>
+            <span class="nx">img</span><span class="p">.</span><span class="nx">classList</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">);</span>
+            <span class="c1">//</span>
+            <span class="kd">let</span> <span class="nx">container</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">);</span>
+            <span class="nx">container</span><span class="p">.</span><span class="nx">classList</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;container&#39;</span><span class="p">);</span>
+            <span class="c1">//</span>
+            <span class="kd">let</span> <span class="nx">name</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">);</span>
+            <span class="nx">name</span><span class="p">.</span><span class="nx">classList</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">);</span>
+            <span class="nx">name</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="s1">&#39;User Name&#39;</span><span class="p">;</span>
+            <span class="c1">//</span>
+            <span class="kd">let</span> <span class="nx">email</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">);</span>
+            <span class="nx">email</span><span class="p">.</span><span class="nx">classList</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">);</span>
+            <span class="nx">email</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="s1">&#39;xxx@xxx.cn&#39;</span><span class="p">;</span>
+            <span class="nx">container</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">email</span><span class="p">);</span>
+            <span class="nx">shadow</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">img</span><span class="p">,</span> <span class="nx">container</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">customElements</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;user-card&#39;</span><span class="p">,</span> <span class="nx">UserCard</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="template-">template标签</h2>
+<p>使用 JS 写 DOM 很麻烦，Web Components API 提供了 template 标签，可以在它里面使用 HTML 定义 DOM。</p>
+<p>获取 template 节点以后，克隆了它的所有子元素，这是因为可能有多个自定义元素的实例，这个模板还要留给其它实例使用，所以不能直接移动它的子元素。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;template</span> <span class="na">id=</span><span class="s">&quot;userCardTemplate&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">&quot;https://semantic-ui.com/images/avatar2/large/kristy.png&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;name&quot;</span><span class="nt">&gt;</span>User Name<span class="nt">&lt;/p&gt;</span>
+        <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;email&quot;</span><span class="nt">&gt;</span>xxx@xxx.com<span class="nt">&lt;/p&gt;</span>
+        <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;button&quot;</span><span class="nt">&gt;</span>Follow<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;/template&gt;</span>
+<span class="nt">&lt;script&gt;</span>
+    <span class="kr">class</span> <span class="nx">UserCard</span> <span class="kr">extends</span> <span class="nx">HTMLElement</span> <span class="p">{</span>
+        <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+            <span class="kr">super</span><span class="p">();</span>
+            <span class="kd">let</span> <span class="nx">shadow</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+                <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;open&#39;</span>
+            <span class="p">});</span>
+            <span class="kd">let</span> <span class="nx">templateElm</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;userCardTemplate&#39;</span><span class="p">);</span>
+            <span class="kd">let</span> <span class="nx">content</span> <span class="o">=</span> <span class="nx">templateElm</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">cloneNode</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+            <span class="nx">shadow</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">content</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">customElements</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;user-card&#39;</span><span class="p">,</span> <span class="nx">UserCard</span><span class="p">);</span>
+<span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">添加样式</h2>
+<p>template中的:host 伪类，指代自定义元素本身。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;template</span> <span class="na">id=</span><span class="s">&quot;userCardTemplate&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;style&gt;</span>
+        <span class="nd">:host</span> <span class="p">{</span>
+            <span class="k">display</span><span class="o">:</span> <span class="n">flex</span><span class="p">;</span>
+            <span class="k">width</span><span class="o">:</span> <span class="m">450px</span><span class="p">;</span>
+            <span class="k">height</span><span class="o">:</span> <span class="m">200px</span><span class="p">;</span>
+            <span class="k">background-color</span><span class="o">:</span> <span class="m">#d4d4d4</span><span class="p">;</span>
+            <span class="k">border</span><span class="o">:</span> <span class="m">1px</span> <span class="k">solid</span> <span class="m">#d5d5d5</span><span class="p">;</span>
+            <span class="n">box</span><span class="o">-</span><span class="n">shadow</span><span class="o">:</span> <span class="m">1px</span> <span class="m">1px</span> <span class="m">5px</span> <span class="n">rgba</span><span class="p">(</span><span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">.</span><span class="m">1</span><span class="p">);</span>
+            <span class="k">border</span><span class="o">-</span><span class="n">radius</span><span class="o">:</span> <span class="m">3px</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nc">.image</span> <span class="p">{</span>
+            <span class="n">flex</span><span class="o">:</span> <span class="m">0</span> <span class="m">0</span> <span class="k">auto</span><span class="p">;</span>
+            <span class="k">width</span><span class="o">:</span> <span class="m">200px</span><span class="p">;</span>
+            <span class="k">height</span><span class="o">:</span> <span class="m">200px</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nc">.container</span> <span class="p">{</span>
+            <span class="k">padding-left</span><span class="o">:</span> <span class="m">20px</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="nt">&lt;/style&gt;</span>
+    <span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">&quot;https://semantic-ui.com/images/avatar2/large/kristy.png&quot;</span> <span class="na">class=</span><span class="s">&quot;image&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;name&quot;</span><span class="nt">&gt;</span>User Name<span class="nt">&lt;/p&gt;</span>
+        <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;email&quot;</span><span class="nt">&gt;</span>xxx@xxx.com<span class="nt">&lt;/p&gt;</span>
+        <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;button&quot;</span><span class="nt">&gt;</span>Follow<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;/template&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">自定义元素的参数</h2>
+<p>可以使用 getAttribute 获取参数。注意 getAttribute需要在 connectCallback 后调用。</p>
+<pre><code class="lang-html"><div class="highlight"><pre>  <span class="nt">&lt;script&gt;</span>
+      <span class="kr">class</span> <span class="nx">UserCard</span> <span class="kr">extends</span> <span class="nx">HTMLElement</span> <span class="p">{</span>
+          <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+              <span class="kr">super</span><span class="p">();</span>
+              <span class="kd">let</span> <span class="nx">shadow</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+                  <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;closed&#39;</span>
+              <span class="p">});</span>
+              <span class="kd">let</span> <span class="nx">templateElm</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;userCardTemplate&#39;</span><span class="p">);</span>
+              <span class="kd">let</span> <span class="nx">content</span> <span class="o">=</span> <span class="nx">templateElm</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">cloneNode</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+              <span class="nx">shadow</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">content</span><span class="p">);</span>
+          <span class="p">}</span>
+          <span class="nx">updateContent</span><span class="p">()</span> <span class="p">{</span>
+              <span class="kd">let</span> <span class="nx">content</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">shadowRoot</span><span class="p">;</span>
+              <span class="nx">content</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;img&#39;</span><span class="p">).</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;src&#39;</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">)</span> <span class="o">||</span> <span class="s1">&#39;img/default.png&#39;</span><span class="p">);</span>
+              <span class="nx">content</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;.container&gt;.name&#39;</span><span class="p">).</span><span class="nx">innerText</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">);</span>
+              <span class="nx">content</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;.container&gt;.email&#39;</span><span class="p">).</span><span class="nx">innerText</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">);</span>
+          <span class="p">}</span>
+          <span class="nx">connectedCallback</span><span class="p">()</span> <span class="p">{</span>
+              <span class="k">this</span><span class="p">.</span><span class="nx">updateContent</span><span class="p">();</span>
+          <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="nb">window</span><span class="p">.</span><span class="nx">customElements</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;user-card&#39;</span><span class="p">,</span> <span class="nx">UserCard</span><span class="p">);</span>
+  <span class="nt">&lt;/script&gt;</span>
+  <span class="nt">&lt;div&gt;</span>
+      <span class="nt">&lt;user-card</span> <span class="na">image=</span><span class="s">&quot;https://semantic-ui.com/images/avatar2/large/kristy.png&quot;</span> <span class="na">name=</span><span class="s">&quot;xxx&quot;</span> <span class="na">email=</span><span class="s">&quot;xx@xxx.com&quot;</span><span class="nt">&gt;&lt;/user-card&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="shadow-dom">Shadow DOM</h2>
+<p>我们不希望用户能够看到 user-card 的内部代码，Web Component 允许内部代码隐藏起来，这叫做 Shadow DOM，即这部分 DOM 默认与外部 DOM 隔离，内部任何代码都无法影响外部。</p>
+<p>自定义元素的 this.attachShadow 方法开启 Shadow DOM。参数{mode:&quot;closed&quot;}表示 Shadow DOM 是封闭的，不允许外部访问。</p>
+<h2 id="-">扩展阅读</h2>
+<h3 id="customerelement-define">customerElement.define</h3>
+<p>第三个参数为可选参数，一个包含 extends 属性的配置对象，指定了所创建的元素继承自哪个内置元素，可以继承任何内置元素。</p>
+<p>使用 is属性，必须指定 extends属性，且不能使用自定义标签方式。</p>
+<pre><code class="lang-html"><div class="highlight"><pre> <span class="nt">&lt;script&gt;</span>
+     <span class="kr">class</span> <span class="nx">WordCount</span> <span class="kr">extends</span> <span class="nx">HTMLParagraphElement</span> <span class="p">{</span>
+         <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+             <span class="kr">super</span><span class="p">();</span>
+             <span class="kd">let</span> <span class="nx">shadow</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+                 <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;open&#39;</span>
+             <span class="p">});</span>
+             <span class="kd">let</span> <span class="nx">p</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">);</span>
+             <span class="nx">p</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="s2">&quot;Hello,I am word-count!&quot;</span><span class="p">;</span>
+             <span class="nx">shadow</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">p</span><span class="p">);</span>
+         <span class="p">}</span>
+     <span class="p">}</span>
+     <span class="nb">window</span><span class="p">.</span><span class="nx">customElements</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;word-count&#39;</span><span class="p">,</span> <span class="nx">WordCount</span><span class="p">,</span> <span class="p">{</span>
+         <span class="kr">extends</span><span class="o">:</span> <span class="s1">&#39;p&#39;</span>
+     <span class="p">});</span>
+ <span class="nt">&lt;/script&gt;</span>
+ <span class="nt">&lt;div&gt;</span>
+     <span class="nt">&lt;p</span> <span class="na">is=</span><span class="s">&quot;word-count&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
+ <span class="nt">&lt;/div&gt;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">自定义元素使用方式</h3>
+<p>1、独立的元素，define 时第三个参数为空，可以直接把它们写成 HTML 标签的形式。eg：&lt;cus-tag&gt;&lt;/cus-tag&gt;或 document.createElement(&#39;cus-tag&#39;)。</p>
+<p>2、继承自基本的 HTML 元素，define 时，必须指定所需扩展的元素，使用时，需要先写出基本的元素标签，并通过 is 属性指定 custom  element 的名称。eg：&lt;p is=&quot;cus-tag&quot;&gt;&lt;/p&gt;，document.createElement(&#39;p&#39;, {is:&#39;cus-tag&#39;})。</p>
+<pre><code><div class="highlight"><pre><span class="nx">createElement</span><span class="err">的第二个参数目前只支持一个包含</span> <span class="nx">is</span> <span class="err">属性的对象。</span>
+</pre></div>
+
+</code></pre><h3 id="this-getattribute">this.getAttribute</h3>
+<p>在 Chrome 的较新版本中，如果要获取自定义元素的属性，必须先使用该元素，然后再 define该元素。</p>
+<h3 id="-">生命周期回调函数</h3>
+<p>在 custom element 的构造函数中，可以指定多个不同的回调函数，它们将会在元素的不同生命时期被调用。</p>
+<p>connectedCallback，当 custom element 首次被插入文档 DOM 时，被调用。</p>
+<p>disconnectedCallback，当 custom element 从文档 DOM 中删除时，被调用。</p>
+<p>apoptedCallbacck，当 custom element 被移动到新的文档时，被调用。</p>
+<p>attributeChangedCallback，当 custom element 增加，删除，修改自身属性时，被调用。</p>
+<p>如果需要使用attributeChangedCallback 回调函数，必须通知浏览器监听这个属性，可以通过observedAttribites get 函数来实现。返回一个需要监听的属性数组。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;div&gt;</span>
+    <span class="nt">&lt;custom-square</span> <span class="na">l=</span><span class="s">&quot;100&quot;</span> <span class="na">c=</span><span class="s">&quot;red&quot;</span><span class="nt">&gt;&lt;/custom-square&gt;</span>
+    <span class="nt">&lt;script&gt;</span>
+        <span class="kr">class</span> <span class="nx">CustomeSquare</span> <span class="kr">extends</span> <span class="nx">HTMLElement</span> <span class="p">{</span>
+            <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+                <span class="kr">super</span><span class="p">();</span>
+                <span class="kd">let</span> <span class="nx">shadow</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+                    <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;open&#39;</span>
+                <span class="p">});</span>
+                <span class="kd">let</span> <span class="nx">div</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">);</span>
+                <span class="kd">let</span> <span class="nx">style</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;style&#39;</span><span class="p">);</span>
+                <span class="nx">shadow</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">div</span><span class="p">);</span>
+                <span class="nx">shadow</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">style</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="nx">updateStyle</span><span class="p">()</span> <span class="p">{</span>
+                <span class="kd">let</span> <span class="nx">shadow</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">shadowRoot</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">shadow</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+                <span class="kd">let</span> <span class="nx">childNodes</span> <span class="o">=</span> <span class="nx">shadow</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">;</span>
+                <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">childNodes</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">nodeName</span> <span class="o">===</span> <span class="s1">&#39;STYLE&#39;</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">childNodes</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">textContent</span> <span class="o">=</span> <span class="err">`</span><span class="nx">div</span><span class="p">{</span><span class="nx">width</span><span class="o">:</span><span class="nx">$</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;l&#39;</span><span class="p">)}</span><span class="nx">px</span><span class="p">;</span><span class="nx">height</span><span class="o">:</span><span class="nx">$</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;l&#39;</span><span class="p">)}</span><span class="nx">px</span><span class="p">;</span><span class="nx">background</span><span class="o">-</span><span class="nx">color</span><span class="o">:</span><span class="nx">$</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">)};}</span><span class="err">`</span> <span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="nx">connectedCallback</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Custom square element added to page!&#39;</span><span class="p">);</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">updateStyle</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="nx">attributeChangedCallback</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">oldVal</span><span class="p">,</span> <span class="nx">newVal</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="err">`</span><span class="nx">Attribute</span> <span class="nx">$</span><span class="p">{</span><span class="nx">name</span><span class="p">}</span> <span class="nx">changed</span><span class="p">,</span> <span class="nx">from</span> <span class="nx">$</span><span class="p">{</span><span class="nx">oldVal</span><span class="p">}</span> <span class="nx">to</span> <span class="nx">$</span><span class="p">{</span><span class="nx">newVal</span><span class="p">}</span><span class="o">!</span><span class="err">`</span> <span class="p">);</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">updateStyle</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="kr">static</span> <span class="nx">get</span> <span class="nx">observedAttributes</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nb">window</span><span class="p">.</span><span class="nx">customElements</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;custom-square&#39;</span><span class="p">,</span> <span class="nx">CustomeSquare</span><span class="p">);</span>
+    <span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="shadow-dom">shadow DOM</h2>
+<p>Web Components 的一个重要属性是封装，可以将独立结构，样式和行为隐藏起来，并与页面上的其它代码相隔离，保证不同的部分不会混在一起，可使代码更加干净，整洁。</p>
+<p>Shadow DOM 接口是关键所在，Shadow DOM 可以将一个隐藏的、独立的 DOM 附加到一个元素上。</p>
+<p>Shadow host：一个常规 DOM 节点，Shadow DOM 会被附加到这个节点上。</p>
+<p>Shadow tree：Shadow DOM 内部的 DOM 树。</p>
+<p>Shadow Root：Shadow tree 的根节点。</p>
+<p>可以使用和常规 DOM 一样的方法类操作 Shadow DOM，不同的是，Shadow DOM 内部的元素始终不会影响到它外部的元素，这为封装提供了便利。</p>
+<p>Shadow DOM 不是一个新事物，浏览器早就用它来封装一些元素的内部结构，eg：video 元素，一系列的按钮和其它控制器。</p>
+<h3 id="-">基本用法</h3>
+<p>使用 Element.attachShadow()方法将一个 shadow root 附加到任何一个元素上。</p>
+<p>接受一个配置对象作为参数，该对象有一个 mode 属性，值可以是 open 或 closed。</p>
+<p>open 表示可以通过页面内的 JS 方法来获取 Shadow DOM。eg：element.shadowRoot。</p>
+<p>closed，不可以从外部获取 Shadow DOM。</p>
+<pre><code class="lang-html"><div class="highlight"><pre>  <span class="nt">&lt;script&gt;</span>
+      <span class="kd">let</span> <span class="nx">appEl</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;#app&#39;</span><span class="p">);</span>
+      <span class="kd">let</span> <span class="nx">shadowRoot</span> <span class="o">=</span> <span class="nx">appEl</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+          <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;closed&#39;</span>
+      <span class="p">});</span>
+      <span class="c1">//</span>
+      <span class="kd">let</span> <span class="nx">p</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">);</span>
+      <span class="nx">p</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="s2">&quot;I am in shadow dom!&quot;</span><span class="p">;</span>
+      <span class="nx">shadowRoot</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">p</span><span class="p">);</span>
+  <span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">关于模板</h2>
+<p>template 元素及其内容不会在 DOM 中呈现，但仍可使用 JS 去引用它。</p>
+<p>可以在 template 中引用 link 或添加 style 标签，该标签内容不会影响外部元素。</p>
+<pre><code class="lang-html"><div class="highlight"><pre>  <span class="nt">&lt;template</span> <span class="na">id=</span><span class="s">&quot;myParagraph&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href=</span><span class="s">&quot;https://xxxx.github.io/note/note.css&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;style&gt;</span>
+          <span class="nt">p</span> <span class="p">{</span>
+              <span class="k">color</span><span class="o">:</span> <span class="nb">white</span><span class="p">;</span>
+              <span class="k">background-color</span><span class="o">:</span> <span class="m">#666</span><span class="p">;</span>
+              <span class="k">padding</span><span class="o">:</span> <span class="m">5px</span><span class="p">;</span>
+          <span class="p">}</span>
+      <span class="nt">&lt;/style&gt;</span>
+      <span class="nt">&lt;p&gt;</span>My paragraph!<span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;/template&gt;</span>
+  <span class="nt">&lt;my-paragraph&gt;&lt;/my-paragraph&gt;</span>
+  <span class="nt">&lt;script&gt;</span>
+      <span class="kr">class</span> <span class="nx">MyParagraph</span> <span class="kr">extends</span> <span class="nx">HTMLElement</span> <span class="p">{</span>
+          <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+              <span class="kr">super</span><span class="p">();</span>
+              <span class="kd">let</span> <span class="nx">shadowRoot</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+                  <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;open&#39;</span>
+              <span class="p">});</span>
+              <span class="kd">let</span> <span class="nx">templateContent</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;#myParagraph&#39;</span><span class="p">).</span><span class="nx">content</span><span class="p">;</span>
+              <span class="nx">shadowRoot</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">templateContent</span><span class="p">.</span><span class="nx">cloneNode</span><span class="p">(</span><span class="kc">true</span><span class="p">));</span>
+          <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="nb">window</span><span class="p">.</span><span class="nx">customElements</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;my-paragraph&#39;</span><span class="p">,</span> <span class="nx">MyParagraph</span><span class="p">);</span>
+  <span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-slots-">使用 slots 添加灵活度</h2>
+<p>插槽由其 name 属性标识，并且允许您在模板中定义占位符。</p>
+<p>要定义插槽内容，需要在自定义元素内包括一个 HTML 结构，该结构具有 slot 属性。</p>
+<pre><code class="lang-html"><div class="highlight"><pre> <span class="nt">&lt;template</span> <span class="na">id=</span><span class="s">&quot;slotDemo&quot;</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;h2&gt;</span>Text Title<span class="nt">&lt;/h2&gt;</span>
+     <span class="nt">&lt;p&gt;</span>
+         <span class="nt">&lt;slot</span> <span class="na">name=</span><span class="s">&quot;myText&quot;</span><span class="nt">&gt;</span>My default text!<span class="nt">&lt;/slot&gt;</span>
+     <span class="nt">&lt;/p&gt;</span>
+     <span class="nt">&lt;div&gt;</span>
+         <span class="nt">&lt;slot</span> <span class="na">name=</span><span class="s">&quot;textTip&quot;</span><span class="nt">&gt;</span>Default tip here!<span class="nt">&lt;/slot&gt;</span>
+     <span class="nt">&lt;/div&gt;</span>
+ <span class="nt">&lt;/template&gt;</span>
+ <span class="nt">&lt;script&gt;</span>
+     <span class="kr">class</span> <span class="nx">SlotDemo</span> <span class="kr">extends</span> <span class="nx">HTMLElement</span> <span class="p">{</span>
+         <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+             <span class="kr">super</span><span class="p">();</span>
+             <span class="kd">let</span> <span class="nx">shadowRoot</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attachShadow</span><span class="p">({</span>
+                 <span class="nx">mode</span><span class="o">:</span> <span class="s2">&quot;open&quot;</span>
+             <span class="p">});</span>
+             <span class="kd">let</span> <span class="nx">templateContext</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;#slotDemo&#39;</span><span class="p">).</span><span class="nx">content</span><span class="p">;</span>
+             <span class="nx">shadowRoot</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">templateContext</span><span class="p">.</span><span class="nx">cloneNode</span><span class="p">(</span><span class="kc">true</span><span class="p">));</span>
+         <span class="p">}</span>
+     <span class="p">}</span>
+     <span class="nb">window</span><span class="p">.</span><span class="nx">customElements</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;my-slot-demo&#39;</span><span class="p">,</span> <span class="nx">SlotDemo</span><span class="p">);</span>
+ <span class="nt">&lt;/script&gt;</span>
+ <span class="nt">&lt;my-slot-demo&gt;</span>
+     <span class="nt">&lt;span</span> <span class="na">slot=</span><span class="s">&quot;textTip&quot;</span><span class="nt">&gt;</span>Here is the tip!<span class="nt">&lt;/span&gt;</span>
+     <span class="nt">&lt;span</span> <span class="na">slot=</span><span class="s">&quot;myText&quot;</span><span class="nt">&gt;</span>Let us have some different text!<span class="nt">&lt;/span&gt;</span>
+ <span class="nt">&lt;/my-slot-demo&gt;</span>
+</pre></div>
+
+</code></pre>
+<h1 id="-">参考文献</h1>
+<p><a href="http://www.ruanyifeng.com/blog/2019/08/web_components.html">http://www.ruanyifeng.com/blog/2019/08/web_components.html</a></p>
+<p><a href="https://developer.mozilla.org/zh-CN/docs/Web/Web_Components/Using_custom_elements">https://developer.mozilla.org/zh-CN/docs/Web/Web_Components/Using_custom_elements</a></p>
+</body>
+</html>
