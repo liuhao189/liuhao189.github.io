@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta
+    http-equiv="X-UA-Compatible"
+    content="ie=edge"
+  >
+  <title>Intersection Observer</title>
+  <script></script>
+  <style>
+    body {
+      overflow: hidden;
+    }
+
+    #app {
+      height: 100vh;
+      overflow-y: auto;
+      margin: 20px;
+      box-sizing: border-box;
+    }
+
+    #list {
+      background-color: #ddd;
+      height: 500px;
+      margin-top: 110vh;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div id="list">
+
+    </div>
+  </div>
+  <script>
+    let options = {
+      root: document.querySelector('#app'),
+      rootMargin: '20px',
+      threshold: 1.0
+    }
+    let observer = new IntersectionObserver(callback, options);
+    let target = document.querySelector('#list');
+    observer.observe(target);
+    //
+    function callback(entries, observer) {
+      debugger;
+    }
+  </script>
+</body>
+
+</html>
