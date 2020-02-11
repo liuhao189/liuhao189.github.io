@@ -52,6 +52,19 @@ function callback() {
 
 ## 为观察者配置一个目标
 
-```js
+只要目标满足为 IntersectionObserver 指定的阈值，就会调用回调。回调接受 IntersectionObserverEntry 对象和观察者的列表。
+
+主线程执行，该函数执行要尽可能得快，有一些耗时的操作需要执行，建议使用 requestIdleCallback 方法。
+
+``` js
+    function callback(entries, observer) {
+        let entry = entries && entries.length ? entries[0] : null;
+        if (entry) {
+            console.log( `交叉： ${entry.isIntersecting}，交叉度：${entry.intersectionRatio}，观察对象：${entry.target}` );
+        }
+    }
+
+    let target = document.querySelector('#list');
+    observer.observe(target);
 ```
 

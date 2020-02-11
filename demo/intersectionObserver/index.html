@@ -28,6 +28,7 @@
     #list {
       background-color: #ddd;
       height: 500px;
+      margin-bottom: 100px;
       margin-top: 110vh;
     }
   </style>
@@ -43,14 +44,17 @@
     let options = {
       root: document.querySelector('#app'),
       rootMargin: '20px',
-      threshold: 1.0
+      threshold: [0, 0.25, 0.5, 1]
     }
     let observer = new IntersectionObserver(callback, options);
     let target = document.querySelector('#list');
     observer.observe(target);
     //
     function callback(entries, observer) {
-      debugger;
+      let entry = entries && entries.length ? entries[0] : null;
+      if (entry) {
+        console.log(`交叉： ${entry.isIntersecting}，交叉度：${entry.intersectionRatio}，观察对象：${entry.target}`);
+      }
     }
   </script>
 </body>
