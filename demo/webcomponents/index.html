@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta
+    http-equiv="X-UA-Compatible"
+    content="ie=edge"
+  >
+  <title>WebComponent-Demo</title>
+</head>
+
+<body>
+  <script>
+    // class UserCard extends HTMLElement {
+    //   constructor() {
+    //     super();
+    //     let shadow = this.attachShadow({ mode: 'open' });
+    //     //
+    //     let img = document.createElement('img');
+    //     img.src = 'https://semantic-ui.com/images/avatar2/large/kristy.png';
+    //     img.classList.add('image');
+    //     //
+    //     let container = document.createElement('div');
+    //     container.classList.add('container');
+    //     //
+    //     let name = document.createElement('p');
+    //     name.classList.add('name');
+    //     name.innerText = 'User Name';
+    //     //
+    //     let email = document.createElement('p');
+    //     email.classList.add('email');
+    //     email.innerText = 'xx@xxx.cn';
+    //     container.append(name, email);
+    //     shadow.append(img, container);
+    //   }
+    // }
+    // window.customElements.define('user-card', UserCard);
+  </script>
+  <template id="userCardTemplate">
+    <style>
+      :host {
+        display: flex;
+        width: 450px;
+        height: 200px;
+        background-color: #d4d4d4;
+        border: 1px solid #d5d5d5;
+        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+      }
+
+      .image {
+        flex: 0 0 auto;
+        width: 200px;
+        height: 200px;
+      }
+
+      .container {
+        padding-left: 20px;
+      }
+    </style>
+    <img class="image" />
+    <div class="container">
+      <p class="name"></p>
+      <p class="email"></p>
+      <button class="button">Follow</button>
+    </div>
+  </template>
+  <div>
+    <user-card
+      image="https://semantic-ui.com/images/avatar2/large/kristy.png"
+      name="xxx"
+      email="xx@xxx.com"
+    ></user-card>
+  </div>
+  <script>
+    class UserCard extends HTMLElement {
+      constructor() {
+        super();
+        let shadow = this.attachShadow({ mode: 'open' });
+        let templateElm = document.getElementById('userCardTemplate');
+        let content = templateElm.content.cloneNode(true);
+        let btn = content.querySelector('button');
+        btn.addEventListener('click', () => {
+          window.alert('follow!')
+        });
+        shadow.append(content);
+        this.updateContent();
+      }
+      updateContent() {
+        let content = this.shadowRoot;
+        content.querySelector('img').setAttribute('src', this.getAttribute('image') || 'img/default.png');
+        content.querySelector('.container>.name').innerText = this.getAttribute('name');
+        content.querySelector('.container>.email').innerText = this.getAttribute('email');
+      }
+      connectedCallback() {
+        // this.updateContent();
+      }
+    }
+    window.customElements.define('user-card', UserCard);
+  </script>
+  <script>
+    class WordCount extends HTMLParagraphElement {
+      constructor() {
+        super();
+        let shadow = this.attachShadow({ mode: 'open' });
+        let p = document.createElement('p');
+        p.innerText = "Hello,I am word-count!";
+        shadow.append(p);
+      }
+    }
+    window.customElements.define('word-count', WordCount, { extends: 'p' });
+  </script>
+  <div>
+    <p is="word-count"></p>
+    <word-count></word-count>
+  </div>
+  <div>
+    <script>
+      class CustomeSquare extends HTMLElement {
+        constructor() {
+          super();
+          let shadow = this.attachShadow({ mode: 'open' });
+          let div = document.createElement('div');
+          let style = document.createElement('style');
+          shadow.appendChild(div);
+          shadow.appendChild(style);
+        }
+
+        updateStyle() {
+          let shadow = this.shadowRoot;
+          if (!shadow) return;
+          let childNodes = shadow.childNodes;
+          for (let i = 0; i < childNodes.length; ++i) {
+            if (childNodes[i].nodeName === 'STYLE') {
+              childNodes[i].textContent = `div{width:${this.getAttribute('l')}px;height:${this.getAttribute('l')}px;background-color:${this.getAttribute('c')};}`;
+            }
+          }
+        }
+
+        connectedCallback() {
+          console.log('Custom square element added to page!');
+          this.updateStyle();
+        }
+
+        attributeChangedCallback(name, oldVal, newVal) {
+          console.log(`Attribute ${name} changed, from ${oldVal} to ${newVal}!`);
+          this.updateStyle();
+        }
+
+        static get observedAttributes() {
+          return ['l', 'c'];
+        }
+      }
+
+      window.customElements.define('custom-square', CustomeSquare);
+    </script>
+    <custom-square
+      l="100"
+      c="red"
+    ></custom-square>
+  </div>
+</body>
+
+</html>

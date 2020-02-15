@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta
+    http-equiv="X-UA-Compatible"
+    content="ie=edge"
+  >
+  <title>Shadow DOM</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <template id="myParagraph">
+    <link
+      rel="stylesheet"
+      href="https://xxxx.github.io/note/note.css"
+    >
+    <style>
+      p {
+        color: white;
+        background-color: #666;
+        padding: 5px;
+      }
+    </style>
+    <p>My paragraph!</p>
+  </template>
+  <my-paragraph></my-paragraph>
+  <script>
+    class MyParagraph extends HTMLElement {
+      constructor() {
+        super();
+        let shadowRoot = this.attachShadow({ mode: 'open' });
+        let templateContent = document.querySelector('#myParagraph').content;
+        shadowRoot.appendChild(templateContent.cloneNode(true));
+      }
+    }
+    window.customElements.define('my-paragraph', MyParagraph);
+  </script>
+  <script>
+    let appEl = document.querySelector('#app');
+    let shadowRoot = appEl.attachShadow({ mode: 'closed' });
+    //
+    let p = document.createElement('p');
+    p.innerText = "I am in shadow dom!";
+    shadowRoot.appendChild(p);
+  </script>
+  <template id="slotDemo">
+    <h2>Text Title</h2>
+    <p>
+      <slot name="myText">My default text!</slot>
+    </p>
+    <div>
+      <slot name="textTip">Default tip here!</slot>
+    </div>
+  </template>
+  <script>
+    class SlotDemo extends HTMLElement {
+      constructor() {
+        super();
+        let shadowRoot = this.attachShadow({ mode: "open" });
+        let templateContext = document.querySelector('#slotDemo').content;
+        shadowRoot.appendChild(templateContext.cloneNode(true));
+      }
+    }
+    window.customElements.define('my-slot-demo', SlotDemo);
+  </script>
+  <my-slot-demo>
+    <span slot="textTip">Here is the tip!</span>
+    <span slot="myText">Let us have some different text!</span>
+  </my-slot-demo>
+</body>
+
+</html>
