@@ -78,7 +78,7 @@ function findLCIS(nums) {
         }
         prev = curr;
     }
-    arr.puysh(currArr);
+    arr.push(currArr);
     let maxIndex = 0;
     let maxLen = -1;
     arr.forEach((arr, inx) => {
@@ -89,6 +89,23 @@ function findLCIS(nums) {
         }
     });
     return arr[maxIndex];
+}
+```
+
+```js
+function getLCISLength(nums) {
+    if (!nums || !nums.length) return 0;
+    let dp = [1];
+    let max = dp[0];
+    for (let i = 1; i < nums.length; ++i) {
+        if (nums[i] > nums[i - 1]) {
+            dp[i] = dp[i - 1] + 1;
+        } else {
+            dp[i] = 1;
+        }
+        max = Math.max(max, dp[i]);
+    }
+    return max;
 }
 ```
 
