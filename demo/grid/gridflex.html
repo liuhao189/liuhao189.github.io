@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Grid and Flex</title>
+</head>
+
+<body>
+  <div class="app">
+    <h1>Absolute</h1>
+    <div class="absolute-wrapper">
+
+    </div>
+    <h1>Grid</h1>
+    <div class="grid-wrapper">
+      <div class="boxg1">One</div>
+      <div class="boxg2">Two</div>
+      <div>Three</div>
+    </div>
+    <style>
+      .grid-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        /* align-items: end;
+        grid-auto-rows: 200px; */
+      }
+
+      .grid-wrapper>div {
+        background-color: orangered;
+      }
+
+      .boxg1 {
+        align-self: stretch;
+      }
+
+      .boxg2 {
+        align-self: start;
+      }
+    </style>
+    <h1>Flex</h1>
+    <div class="wrapper">
+      <div class="box1">One</div>
+      <div class="box2">Two</div>
+      <div>Three</div>
+      <div>Four</div>
+      <div>Five</div>
+    </div>
+    <style>
+      .wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        min-height: 300px;
+        align-items: flex-end;
+      }
+
+      .box1 {
+        align-self: stretch;
+      }
+
+      .box2 {
+        align-self: flex-start;
+      }
+
+      .wrapper>div {
+        flex: 1 1 200px;
+        background-color: orange;
+      }
+    </style>
+    <style>
+      .wrapperg {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: minmax(100px, auto);
+      }
+
+      .wrapperg>div {
+        background-color: orange;
+      }
+    </style>
+  </div>
+</body>
+
+</html>

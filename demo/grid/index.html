@@ -11,6 +11,81 @@
 </head>
 
 <body>
+  <h1>New</h1>
+  <div class="new">
+    <div class="boxn1">
+      <div>a</div>
+      <div>b</div>
+      <div>c</div>
+    </div>
+    <div class="boxn2">Two</div>
+    <div>Three</div>
+    <div>Four</div>
+    <div>Five</div>
+  </div>
+  <style>
+    .new {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: minmax(100px, auto);
+      column-gap: 10px;
+      row-gap: 1em;
+      /* height: 400px; */
+    }
+
+    .new>div {
+      background-color: red;
+      color: white;
+    }
+
+    .boxn1 {
+      display: grid;
+      grid-column-start: 1;
+      grid-column-end: 4;
+      grid-row-start: 1;
+      grid-row-end: 3;
+      /* z-index: 2; */
+    }
+
+    .boxn2 {
+      grid-row-start: 2;
+      grid-row-end: 4;
+      grid-column-start: 1;
+      grid-column-end: 2;
+      background-color: gray !important;
+    }
+  </style>
+  <h1>Old</h1>
+  <div class="review">
+    <div class="boxr1">One</div>
+    <div class="boxr2">Two</div>
+    <div class="boxr3">Three
+      <br />Three
+      <br />Three
+      <br />Three
+      <br />Three
+      <br />Three
+      <br />Three
+    </div>
+    <div class="boxr4">Four</div>
+    <div class="boxr5">Five</div>
+    <div>Six</div>
+    <div>Seven</div>
+  </div>
+  <style>
+    .review {
+      display: grid;
+      grid-template-columns: 200px repeat(1, 1fr 2fr);
+      grid-auto-rows: minmax(100px, auto);
+    }
+
+    .boxr1 {
+      grid-column-start: 1;
+      grid-column-end: 3;
+      grid-row-start: 1;
+      grid-row-end: 3;
+    }
+  </style>
   <div class="wrapper">
     <div class="box1">One</div>
     <div class="box2">Two</div>

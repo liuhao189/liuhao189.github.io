@@ -2,8 +2,7 @@
 
 ## 简介
 
-CSS网格布局引入了二维布局系统，可用于布局页面主要的区域布局或小型组件。
-
+CSS网格布局引入了二维布局系统，可用于页面主要的区域布局或小型组件布局。
 
 ## 什么是网格
 
@@ -17,9 +16,9 @@ CSS网格布局引入了二维布局系统，可用于布局页面主要的区�
 
 3、创建额外的轨道来包含元素。可以使用网格布局定义一个显式网格，但是根据规范它会处理你加在网格外面的内容。
 
-4、对齐控制。网格包含对齐特点，以便我们可以控制一旦放置到网格区域中的物体对齐，以及整个网格如何对齐。
+4、对齐控制。网格包含对齐特点，以便我们可以控制放置到网格区域中的物体对齐，以及整个网格如何对齐。
 
-5、控制重叠内容，对个元素可以放置在网格单元格中，或者区域可以部分地彼此重叠，使用 z-index 属性来控制重叠区域显示的优先级。
+5、控制重叠内容，元素可以放置在网格单元格中，或者区域可以部分地彼此重叠，使用 z-index 属性来控制重叠区域显示的优先级。
 
 ## 网格容器
 
@@ -40,6 +39,9 @@ CSS网格布局引入了二维布局系统，可用于布局页面主要的区�
       display: grid;
     }
   </style>
+  <script>
+    //默认每个子元素占据一行。高度为内容高度，宽度为 100%。
+  </script>
 ```
 
 ## 网格轨道
@@ -79,7 +81,7 @@ CSS网格布局引入了二维布局系统，可用于布局页面主要的区�
 
 ## repeat函数
 
-多轨道的大型网格可使用 repeat 标记来重复部分或整个轨道列表。
+多轨道的大型网格可使用 repeat 函数来重复部分或整个轨道列表。
 
 repeat(n,...args)，n 代表重复的份数，args 代表需要重复的配置。
 
@@ -112,7 +114,7 @@ repeat(n,...args)，n 代表重复的份数，args 代表需要重复的配置�
 
 ## 轨道大小和 minmax
 
-网格使用 minmax 函数来解决这个问题，我们用 minmax 作为 grid-auto-rows 的值。创建行高最小为 xxpx，最大为 auto。用 auto 意味着行的尺寸将会根据内容的大小来自动变换。
+用 minmax 作为 grid-auto-rows 的值。创建行高最小为 xxpx，最大为 auto。用 auto 意味着行的尺寸将会根据内容的大小来自动变换。
 
 ```html
   <style>
@@ -187,6 +189,211 @@ Gird 会为我们创建编号的网格线来让我们来定位每一个网格元
       grid-row-start: 3;
       grid-row-end: 5;
     }
-  </style>s
+  </style>
 ```
+
+## 网格单元
+
+一个网格单元是在一个网格元素中最小的单位，概念上来讲其实它和表格的一个单元格很像。
+
+一旦一个网格元素被定义在一个父级元素当中，那么它的子级元素将会排列在每个定义好的网络单元中。
+
+## 网格区域
+
+网格元素可以向行或列的方向扩展一个或多个单元，并且会创建一个网格区域。
+
+## 网格间距
+
+在两个网格单元之间的网络横向间距和网格纵向间距可使用 column-gap 和 row-gap 属性来创建。
+
+间距使用的而空间会在使用弹性长度 fr 的轨道的空间计算前就被留出来。你不能像间距中插入任何内容，间距就想一条很宽的基线。
+
+```html
+  <div class="new">
+    <div>One</div>
+    <div>Two</div>
+    <div>Three</div>
+    <div>Four</div>
+    <div>Five</div>
+  </div>
+  <style>
+    .new {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: minmax(100px, auto);
+      column-gap: 10px;
+      row-gap: 1em;
+    }
+
+    .new>div {
+      background-color: red;
+      color: white;
+    }
+  </style>
+```
+
+## 嵌套网格
+
+一个网格元素可以成为一个网格容器。
+
+## 使用 z-index 控制层级
+
+多个网格项目可以占用同一个网格单位。可以使用 z-index 让网格重叠。
+
+## Grid and flexbox
+
+CSS 网格布局和弹性盒布局的主要区别在于弹性盒布局是为一维布局服务的（沿横向或纵向的），而网格布局是为二维布局服务的（同时沿着横向和纵向）。
+
+### 一维布局 vs 二维布局
+
+设置 flex-wrap 属性，从而当容器变得太窄时，元素会换到新的一行。换到新的一行的元素分享了这行的可用空间，并没有与上一行元素对齐。
+
+允许弹性元素换行时，每个新航都变成了一个新的弹性容器，空间分布只在行内进行。
+
+```html
+ <div class="wrapper">
+      <div>One</div>
+      <div>Two</div>
+      <div>Three</div>
+      <div>Four</div>
+      <div>Five</div>
+    </div>
+    <style>
+      .wrapper {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .wrapper>div {
+        flex: 1 1 200px;
+        background-color: orange;
+      }
+    </style>
+```
+grid的版本。
+
+```html
+ <div class="wrapper">
+      <div>One</div>
+      <div>Two</div>
+      <div>Three</div>
+      <div>Four</div>
+      <div>Five</div>
+    </div>
+    <style>
+      .wrapperg {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .wrapperg>div {
+        background-color: orange;
+      }
+    </style>
+```
+
+我只需要按行或者列控制布局，那就用弹性盒子。
+
+我们需要同时按行和列控制布局，那就用网络。
+
+### 从内容出发还是从布局入口
+
+弹性盒从内容出发，一个使用弹性盒的理想情形是你有一组元素，希望它们能平均地分布在容器中。你让内容的大小决定每个元素占据多少空间。如果元素换行，会根据新行的可用空间决定它们自己的大小。
+
+网格则从布局入口，先创建网格，然后再把元素放入网格中，或者让自动放置规则根据把元素按照网格排列。
+
+弹性盒不能很好布局时，可以使用网格布局。
+
+### 盒对齐
+
+弹性盒特性最让人激动的一点是我们第一次拥有了正当的对齐能力。弹性盒已经被加入到新规范和 Box Alignment Level3。意味着它们能被用在包括网格布局的其它规范中。
+
+```html
+    <div class="wrapper">
+      <div class="box1">One</div>
+      <div class="box2">Two</div>
+      <div>Three</div>
+      <div>Four</div>
+      <div>Five</div>
+    </div>
+    <style>
+      .wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        min-height: 300px;
+        align-items: flex-end;
+      }
+
+      .box1 {
+        align-self: stretch;
+      }
+
+      .box2 {
+        align-self: flex-start;
+      }
+
+      .wrapper>div {
+        flex: 1 1 200px;
+        background-color: orange;
+      }
+    </style>
+```
+
+### 网格中的布局
+
+对于网格来说，我们是让元素在它们各自的网格区域中对齐，但它也可能是多个单元组成的一个区域。
+
+```html
+   <style>
+      .grid-wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        align-items: end;
+        grid-auto-rows: 200px;
+      }
+
+      .grid-wrapper>div {
+        background-color: orangered;
+      }
+
+      .boxg1 {
+        align-self: stretch;
+      }
+
+      .boxg2 {
+        align-self: start;
+      }
+    </style>
+```
+
+### fr单位和 flex-basis属性
+
+fr单位在网格容器中分配一定比例的可用空间到我们的网络轨道。当与 minmax 函数结合使用时，fr 单位可以给我们与 flexbox 中的 flex 属性非常相似的行为。
+
+两种布局方式对响应式的处理存在不同，弹性布局，拖拽以改变浏览器大小时，弹性盒会根据可用空间适当地调整行中项目的个数。当有足够的空间时，全部的项目会在一行展示。
+
+网格布局则始终保持 3 列轨道，轨道会自动拉伸，但始终会保持我们定义网格时候的轨道个数。
+
+### 自动填充网格轨道
+
+可以通过 repeat 方法，配合 auto-fill 和 auto-fit 属性，创建类似弹性盒的效果，同时保证内容严格按照行和列的固定规则排序。
+
+repeat 方法中使用 auto-fill 属性替换整数值，并且设置轨道的宽度为具体大小。这意味着网格布局将会根据容器的宽度创建列。
+
+```html
+<style>
+  .wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 200px)
+  }
+</style>
+```
+
+## 作为包含块的网格容器
+
+网格容器成为一个包含块，需要将容器增加 position属性，设置为非 static 的值。
+
+如果再把一个网格项目设置为 position:absolute，那么网格容器就成为了包含块。
+
+
 
