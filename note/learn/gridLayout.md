@@ -206,7 +206,7 @@ Gird 会为我们创建编号的网格线来让我们来定位每一个网格元
 
 在两个网格单元之间的网络横向间距和网格纵向间距可使用 column-gap 和 row-gap 属性来创建。
 
-间距使用的而空间会在使用弹性长度 fr 的轨道的空间计算前就被留出来。你不能像间距中插入任何内容，间距就想一条很宽的基线。
+间距使用的空间会在使用弹性长度 fr 的轨道的空间计算前就被留出来。你不能像间距中插入任何内容，间距就想一条很宽的基线。
 
 ```html
   <div class="new">
@@ -248,9 +248,10 @@ CSS 网格布局和弹性盒布局的主要区别在于弹性盒布局是为一�
 
 设置 flex-wrap 属性，从而当容器变得太窄时，元素会换到新的一行。换到新的一行的元素分享了这行的可用空间，并没有与上一行元素对齐。
 
-允许弹性元素换行时，每个新航都变成了一个新的弹性容器，空间分布只在行内进行。
+允许弹性元素换行时，每个新行都变成了一个新的弹性容器，空间分布只在行内进行。
 
 ```html
+<!-- flex layout -->
  <div class="wrapper">
       <div>One</div>
       <div>Two</div>
@@ -273,6 +274,7 @@ CSS 网格布局和弹性盒布局的主要区别在于弹性盒布局是为一�
 grid的版本。
 
 ```html
+<!-- grid layout -->
  <div class="wrapper">
       <div>One</div>
       <div>Two</div>
@@ -292,15 +294,15 @@ grid的版本。
     </style>
 ```
 
-我只需要按行或者列控制布局，那就用弹性盒子。
+我只需要按行或按列控制布局，那就用弹性盒子。
 
-我们需要同时按行和列控制布局，那就用网络。
+我们需要同时按行和列控制布局，那就用网络布局。
 
 ### 从内容出发还是从布局入口
 
 弹性盒从内容出发，一个使用弹性盒的理想情形是你有一组元素，希望它们能平均地分布在容器中。你让内容的大小决定每个元素占据多少空间。如果元素换行，会根据新行的可用空间决定它们自己的大小。
 
-网格则从布局入口，先创建网格，然后再把元素放入网格中，或者让自动放置规则根据把元素按照网格排列。
+网格则从布局入口，先创建网格，然后再把元素放入网格中，或者让自动放置规则把元素按照网格排列。
 
 弹性盒不能很好布局时，可以使用网格布局。
 
@@ -342,6 +344,8 @@ grid的版本。
 ### 网格中的布局
 
 对于网格来说，我们是让元素在它们各自的网格区域中对齐，但它也可能是多个单元组成的一个区域。
+
+因为不是 flex，所以不会有 flex 前缀。
 
 ```html
    <style>
@@ -394,6 +398,148 @@ repeat 方法中使用 auto-fill 属性替换整数值，并且设置轨道的�
 网格容器成为一个包含块，需要将容器增加 position属性，设置为非 static 的值。
 
 如果再把一个网格项目设置为 position:absolute，那么网格容器就成为了包含块。
+
+如果不设置 grid 的线格布局，则相对于容器布局，如果设置 grid 的线格布局，则相对于设置的线格的左上角布局。
+
+因为该项目了脱离了文档流，所以不会创建额外的轨道，所以设置超出范围的值将不起作用。
+
+```html
+ <div class="wrapper">
+      <div class="box1">One</div>
+      <div class="box2">Two</div>
+      <div class="box3">
+        This block is absolutely positioned. In this example the grid container is the containing block.
+      </div>
+      <div class="box4">Four</div>
+    </div>
+    <style>
+      .wrapper {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-auto-rows: 200px;
+        gap: 20px;
+        position: relative;
+      }
+
+      .wrapper>div {
+        background-color: orange;
+      }
+
+      .box3 {
+        position: absolute;
+        grid-column-start: 2;
+        grid-column-end: 4;
+        grid-row-start: 1;
+        grid-row-end: 3;
+        left: 40px;
+        top: 40px;
+      }
+    </style>
+```
+
+
+## 网格和 display:contents
+
+display:contents的定义，元素本身不会生成任何盒子，但其子元素和伪元素仍然会像平常一样生成盒子。用户 dialing 为了生成盒子和布局，必须将元素视为已在文档树中被其子元素和伪元素替换。
+
+就像子元素在文档树中上升了一层。
+
+如果将 display:contents 添加到 box1 的样式规则中，则该项目的盒子将消失，子项目成为网格项目，并且应用自动定位规则放置在网格中。
+
+```html
+<div class="wrapper2">
+      <div class="box1">
+        <div class="nested">a</div>
+        <div class="nested">b</div>
+        <div class="nested">c</div>
+      </div>
+      <div class="box2">Two</div>
+      <div class="box2">Three</div>
+      <div class="box2">Four</div>
+      <div class="box2">Five</div>
+    </div>
+    <style>
+      .wrapper2 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: minmax(100px, auto);
+        gap: 20px;
+      }
+
+      .wrapper2>div {
+        background-color: bisque;
+      }
+
+      .box1 {
+        grid-column-start: 1;
+        grid-column-end: 4;
+        display: contents;
+      }
+
+      .box1>.nested {
+        background-color: burlywood;
+      }
+    </style>
+```
+
+## auto关键字
+
+auto关键字表示浏览器自己决定长度。基本上等于该单元格的最大宽度，除非当个个设置了 min-width，且这个值大于最大宽度。
+
+```css
+grid-template-columns: 100px auto 100px;
+```
+## 网格线的名称
+
+grid-template-columns 和 grid-template-rows 属性里面，可以使用方括号，指定每一根网格线的名字，方便以后的引用。允许同一根线有多个名字。
+
+```css
+    grid-template-columns: [c1] 100px [c2] 100px [c3] auto [c4];
+    grid-template-rows: [r1] 100px [r2] 100px [r3 row3] auto [r4];
+```
+
+## grid-template-areas属性
+
+网格布局允许指定区域，一个区域由单个或多个单元格组成。grid-template-areas 属性用于定义区域。
+
+多个单元格可以合并为一个区域。如果某一区域不需要利用，则使用.表示。
+
+区域的命名会影响到网格线，每个区域的起始网格线，会自动命名为“区域名-start”，终止网格线自动命名为“区域名-end”。
+
+```css
+  grid-template-areas: 'a a b''a a c''a a d';
+```
+
+## grid-auto-flow属性
+
+子元素默认的放置顺序是“先行后列”，这个顺序是由grid-auto-flow 属性决定，默认值是 row，即先行后列。也可以设置为 column。
+
+除了可以设置为 row 或 column，还可以设置为 row dense和 column dense。这两个值主要用于，某些项目指定位置以后，剩下的项目怎么自动放置。
+
+## 对齐
+
+justify-items设置单元格内容的水平位置，align-items 设置单元格内容的垂直位置。
+
+start，end，center，stretch。
+
+place-items 是两个属性的缩写，align-items，justify-items。
+
+```css
+    .place {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: 100px;
+      gap: 20px;
+      align-items: stretch;
+      justify-items: end;
+      place-items: center start;
+    }
+```
+
+## 容器对齐
+
+justify-content是整个内容区域在容器里面的水平位置，align-content 是整个内容区域的成垂直位置。
+
 
 
 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Grid Ext</title>
+</head>
+
+<body>
+  <div id="app">
+    <h1>Name</h1>
+    <div class="wrapper">
+      <div>One</div>
+      <div>Two</div>
+      <div>Three</div>
+      <div>Four</div>
+    </div>
+    <style>
+      .wrapper {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: [c1] 100px [c2] 100px [c3] 100px auto [c4];
+        grid-template-rows: [r1] 100px [r2] 100px [r3 row3] auto [r4];
+        grid-template-areas: 'a a b''a a c''a a d';
+        grid-auto-flow: column;
+      }
+
+      .wrapper>div:nth-child(1) {
+        grid-row-start: a-start;
+        grid-row-end: a-end;
+        grid-column-start: a-start;
+        grid-column-end: a-end;
+      }
+
+      .wrapper>div {
+        background-color: orange;
+      }
+    </style>
+    <h1>Auto-Flow</h1>
+    <div class="wrapper2">
+      <div>1</div>
+      <div>2</div>
+      <div>3</div>
+      <div>4</div>
+      <div>5</div>
+      <div>6</div>
+      <div>7</div>
+      <div>8</div>
+      <div>9</div>
+    </div>
+    <style>
+      .wrapper2 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 100px;
+        grid-auto-flow: row dense;
+        gap: 20px;
+      }
+
+      .wrapper2>div {
+        background-color: orange;
+      }
+
+      .wrapper2>div:nth-child(1) {
+        grid-column-start: 1;
+        grid-column-end: 3;
+        grid-row-start: 1;
+        grid-row-end: 2;
+      }
+
+      .wrapper2>div:nth-child(2) {
+        grid-column-start: 1;
+        grid-column-end: 3;
+        grid-row-start: 2;
+        grid-row-end: 3;
+      }
+    </style>
+  </div>
+  <h1>Place</h1>
+  <div class="place">
+    <div>One</div>
+    <div>Two</div>
+    <div>Three</div>
+    <div>Four</div>
+    <div>Five</div>
+    <div>Six</div>
+  </div>
+  <style>
+    .place {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: 100px;
+      gap: 20px;
+      align-items: stretch;
+      justify-items: end;
+      place-items: center start;
+    }
+
+    .place>div {
+      background-color: orange;
+    }
+  </style>
+</body>
+
+</html>

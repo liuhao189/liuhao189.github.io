@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>grid absolute</title>
+</head>
+
+<body>
+  <div id="app">
+    <h1>Absolute</h1>
+    <div class="wrapper">
+      <div class="box1">One</div>
+      <div class="box2">Two</div>
+      <div class="box3">
+        This block is absolutely positioned. In this example the grid container is the containing block.
+      </div>
+      <div class="box4">Four</div>
+    </div>
+    <style>
+      .wrapper {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-auto-rows: 200px;
+        gap: 20px;
+        position: relative;
+      }
+
+      .wrapper>div {
+        background-color: orange;
+      }
+
+      .box3 {
+        position: absolute;
+        grid-column-start: 2;
+        grid-column-end: 4;
+        grid-row-start: 1;
+        grid-row-end: 3;
+        left: 40px;
+        top: 40px;
+      }
+    </style>
+    <h1>display:contents</h1>
+    <div class="wrapper2">
+      <div class="box1">
+        <div class="nested">a</div>
+        <div class="nested">b</div>
+        <div class="nested">c</div>
+      </div>
+      <div class="box2">Two</div>
+      <div class="box2">Three</div>
+      <div class="box2">Four</div>
+      <div class="box2">Five</div>
+    </div>
+    <style>
+      .wrapper2 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: minmax(100px, auto);
+        gap: 20px;
+      }
+
+      .wrapper2>div {
+        background-color: bisque;
+      }
+
+      .box1 {
+        grid-column-start: 1;
+        grid-column-end: 4;
+        display: contents;
+      }
+
+      .box1>.nested {
+        background-color: burlywood;
+      }
+    </style>
+  </div>
+</body>
+
+</html>
