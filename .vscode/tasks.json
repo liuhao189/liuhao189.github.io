@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new",
+        "showReuseMessage": true,
+        "clear": true
+    },
+    "tasks": [
+        {
+            "label": "listFile",
+            "type": "shell",
+            "command": "ls -l",
+            "group": "none",
+        }
+    ]
+}
