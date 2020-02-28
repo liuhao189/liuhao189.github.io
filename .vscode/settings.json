@@ -34,4 +34,9 @@
         }
     ],
     "npm.enableScriptExplorer": false,
+    "workbench.editor.openSideBySideDirection": "right",
+    "editor.minimap.enabled": false,
+    "editor.renderIndentGuides": false,
+    "workbench.editor.showTabs": true,
+    "workbench.editor.enablePreview": true
 }

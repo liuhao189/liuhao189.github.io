@@ -13,7 +13,7 @@
             "label": "listFile",
             "type": "shell",
             "command": "ls -l",
-            "group": "none",
+            "group": "none"
         }
     ]
 }
