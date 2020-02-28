@@ -1,0 +1,42 @@
+{
+    "javascript.implicitProjectConfig.checkJs": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/.npmrc": true,
+        "**/.gitignore": true,
+        "**/sw.js": true,
+    },
+    "files.associations": {
+        ".database": "json"
+    },
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "./demo/**/config.json"
+            ],
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "the name of the entey"
+                    },
+                    "age": {
+                        "type": "number",
+                        "description": "the age of the project"
+                    }
+                }
+            }
+        }
+    ],
+    "npm.enableScriptExplorer": false,
+    "workbench.editor.openSideBySideDirection": "right",
+    "editor.minimap.enabled": false,
+    "editor.renderIndentGuides": false,
+    "workbench.editor.showTabs": true,
+    "workbench.editor.enablePreview": true
+}

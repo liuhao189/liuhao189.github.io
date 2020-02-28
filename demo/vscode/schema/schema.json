@@ -1,0 +1,15 @@
+{
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "the name of the entey"
+            },
+            "age": {
+                "type": "number",
+                "description": "the age of the project"
+            }
+        }
+    }
+}

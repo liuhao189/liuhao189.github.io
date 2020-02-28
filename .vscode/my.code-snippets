@@ -1,0 +1,16 @@
+{
+	"create component": {
+		"prefix": "component",
+		"body": [
+			"class $1 extends React.Component {",
+			"",
+			"\trender() {",
+			"\t\treturn($2);",
+			"\t}",
+			"",
+			"}"
+		],
+		"scope": "javascript,typescript",
+		"description": "define a new react component"
+	}
+}
