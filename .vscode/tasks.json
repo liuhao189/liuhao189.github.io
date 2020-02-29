@@ -12,7 +12,7 @@
         {
             "label": "listFile",
             "type": "shell",
-            "command": "ls -l",
+            "command": "dir",
             "group": "none"
         }
     ]

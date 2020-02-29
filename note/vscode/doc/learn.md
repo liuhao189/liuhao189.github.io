@@ -209,7 +209,6 @@ tasks主要定义在tasks.json文件夹中。
 
 运行任务主要在终端>运行任务>选择任务名称。
 
-
 ## UI基本Layout
 
 主要包括Editor，SideBar，StatusBar，ActivityBar，Panels。
@@ -229,14 +228,13 @@ Minimap展示源代码的高级别的概览。
 
 ### Breadcrumbs
 
-编辑器上面有一个导航条。如果该语言支持symbols，symbol的路径会展示在导航条。
+编辑器上面有一个导航条。如果该语言支持symbol，symbol的路径会展示在导航条。
 
 可以在views>Show Breadcrumbs来显示和隐藏导航条。
 
-
 ### 文件浏览器
 
-默认，VSCode会忽略一些文件夹。eg：.git。用户可以使用files.exclude的设置来忽略文件和文件夹。
+默认，VSCode会忽略一些文件夹。eg：.git。用户可以使用files.exclude来配置忽略文件和文件夹。
 
 按照Cmd/Ctrl+点击可以选中多个文件，右键可以对比文件。
 
@@ -244,7 +242,7 @@ Minimap展示源代码的高级别的概览。
 
 ### 命令面板
 
-命令面板包含几乎所有VSCode的功能。
+命令面板包含几乎所有VSCode的功能。Cmd/Ctrl+P即可。
 
 ### Zen模式
 
@@ -278,6 +276,7 @@ Alt+Z切换自动换行。
 
 在打开keybindings.json时，按Cmd+K Cmd+K可以打开快捷键编辑弹框。
 
+
 ### 移除快捷键
 
 在command的开头添加-即可移除该快捷键。
@@ -293,8 +292,6 @@ Alt+Z切换自动换行。
 ### 命令参数
 
 命令可以通过args传递参数对象。
-
-
 
 ### when
 
