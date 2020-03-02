@@ -38,5 +38,9 @@
     "editor.minimap.enabled": false,
     "editor.renderIndentGuides": false,
     "workbench.editor.showTabs": true,
-    "workbench.editor.enablePreview": true
+    "workbench.editor.enablePreview": true,
+    "extensions.showRecommendationsOnlyOnDemand": true,
+    "extensions.ignoreRecommendations": true,
+    "editor.suggest.localityBonus": true,
+    "editor.snippetSuggestions": "inline"
 }

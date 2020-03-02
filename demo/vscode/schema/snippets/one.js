@@ -1,7 +1,3 @@
-class ComponentOne extends React.Component {
+let company = 'microsoft';
 
-    render() {
-        return ();
-    }
-
-}
+comp

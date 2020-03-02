@@ -69,3 +69,72 @@ code --install-extension my-extension.vsix
 }
 ```
 
+### 不展示建议的扩展
+
+可以使用以下配置不展示建议的扩展。
+
+```json
+"extensions.showRecommendationsOnlyOnDemand": true,
+"extensions.ignoreRecommendations": true
+```
+
+## 智能感知
+
+智能感知包含了很多功能，包括代码补全，参数信息，hover或转到定义信息，成员列表等。
+
+VSCode默认支持：JS，TS，JSON，HTML，CSS，SCSS和LESS的智能感知。
+
+通过安装扩展可以支持：Python，C/C++，C#，JAVA，GO，PHP，Ruby，Rust等编程语言。
+
+### 智能感知功能细节
+
+智能感知功能是通过相应的语言服务来实现的。
+
+一个语言服务基于语言语义和分析源代码来提供智能补全服务。
+
+### 自定义智能感知
+
+智能感知使用config配置来控制其行为。
+
+#### Tab补全
+
+Tab补全功能，只需按tab键，VSCode会将最好的建议插入到代码里。
+
+此功能默认是关闭的。
+
+```json
+"editor.tabCompletion": "off",
+"editor.tabCompletion": "on",
+"editor.tabCompletion": "onlySnippets"
+```
+
+#### 就近原则
+
+提示的顺序会按照变量定义的顺序来排序。eg：loop，function，file。
+
+配置使用editor.suggest.localityBonus。默认为false。
+
+```js
+let id = 1;
+function loadInfo(infoId){
+    let info={};
+    //type i shoule info,infoId,id
+}
+```
+
+#### 选中的建议
+
+配置是：editor.suggestSelection。可选值为first，recentlyUsed，recentlyUsedByPrefix。
+
+#### 代码片段建议
+
+默认代码片段的建议也会出现在列表里。
+
+配置为：editor.snippetSuggestions，可选值为none，top，bottom，inline(默认)。
+
+#### 智能提示不起作用
+
+如果你发现智能提示不起作用，一般是因为语言服务没有运行。可以按如下步骤尝试解决：重启VSCode；重新安装语言服务；在github上开issue。
+
+
+
