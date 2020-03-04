@@ -42,5 +42,9 @@
     "extensions.showRecommendationsOnlyOnDemand": true,
     "extensions.ignoreRecommendations": true,
     "editor.suggest.localityBonus": true,
-    "editor.snippetSuggestions": "inline"
+    "editor.snippetSuggestions": "inline",
+    "breadcrumbs.filePath": "last",
+    "breadcrumbs.icons": false,
+    "breadcrumbs.symbolPath": "last",
+    "breadcrumbs.enabled": false
 }

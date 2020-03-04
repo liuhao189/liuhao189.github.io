@@ -4,11 +4,39 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Server",
+            "program": "${workspaceFolder}/demo/debugger/server.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Client",
+            "program": "${workspaceFolder}/demo/debugger/app.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "启动程序",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/sw.js"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Server/Client",
+            "configurations": [
+                "Server",
+                "Client"
+            ],
+            "preLaunchTask": "listFile"
         }
     ]
 }

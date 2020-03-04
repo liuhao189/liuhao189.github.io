@@ -40,7 +40,6 @@ typescript和javascript中使用 //#region 和 //#endregion
 
 如果是扩展包，详情页会展示该扩展包包括的扩展。
 
-
 默认情况下，VSCode会自动检查和更新插件。
 
 你可以用下面的配置禁用这些。
@@ -135,6 +134,163 @@ function loadInfo(infoId){
 #### 智能提示不起作用
 
 如果你发现智能提示不起作用，一般是因为语言服务没有运行。可以按如下步骤尝试解决：重启VSCode；重新安装语言服务；在github上开issue。
+
+### 代码导航
+
+在快速打开弹框中，按住Ctrl+Tab，会在同一个编辑器组中打开前几个文件。
+
+
+Ctrl+_或 Ctrl+Shift+_ 可以在光标位置之间导航。
+
+#### 导航条
+
+自定义配置：
+
+```json
+// "on", "off" "last"
+"breadcrumbs.filePath":"on",
+"breadcrumbs.symbolPath":"on",
+"breadcrumbs.icons":false
+```
+
+### 重构
+
+#### 提取方法
+
+一个常见的重构操作是避免重复代码，这需要将通用代码逻辑提取到一个方法。
+
+操作：选中重复代码，选择在不同的scope里生成新方法。
+
+```js
+//before
+function one(msg) {
+    console.log(msg);
+    console.warn(msg);
+    console.error(msg);
+    console.debug(msg);
+}
+//after
+function one(msg) {
+    newFunction(msg);
+}
+
+function newFunction(msg) {
+    console.log(msg);
+    console.warn(msg);
+    console.error(msg);
+    console.debug(msg);
+}
+```
+
+#### symbol重命名
+
+一些语言仅支持在文件内的symbol变更，一些语言支持扩文件的更改symbol的名称。
+
+键盘快捷键为F2。
+
+### 调试
+
+调试主要的配置在.vscode/launch.json中。
+
+```json
+    {
+        "type": "node",
+        "request": "launch",
+        "name": "服务器应用程序",
+        "program": "${workspaceFolder}/demo/debugger/app.js",
+        "skipFiles": [
+            "<node_internals>/**"
+        ]
+    }
+```
+
+#### 高级断点
+
+可以在调试菜单中，创建条件断点，内联断点，函数断点和记录点。
+
+#### launch配置
+
+按F5，VSCode会尝试调试当前文件。
+
+VSCode中，主要有两种调试模式。分别是Launch和Attach。
+
+Launch聚焦于如何在debug模式下启动你的应用。
+
+Attach聚焦于如何把VSCode的调试器连接到已启动的实例中。
+
+launch配置的智能感知依赖于type属性。
+
+通用配置：
+
+1、request，现阶段支持launch和attach。
+
+2、name
+
+3、presentation，可选值：order，group，hidden。
+
+4、preLaunchTask，launch前要执行的task名称。
+
+5、postDebugTask，创建新的调试会话后调用的task名称。
+
+常见配置：
+
+1、program，运行的程序和文件
+
+2、args，运行program时传递的参数。
+
+3、env，运行环境。
+
+4、cwd，当前工作目录，一般为了找到依赖。
+
+5、port，attach时使用的端口号。
+
+6、stopOnEntry
+
+7、console，console的类型，internalConsole，intergratedTerminal，externalTerminal。
+
+#### 复合调试配置
+
+复合调试配置可以一次启动多个调试会话。
+
+preLaunchTask配置的task会在launch之前执行。
+
+```json
+    "compounds": [
+        {
+            "name": "Server/Client",
+            "configurations": [
+                "Server",
+                "Client"
+            ],
+            "preLaunchTask": "listFile"
+        }
+    ]
+```
+
+#### 调试条
+
+位置配置：
+
+```json
+//可选值："floating","docked","hidden"
+"debug.toolBarLocation":"floating"
+```
+
+#### 记录点
+
+记录点可以以非代码侵入的方式打印一些信息，{}内的内容会当做表达式被执行。
+
+```js
+const msg='Hello World';
+//add log point below
+let logPointStr='Message：{msg}'
+```
+
+
+
+
+
+
 
 
 
