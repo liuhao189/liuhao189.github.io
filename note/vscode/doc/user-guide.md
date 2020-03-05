@@ -317,7 +317,96 @@ VSCode支持在配置中变量插值的功能。
 可以在用户设置中添加launch字段，如果在工作区中包含了launch.json文件，那么用户设置中的launch字段会被忽略。
 
 
-## 版本管理
+## 集成的终端
+
+快捷键Ctrl+`可以打开终端。
+
+快捷键Shift+Cmd+C可以打开外部的终端。
+
+
+### 配置
+
+在Linux和macOS上，默认使用$SHELL。
+
+在较新版本windows上，使用PowerShell；较旧版本windows上，使用cmd。
+
+可以通过"terminal.integrated.shell.*"和"terminal.integrated.shellArgs.*"来配置。
+
+为了安全考虑，上一行的配置只能在用户级别配置。
+
+### 运行选择的文本
+
+可以Cmd+Shift+P打开命令面板，然后选择runSelectedText。
+
+```bash
+echo 'Hello World!';
+```
+
+### 渲染方式
+
+默认，集成终端使用多个cavas元素渲染的，在变化频率高时，性能高。在一些不常见的情况下，Electron&&Chromium渲染DOM更快。
+
+如果你感觉到性能问题，可以使用"terminal.integrated.rendererType":"dom"配置来使用DOM渲染。
+
+```json
+//canvas dom experimentalWebgl
+"terminal.integrated.rendererType" :"dom"
+```
+
+另一个提升性能的小技巧是忽略GPU的黑名单。
+
+```bash
+code --ignore-gpu-blacklist
+```
+
+## 多文件夹工作区
+
+可以在File -> Add Folder to Workspace来添加新的文件夹。
+
+可以另存为工作区文件。工作区文件以.code-workspace为后缀，文件内容为json格式。
+
+```json
+{
+	"folders": [
+		{
+			"path": "/Users/xxx/Desktop/github/xxx.github.io"
+		},
+		{
+			"path": "/Users/xxx/Desktop/github/sourcecode"
+		}
+	],
+	"settings": {
+		"javascript.implicitProjectConfig.checkJs": false,
+		"files.associations": {
+			".database": "json"
+		},
+		"workbench.editor.openSideBySideDirection": "right",
+		"workbench.editor.showTabs": true,
+		"workbench.editor.enablePreview": true,
+		"extensions.showRecommendationsOnlyOnDemand": true,
+		"extensions.ignoreRecommendations": true,
+		"breadcrumbs.filePath": "last",
+		"breadcrumbs.icons": false,
+		"breadcrumbs.symbolPath": "last",åå
+		"breadcrumbs.enabled": false
+	}
+}
+```
+
+在folders的数组中，你可以自己添加name属性。
+
+工作区文件也可以添加工作区级别的setting。
+
+多文件工作区中，为了避免设置冲突，涉及到编辑器级别的设置不会读取文件夹内的.vscode/setting.json文件。
+
+当你创建多文件工作区时，VSCode会根据你的第一个单文件夹工作区的设置来生成多文件夹工作区的配置部分。
+
+
+#### Tasks
+
+VSCode会在工作区内自动检测gulp，grunt，npm，ts的命令。
+
+
 
 
 
