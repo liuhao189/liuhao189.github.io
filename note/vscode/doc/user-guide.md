@@ -139,7 +139,6 @@ function loadInfo(infoId){
 
 在快速打开弹框中，按住Ctrl+Tab，会在同一个编辑器组中打开前几个文件。
 
-
 Ctrl+_或 Ctrl+Shift+_ 可以在光标位置之间导航。
 
 #### 导航条
@@ -184,9 +183,7 @@ function newFunction(msg) {
 
 #### symbol重命名
 
-一些语言仅支持在文件内的symbol变更，一些语言支持扩文件的更改symbol的名称。
-
-键盘快捷键为F2。
+一些语言仅支持在文件内的symbol变更，一些语言支持跨文件的更改symbol的名称。键盘快捷键为F2。
 
 ### 调试
 
@@ -218,7 +215,7 @@ Launch聚焦于如何在debug模式下启动你的应用。
 
 Attach聚焦于如何把VSCode的调试器连接到已启动的实例中。
 
-launch配置的智能感知依赖于type属性。
+launch配置的智能感知依赖于type属性的值。
 
 通用配置：
 
@@ -286,9 +283,41 @@ const msg='Hello World';
 let logPointStr='Message：{msg}'
 ```
 
+#### 内置变量
+
+VSCode支持在配置中变量插值的功能。
+
+常用变量：
+
+1、${workspaceFolder}，当前工作区的根目录
+
+2、${file}，当前打开的文件
+
+3、${env:Name}，环境变量Name的值。
+
+其它变量：[其它变量](https://code.visualstudio.com/docs/editor/variables-reference)
+
+#### 特定平台的配置
+
+支持：windows，linux，osx。
+
+```json
+    "args": [
+        "--windows"
+    ],
+    "osx": {
+        "args": [
+            "--osx"
+        ]
+    }
+```
+
+#### 用户设置中的launch
+
+可以在用户设置中添加launch字段，如果在工作区中包含了launch.json文件，那么用户设置中的launch字段会被忽略。
 
 
-
+## 版本管理
 
 
 
