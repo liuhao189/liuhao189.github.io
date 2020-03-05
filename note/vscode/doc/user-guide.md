@@ -401,14 +401,34 @@ code --ignore-gpu-blacklist
 
 当你创建多文件工作区时，VSCode会根据你的第一个单文件夹工作区的设置来生成多文件夹工作区的配置部分。
 
+## Tasks
 
-#### Tasks
+Task主要用于完成自动化任务。eg：lint，build，package，test，deploy。
 
-VSCode会在工作区内自动检测gulp，grunt，npm，ts的命令。
+### 自动检测
+
+VSCode会在工作区内自动检测gulp，grunt，npm，ts，Jake的命令。后期会增加Maven和C#。
 
 
+### 自定义任务
 
+并不是所有的Task会被自动检测出来，一些情况下需要自定义Task。
 
+任务字段：
+
+1、label，task名称。
+
+2、type，可以是shell，也可以process。
+
+3、command，实际执行的命令。
+
+4、group，任务分组。
+
+5、presentation，任务输出和执行的设置。
+
+6、options，cwd，env，shell。
+
+7、runOptions，运行配置。
 
 
 
