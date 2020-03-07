@@ -8,7 +8,15 @@
             "program": "${workspaceFolder}/demo/debugger/server.js",
             "skipFiles": [
                 "<node_internals>/**"
-            ]
+            ],
+            "args": [
+                "--windows"
+            ],
+            "osx": {
+                "args": [
+                    "--osx"
+                ]
+            }
         },
         {
             "type": "node",

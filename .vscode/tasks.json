@@ -14,6 +14,26 @@
             "type": "shell",
             "command": "ls -l",
             "group": "none"
+        },
+        {
+            "label": "testShell",
+            "type": "process",
+            "command": "test.sh",
+            "group": "none",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/.vscode",
+                "env": {
+                    "NODE_ENV": "prod"
+                }
+            }
         }
     ]
 }
