@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>用户指导</title>
+  <link rel="stylesheet" href="/note/note.css">
+</head>
+<body>
+<h1 id="-">用户指导</h1>
+<h2 id="-">基本编辑</h2>
+<h3 id="hot-exit">Hot Exit</h3>
+<p>VSCode在你正常退出时，会记住没有保存的文件内容。正常的退出为file &gt; exit。</p>
+<h3 id="-">查找</h3>
+<p>默认查找弹框出现时，会将你光标下的词填充到查找框中。可以使用“editor.find.seedSearchStringFromSelection”来禁用此行为。</p>
+<p>选中查找框的“汉堡包”的图标，会在选中的区域内搜索。可以通过“editor.find.autoFindInSelection”来默认从选中区域搜索。</p>
+<p>跨文件搜索快捷键，Shift+Cmd+F。</p>
+<p>跨文件搜索时，排除和包括的文件可以使用glob配置。</p>
+<p><em>匹配一个或多个字符，?匹配一个字符，<strong>，匹配多个路径分隔符，{}，条件分组，eg:{</strong>/</em>.html,*<em>/</em>.txt},[]声明一个字符集合，eg:example.[0-9]</p>
+<h3 id="-">代码区域</h3>
+<p>为了代码可读性，我们可以自己添加region。</p>
+<p>CSS/LESS/SCSS中使用/<em> #region </em>/ 和 /<em> #endregion </em>/</p>
+<p>markdown中使用&lt;!-- #region one --&gt;和 &lt;!-- #endregion --&gt;</p>
+<p>typescript和javascript中使用 //#region 和 //#endregion</p>
+<h2 id="-">扩展</h2>
+<p>扩展详情页展示：</p>
+<p>1、扩展提供的功能，命令，配置，键盘快捷键，语言支持，调试器等。</p>
+<p>2、readme.md &amp;&amp; changelog.md，扩展介绍和变更记录。</p>
+<p>3、依赖，是否依赖其它扩展。。。</p>
+<p>如果是扩展包，详情页会展示该扩展包包括的扩展。</p>
+<p>默认情况下，VSCode会自动检查和更新插件。</p>
+<p>你可以用下面的配置禁用这些。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;extensions.autoUpdate&quot;</span><span class="err">:</span> <span class="kc">false</span><span class="err">,</span>
+<span class="s2">&quot;extensions.autoCheckUpdates&quot;</span><span class="err">:</span> <span class="kc">false</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-vsix-">从VSIX安装扩展</h3>
+<p>可以从VSIX本地文件安装扩展。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>code --install-extension my-extension.vsix
+</pre></div>
+
+</code></pre>
+<h3 id="-">工作区建议的插件</h3>
+<p>在一个单文件夹工作区，可以在.vscode文件夹下创建一个extensions.json文件。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;recommendations&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;ms-python.python&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">不展示建议的扩展</h3>
+<p>可以使用以下配置不展示建议的扩展。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;extensions.showRecommendationsOnlyOnDemand&quot;</span><span class="err">:</span> <span class="kc">true</span><span class="err">,</span>
+<span class="s2">&quot;extensions.ignoreRecommendations&quot;</span><span class="err">:</span> <span class="kc">true</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">智能感知</h2>
+<p>智能感知包含了很多功能，包括代码补全，参数信息，hover或转到定义信息，成员列表等。</p>
+<p>VSCode默认支持：JS，TS，JSON，HTML，CSS，SCSS和LESS的智能感知。</p>
+<p>通过安装扩展可以支持：Python，C/C++，C#，JAVA，GO，PHP，Ruby，Rust等编程语言。</p>
+<h3 id="-">智能感知功能细节</h3>
+<p>智能感知功能是通过相应的语言服务来实现的。</p>
+<p>一个语言服务基于语言语义和分析源代码来提供智能补全服务。</p>
+<h3 id="-">自定义智能感知</h3>
+<p>智能感知使用config配置来控制其行为。</p>
+<h4 id="tab-">Tab补全</h4>
+<p>Tab补全功能，只需按tab键，VSCode会将最好的建议插入到代码里。</p>
+<p>此功能默认是关闭的。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;editor.tabCompletion&quot;</span><span class="err">:</span> <span class="s2">&quot;off&quot;</span><span class="err">,</span>
+<span class="s2">&quot;editor.tabCompletion&quot;</span><span class="err">:</span> <span class="s2">&quot;on&quot;</span><span class="err">,</span>
+<span class="s2">&quot;editor.tabCompletion&quot;</span><span class="err">:</span> <span class="s2">&quot;onlySnippets&quot;</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">就近原则</h4>
+<p>提示的顺序会按照变量定义的顺序来排序。eg：loop，function，file。</p>
+<p>配置使用editor.suggest.localityBonus。默认为false。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">loadInfo</span><span class="p">(</span><span class="nx">infoId</span><span class="p">){</span>
+    <span class="kd">let</span> <span class="nx">info</span><span class="o">=</span><span class="p">{};</span>
+    <span class="c1">//type i shoule info,infoId,id</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">选中的建议</h4>
+<p>配置是：editor.suggestSelection。可选值为first，recentlyUsed，recentlyUsedByPrefix。</p>
+<h4 id="-">代码片段建议</h4>
+<p>默认代码片段的建议也会出现在列表里。</p>
+<p>配置为：editor.snippetSuggestions，可选值为none，top，bottom，inline(默认)。</p>
+<h4 id="-">智能提示不起作用</h4>
+<p>如果你发现智能提示不起作用，一般是因为语言服务没有运行。可以按如下步骤尝试解决：重启VSCode；重新安装语言服务；在github上开issue。</p>
+<h3 id="-">代码导航</h3>
+<p>在快速打开弹框中，按住Ctrl+Tab，会在同一个编辑器组中打开前几个文件。</p>
+<p>Ctrl+<em>或 Ctrl+Shift+</em> 可以在光标位置之间导航。</p>
+<h4 id="-">导航条</h4>
+<p>自定义配置：</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="err">//</span> <span class="s2">&quot;on&quot;</span><span class="err">,</span> <span class="s2">&quot;off&quot;</span> <span class="s2">&quot;last&quot;</span>
+<span class="s2">&quot;breadcrumbs.filePath&quot;</span><span class="err">:</span><span class="s2">&quot;on&quot;</span><span class="err">,</span>
+<span class="s2">&quot;breadcrumbs.symbolPath&quot;</span><span class="err">:</span><span class="s2">&quot;on&quot;</span><span class="err">,</span>
+<span class="s2">&quot;breadcrumbs.icons&quot;</span><span class="err">:</span><span class="kc">false</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">重构</h3>
+<h4 id="-">提取方法</h4>
+<p>一个常见的重构操作是避免重复代码，这需要将通用代码逻辑提取到一个方法。</p>
+<p>操作：选中重复代码，选择在不同的scope里生成新方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//before</span>
+<span class="kd">function</span> <span class="nx">one</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="c1">//after</span>
+<span class="kd">function</span> <span class="nx">one</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">newFunction</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">newFunction</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="symbol-">symbol重命名</h4>
+<p>一些语言仅支持在文件内的symbol变更，一些语言支持跨文件的更改symbol的名称。键盘快捷键为F2。</p>
+<h3 id="-">调试</h3>
+<p>调试主要的配置在.vscode/launch.json中。</p>
+<pre><code class="lang-json"><div class="highlight"><pre>    <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;node&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;服务器应用程序&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;${workspaceFolder}/demo/debugger/app.js&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;skipFiles&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;&lt;node_internals&gt;/**&quot;</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">高级断点</h4>
+<p>可以在调试菜单中，创建条件断点，内联断点，函数断点和记录点。</p>
+<h4 id="launch-">launch配置</h4>
+<p>按F5，VSCode会尝试调试当前文件。</p>
+<p>VSCode中，主要有两种调试模式。分别是Launch和Attach。</p>
+<p>Launch聚焦于如何在debug模式下启动你的应用。</p>
+<p>Attach聚焦于如何把VSCode的调试器连接到已启动的实例中。</p>
+<p>launch配置的智能感知依赖于type属性的值。</p>
+<p>通用配置：</p>
+<p>1、request，现阶段支持launch和attach。</p>
+<p>2、name</p>
+<p>3、presentation，可选值：order，group，hidden。</p>
+<p>4、preLaunchTask，launch前要执行的task名称。</p>
+<p>5、postDebugTask，创建新的调试会话后调用的task名称。</p>
+<p>常见配置：</p>
+<p>1、program，运行的程序和文件</p>
+<p>2、args，运行program时传递的参数。</p>
+<p>3、env，运行环境。</p>
+<p>4、cwd，当前工作目录，一般为了找到依赖。</p>
+<p>5、port，attach时使用的端口号。</p>
+<p>6、stopOnEntry</p>
+<p>7、console，console的类型，internalConsole，intergratedTerminal，externalTerminal。</p>
+<h4 id="-">复合调试配置</h4>
+<p>复合调试配置可以一次启动多个调试会话。</p>
+<p>preLaunchTask配置的task会在launch之前执行。</p>
+<pre><code class="lang-json"><div class="highlight"><pre>    <span class="s2">&quot;compounds&quot;</span><span class="err">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Server/Client&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;configurations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;Server&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Client&quot;</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;preLaunchTask&quot;</span><span class="p">:</span> <span class="s2">&quot;listFile&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">调试条</h4>
+<p>位置配置：</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="err">//可选值：</span><span class="s2">&quot;floating&quot;</span><span class="err">,</span><span class="s2">&quot;docked&quot;</span><span class="err">,</span><span class="s2">&quot;hidden&quot;</span>
+<span class="s2">&quot;debug.toolBarLocation&quot;</span><span class="err">:</span><span class="s2">&quot;floating&quot;</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">记录点</h4>
+<p>记录点可以以非代码侵入的方式打印一些信息，{}内的内容会当做表达式被执行。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">msg</span><span class="o">=</span><span class="s1">&#39;Hello World&#39;</span><span class="p">;</span>
+<span class="c1">//add log point below</span>
+<span class="kd">let</span> <span class="nx">logPointStr</span><span class="o">=</span><span class="s1">&#39;Message：{msg}&#39;</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">内置变量</h4>
+<p>VSCode支持在配置中变量插值的功能。</p>
+<p>常用变量：</p>
+<p>1、${workspaceFolder}，当前工作区的根目录</p>
+<p>2、${file}，当前打开的文件</p>
+<p>3、${env:Name}，环境变量Name的值。</p>
+<p>其它变量：<a href="https://code.visualstudio.com/docs/editor/variables-reference">其它变量</a></p>
+<h4 id="-">特定平台的配置</h4>
+<p>支持：windows，linux，osx。</p>
+<pre><code class="lang-json"><div class="highlight"><pre>    <span class="s2">&quot;args&quot;</span><span class="err">:</span> <span class="p">[</span>
+        <span class="s2">&quot;--windows&quot;</span>
+    <span class="p">]</span><span class="err">,</span>
+    <span class="s2">&quot;osx&quot;</span><span class="err">:</span> <span class="p">{</span>
+        <span class="nt">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;--osx&quot;</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-launch">用户设置中的launch</h4>
+<p>可以在用户设置中添加launch字段，如果在工作区中包含了launch.json文件，那么用户设置中的launch字段会被忽略。</p>
+<h2 id="-">集成的终端</h2>
+<p>快捷键Ctrl+`可以打开终端。</p>
+<p>快捷键Shift+Cmd+C可以打开外部的终端。</p>
+<h3 id="-">配置</h3>
+<p>在Linux和macOS上，默认使用$SHELL。</p>
+<p>在较新版本windows上，使用PowerShell；较旧版本windows上，使用cmd。</p>
+<p>可以通过&quot;terminal.integrated.shell.<em>&quot;和&quot;terminal.integrated.shellArgs.</em>&quot;来配置。</p>
+<p>为了安全考虑，上一行的配置只能在用户级别配置。</p>
+<h3 id="-">运行选择的文本</h3>
+<p>可以Cmd+Shift+P打开命令面板，然后选择runSelectedText。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="nb">echo</span> <span class="s1">&#39;Hello World!&#39;</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">渲染方式</h3>
+<p>默认，集成终端使用多个cavas元素渲染的，在变化频率高时，性能高。在一些不常见的情况下，Electron&amp;&amp;Chromium渲染DOM更快。</p>
+<p>如果你感觉到性能问题，可以使用&quot;terminal.integrated.rendererType&quot;:&quot;dom&quot;配置来使用DOM渲染。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="err">//canvas</span> <span class="err">dom</span> <span class="err">experimentalWebgl</span>
+<span class="s2">&quot;terminal.integrated.rendererType&quot;</span> <span class="err">:</span><span class="s2">&quot;dom&quot;</span>
+</pre></div>
+
+</code></pre>
+<p>另一个提升性能的小技巧是忽略GPU的黑名单。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>code --ignore-gpu-blacklist
+</pre></div>
+
+</code></pre>
+<h2 id="-">多文件夹工作区</h2>
+<p>可以在File -&gt; Add Folder to Workspace来添加新的文件夹。</p>
+<p>可以另存为工作区文件。工作区文件以.code-workspace为后缀，文件内容为json格式。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;folders&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/xxx/Desktop/github/xxx.github.io&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/xxx/Desktop/github/sourcecode&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;javascript.implicitProjectConfig.checkJs&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;files.associations&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;.database&quot;</span><span class="p">:</span> <span class="s2">&quot;json&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;workbench.editor.openSideBySideDirection&quot;</span><span class="p">:</span> <span class="s2">&quot;right&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;workbench.editor.showTabs&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">&quot;workbench.editor.enablePreview&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">&quot;extensions.showRecommendationsOnlyOnDemand&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">&quot;extensions.ignoreRecommendations&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">&quot;breadcrumbs.filePath&quot;</span><span class="p">:</span> <span class="s2">&quot;last&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;breadcrumbs.icons&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;breadcrumbs.symbolPath&quot;</span><span class="p">:</span> <span class="s2">&quot;last&quot;</span><span class="p">,</span><span class="err">åå</span>
+        <span class="nt">&quot;breadcrumbs.enabled&quot;</span><span class="p">:</span> <span class="kc">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>在folders的数组中，你可以自己添加name属性。</p>
+<p>工作区文件也可以添加工作区级别的setting。</p>
+<p>多文件工作区中，为了避免设置冲突，涉及到编辑器级别的设置不会读取文件夹内的.vscode/setting.json文件。</p>
+<p>当你创建多文件工作区时，VSCode会根据你的第一个单文件夹工作区的设置来生成多文件夹工作区的配置部分。</p>
+<h2 id="tasks">Tasks</h2>
+<p>Task主要用于完成自动化任务。eg：lint，build，package，test，deploy。</p>
+<h3 id="-">自动检测</h3>
+<p>VSCode会在工作区内自动检测gulp，grunt，npm，ts，Jake的命令。后期会增加Maven和C#。</p>
+<h3 id="-">自定义任务</h3>
+<p>并不是所有的Task会被自动检测出来，一些情况下需要自定义Task。</p>
+<p>任务字段：</p>
+<p>1、label，task名称。</p>
+<p>2、type，可以是shell，也可以process。</p>
+<p>3、command，实际执行的命令。</p>
+<p>4、group，任务分组。</p>
+<p>5、presentation，任务输出和执行的设置。</p>
+<p>6、options，cwd，env，shell。</p>
+<p>7、runOptions，运行配置。</p>
+</body>
+</html>
