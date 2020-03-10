@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VSCode使用教程</title>
+  <link rel="stylesheet" href="/note/note.css">
+</head>
+<body>
+<h1 id="vscode-">VSCode使用教程</h1>
+<h2 id="-">概览</h2>
+<p>VSCode是一个跨平台（Windows，MacOS和Linux）的，免费的，轻量但是功能丰富的源代码编辑器。</p>
+<p>VSCode原生支持JS，TS的开发，通过插件可以支持其它语言(C++，C#，Java，Python，PHP，GO等编程语言)和其它运行时(.NET，Unity等)。</p>
+<h2 id="-">版本&amp;&amp;附加功能</h2>
+<p>VSCode团队每个月发布一个新版本，大部分平台支持自动更新。</p>
+<p>如果想禁用自动更新，需要在软件设置里将update.mode从default设置到none。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;update:mode&quot;</span><span class="err">:</span><span class="s2">&quot;none&quot;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="insiders">insiders</h3>
+<p>如果你想早点尝试新功能或帮助开发团队测试bugs，你可以安装VSCode insiders的版本。insiders版本和稳定版可以同时存在于同一个机器上，不会互相影响。</p>
+<h3 id="-">便携模式</h3>
+<p>VSCode支持便携模式安装，这个模式下，VSCode会将产生的数据存放到本地文件夹。这样VSCode就可以放到可移动存储介质中，然后在不同的机器上运行。便携模式同时支持自定义插件安装目录。</p>
+<p>如果你想下载便携模式版本，需要在<a href="https://code.visualstudio.com/download">下载页</a>中选择zip的压缩包。</p>
+<h3 id="-">附加功能</h3>
+<p>VSCode不像传统的IDE，一安装就包括很多功能。VSCode通过安装插件的方式来支持额外的功能。</p>
+<h2 id="-">开始使用</h2>
+<h3 id="-">提示和小技巧</h3>
+<h4 id="-">快捷键</h4>
+<p>选区操作：cmd+shift+箭头可以选择光标前后上下的区域。</p>
+<p>多光标操作：mac上按住alt键，然后点击空白处，可以增加多光标。Cmd+Alt+上下箭头可以在上下添加多光标。</p>
+<p>复制到上一行：alt+shift+上箭头。</p>
+<p>复制到下一行：alt+shift+下箭头。</p>
+<p>移动行：alt+上下箭头</p>
+<p>删除整行：Shift+Cmd+K。</p>
+<p>注释为：Cmd+/。</p>
+<p>重命名符号：F2即可，然后VSCode会将项目中所有引用的地方替换为重命名后的名字。</p>
+<p>格式化文件：Shift + Alt +F，格式化全文。</p>
+<p>格式化选中区域：Cmd+K 然后Cmd+F。</p>
+<p>收缩所有代码块，Cmd+K，Cmd+0，展开所有代码区域Cmd+K，Cmd+J。</p>
+<p>F8会在文件内的错误之间导航，并看到具体的错误信息。</p>
+<p>Cmd+P可以快速打开文件。输入？可以查看帮助提示。按右箭头可以打开多个文件。</p>
+<p>Shift+Cmd+M可以打开问题面板查看所有错误。</p>
+<p>Cmd+B，展示或隐藏Sidebar。</p>
+<p>Cmd+\为新开一个Tab页。</p>
+<p>Cmd+num为激活某个Tab页。</p>
+<h4 id="-">代码片段</h4>
+<p>VSCode的插件里面几乎有所有的框架和语言的代码片段，这会极大提高开发效率。同时也可以很方便的自定义Snippets。</p>
+<h4 id="ts-check">ts-check</h4>
+<p>在一个JS文件的第一行增加“//@ts-check”可以应用ts的检查功能。相反的“@ts-nocheck”可以不检查该文件。</p>
+<p>要在项目或工作区级别增加全局检测配置，需要在.vscode/settings.json里面增加如下配置。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;javascript.implicitProjectConfig.checkJs&quot;</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">命令面板</h4>
+<p>Shift+Cmd+P可以打开命令面板，命令面板根据你的当前情况显示可用的所有命令。</p>
+<h4 id="-vscode-">.vscode文件夹</h4>
+<p>工作区级别的设置全都在.vscode文件夹里。eg：tasks.json定义运行的task，launch.json定义debugger的操作。</p>
+<h4 id="-">自定义配置</h4>
+<p>在左侧导航栏不显示某些文件夹或文件，使用files.exclude。一般用于不展示变化低频的文件夹，方便查找文件夹。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;files.exclude&quot;</span><span class="err">:</span> <span class="p">{</span>
+    <span class="nt">&quot;**/dist/&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;**/.npmrc&quot;</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+<span class="err">//</span>
+<span class="s2">&quot;search.exclude&quot;</span><span class="err">:</span><span class="p">{</span> 
+    <span class="nt">&quot;**/node_modules&quot;</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>一些设置项因为安全因素，不能在工作区级别自定义设置，只能在用户级别设置。主要是shell执行的设置。</p>
+<p>eg：git.path，terminal.integrated.shell.linux。。。。</p>
+<p>语言级别设置，可以点击状态栏右侧的语言名字，然后在弹出的命令面板里设置当前语言级别的基础配置。</p>
+<pre><code class="lang-json"><div class="highlight"><pre>    <span class="s2">&quot;[typescript]&quot;</span><span class="err">:</span> <span class="p">{</span>
+        <span class="nt">&quot;editor.formatOnPaste&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">&quot;editor.formatOnSave&quot;</span><span class="p">:</span> <span class="kc">true</span>
+    <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">其它</h4>
+<p>在不存在的文件链接上按住Ctrl并Click，会弹出新建文件弹框。</p>
+<p>Cmd+W，关闭当前打开的文件夹。</p>
+<p>Ctrl+_：导航到之前的光标位置。</p>
+<p>Ctrl+Shift+_：导航到之后的光标位置。</p>
+<p>自定义文件后缀，一些自定义的文件后缀其实是json格式。</p>
+<pre><code class="lang-json"><div class="highlight"><pre>    <span class="s2">&quot;files.associations&quot;</span><span class="err">:</span> <span class="p">{</span>
+        <span class="nt">&quot;.database&quot;</span><span class="p">:</span> <span class="s2">&quot;json&quot;</span>
+    <span class="p">}</span><span class="err">,</span>
+</pre></div>
+
+</code></pre>
+<p>你可以按住Shift+Cmd+L，在当前选中的所有区域增加光标。Cmd+D，只会选中下一个。</p>
+<p>按住Alt键，然后滚动，编辑器会快速滚动。</p>
+<p>Cmd+P的搜索框中，输入@可以导航到文件的特定区域。也可以直接Cmd+T。</p>
+<p>Ctrl+G可以导航到特定的行和列。</p>
+<p>Cmd+U取消Cursor的位置变换。</p>
+<p>Cmd+箭头上或箭头下可以导航到文件开始和结束的位置。</p>
+<p>自定义snippets，在.vscode文件夹里新建一个以.code-snippets为后缀的文件。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;create component&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;component&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;body&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;class $1 extends React.Component {&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;\trender() {&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;\t\treturn($2);&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;\t}&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;}&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;scope&quot;</span><span class="p">:</span> <span class="s2">&quot;javascript,typescript&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;define a new react component&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>调试，调试主要的配置在launch.json中。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.2.0&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;configurations&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;node&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;启动程序&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;skipFiles&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;&lt;node_internals&gt;/**&quot;</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;${workspaceFolder}/sw.js&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="task">Task</h4>
+<p>tasks主要定义在tasks.json文件夹中。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;tasks&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;listFile&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;ls -l&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>运行任务主要在终端&gt;运行任务&gt;选择任务名称。</p>
+<h2 id="ui-layout">UI基本Layout</h2>
+<p>主要包括Editor，SideBar，StatusBar，ActivityBar，Panels。</p>
+<p>小技巧：</p>
+<p>Alt + Click file会在新的编辑器中打开该文件。</p>
+<p>通过设置workbench.editor.openSideBySideDirection，可以在下方打开新编辑器。</p>
+<h3 id="minimap">Minimap</h3>
+<p>Minimap展示源代码的高级别的概览。</p>
+<p>可以通过editor.minimap.side设置minimap显示的位置，通过editor.minimap.enabled设置是否启用minimap。</p>
+<h3 id="breadcrumbs">Breadcrumbs</h3>
+<p>编辑器上面有一个导航条。如果该语言支持symbol，symbol的路径会展示在导航条。</p>
+<p>可以在views&gt;Show Breadcrumbs来显示和隐藏导航条。</p>
+<h3 id="-">文件浏览器</h3>
+<p>默认，VSCode会忽略一些文件夹。eg：.git。用户可以使用files.exclude来配置忽略文件和文件夹。</p>
+<p>按照Cmd/Ctrl+点击可以选中多个文件，右键可以对比文件。</p>
+<p>在文件浏览器focus的状态下，输入字符可以搜索文件或文件夹。</p>
+<h3 id="-">命令面板</h3>
+<p>命令面板包含几乎所有VSCode的功能。Cmd/Ctrl+P即可。</p>
+<h3 id="zen-">Zen模式</h3>
+<p>Zen模式会隐藏除了代码编辑器以外的所有UI，让你集中精力在代码上。按两次esc键，可以退出Zen模式。</p>
+<h3 id="-">预览模式</h3>
+<p>当你单机或选择一个文件时，VSCode默认会以预览模式打开该文件。预览模式不会打开一个新的Tab。</p>
+<p>当你编辑过文件，或双击打开该文件时候，会以编辑模式打开。</p>
+<p>可以通过下面的配置禁用预览模式。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="s2">&quot;workbench.editor.enablePreview&quot;</span><span class="o">:</span> <span class="kc">true</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">用户和工作区设置</h2>
+<p>VSCode的扩展可以添加它们自己的配置，扩展添加的配置在Extenstions类目下。</p>
+<h2 id="-">键盘快捷键</h2>
+<p>Alt+Z切换自动换行。</p>
+<p>快捷键的设置保存在keybindings.json文件中。</p>
+<p>快捷键的数据结构：key，描述按键；command：描述要执行的任务。when(可选的)，描述快捷键生效条件。</p>
+<p>快捷键处理顺序是从底部到头部的，如果找到一个key和when都符合的规则，就执行该规则的command，不再继续查找。</p>
+<p>在打开keybindings.json时，按Cmd+K Cmd+K可以打开快捷键编辑弹框。</p>
+<h3 id="-">移除快捷键</h3>
+<p>在command的开头添加-即可移除该快捷键。</p>
+<pre><code class="lang-json"><div class="highlight"><pre>    <span class="p">{</span>
+        <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;cmd+r cmd+y&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;-workbench.action.tasks.runTask&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;args&quot;</span><span class="p">:</span> <span class="s2">&quot;listFile&quot;</span>
+    <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">命令参数</h3>
+<p>命令可以通过args传递参数对象。</p>
+<h3 id="when">when</h3>
+<p>when有四种运算符，==，!=，||，&amp;&amp;。</p>
+<p>可选条件：</p>
+<p>editorFocus</p>
+<p>editorTextFocus</p>
+<p>textInputFocus</p>
+<p>inputFocus</p>
+<p>editorHasSelection</p>
+<p>editorHasMultipleSelections</p>
+<p>editorReadonly</p>
+<p>editorLangId，eg：&quot;editorLangId == typescript&quot;</p>
+<p>OS相关：</p>
+<p>isLinux，isMac，isWindows，isWeb</p>
+<p>Mode相关</p>
+<p>isDebugMode，debugType（debugType==node），isSnippetMode，isQuickOpen。</p>
+<p>Resource相关：</p>
+<p>resourceSchema(eg：resourceSchema==file)，resourceFilename（resourceFileName == gulpfile.js），resourceExtname（resourceExtname==.js），resourceLangId(resourceLangId==markdown)，isFileSystemResource，resource（full uri）。</p>
+<p>可以使用任何的config的配置项，需要添加“config”的前缀。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;when&quot;</span><span class="err">:</span><span class="s2">&quot;config.editor.minimap.enabled&quot;</span>
+</pre></div>
+
+</code></pre>
+<p>key-value的属性时候，可以使用~字符串，代表以此开始。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;when&quot;</span><span class="err">:</span> <span class="s2">&quot;resourceFilename = ~/docker/&quot;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">语言包</h2>
+<p>VSCode默认只带英文语言包，其它语言需要安装语言包扩展。</p>
+<p>语言包的配置会写到argv.json文件中。</p>
+<p>以下命令可以以某个语言打开VSCode。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>code . --locale<span class="o">=</span>en
+</pre></div>
+
+</code></pre>
+<h2 id="-">隐私</h2>
+<h3 id="-">关闭数据上报</h3>
+<p>如果你不想上报你自己的使用数据，可以在配置文件中更改&quot;telemetry.enableTelemetry&quot;为false。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;telemetry.enableTelemetry&quot;</span><span class="err">:</span> <span class="kc">false</span>
+</pre></div>
+
+</code></pre>
+<p>如果你不想上报你的崩溃信息，可以在配置文件中将&quot;telemetry.enableCrashReporter&quot;改为false。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;templetry.enableCrashReporter&quot;</span><span class="err">:</span> <span class="kc">false</span>
+</pre></div>
+
+</code></pre>
+<p>扩展的数据上报，不会使用上述配置。</p>
+<h3 id="-">查看日志数据</h3>
+<p>output面板中选择日志类筛选框即可。也可以在telemetry.log中查看日志。</p>
+</body>
+</html>
