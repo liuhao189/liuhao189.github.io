@@ -1,0 +1,30 @@
+{
+	"For loop": {
+		"scope": "javascript,typescript",
+		"prefix": [
+			"for",
+			"for-const"
+		],
+		"body": [
+			"for (const ${2|element,item,part|} of ${1:array}) {",
+			"\t$LINE_COMMENT created at $CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND",
+			"\t$0",
+			"\tconsole.log('$TM_FILENAME');",
+			"\tconsole.log('$TM_DIRECTORY');",
+			"\tconsole.log('$TM_FILEPATH');",
+			"\tconsole.log('$WORKSPACE_NAME');",
+			"}"
+		],
+		"description": "A for loop"
+	},
+	"Comment Here": {
+		"prefix": [
+			"comment"
+		],
+		"body": [
+			"$BLOCK_COMMENT_START Hello World $BLOCK_COMMENT_END",
+			"${TM_FILENAME/(.*)\\..+$/This is  $1/ig}"
+		],
+		"description": "block comment here"
+	}
+}

@@ -16,7 +16,7 @@ VSCode在你正常退出时，会记住没有保存的文件内容。正常的�
 
 跨文件搜索时，排除和包括的文件可以使用glob配置。
 
-*匹配一个或多个字符，?匹配一个字符，**，匹配多个路径分隔符，{}，条件分组，eg:{**/*.html,**/*.txt},[]声明一个字符集合，eg:example.[0-9]
+*匹配一个或多个字符，? 匹配一个字符，**，匹配多个路径分隔符，{}，条件分组，eg:{**/*.html, **/*.txt}, []声明一个字符集合，eg:example.[0-9]
 
 ### 代码区域
 
@@ -44,15 +44,16 @@ typescript和javascript中使用 //#region 和 //#endregion
 
 你可以用下面的配置禁用这些。
 
-```json
+``` json
 "extensions.autoUpdate": false,
 "extensions.autoCheckUpdates": false
 ```
+
 ### 从VSIX安装扩展
 
 可以从VSIX本地文件安装扩展。
 
-```bash
+``` bash
 code --install-extension my-extension.vsix
 ```
 
@@ -60,7 +61,7 @@ code --install-extension my-extension.vsix
 
 在一个单文件夹工作区，可以在.vscode文件夹下创建一个extensions.json文件。
 
-```json
+``` json
 {
     "recommendations": [
         "ms-python.python"
@@ -72,7 +73,7 @@ code --install-extension my-extension.vsix
 
 可以使用以下配置不展示建议的扩展。
 
-```json
+``` json
 "extensions.showRecommendationsOnlyOnDemand": true,
 "extensions.ignoreRecommendations": true
 ```
@@ -101,7 +102,7 @@ Tab补全功能，只需按tab键，VSCode会将最好的建议插入到代码�
 
 此功能默认是关闭的。
 
-```json
+``` json
 "editor.tabCompletion": "off",
 "editor.tabCompletion": "on",
 "editor.tabCompletion": "onlySnippets"
@@ -113,10 +114,11 @@ Tab补全功能，只需按tab键，VSCode会将最好的建议插入到代码�
 
 配置使用editor.suggest.localityBonus。默认为false。
 
-```js
+``` js
 let id = 1;
-function loadInfo(infoId){
-    let info={};
+
+function loadInfo(infoId) {
+    let info = {};
     //type i shoule info,infoId,id
 }
 ```
@@ -145,7 +147,7 @@ Ctrl+_或 Ctrl+Shift+_ 可以在光标位置之间导航。
 
 自定义配置：
 
-```json
+``` json
 // "on", "off" "last"
 "breadcrumbs.filePath":"on",
 "breadcrumbs.symbolPath":"on",
@@ -160,7 +162,7 @@ Ctrl+_或 Ctrl+Shift+_ 可以在光标位置之间导航。
 
 操作：选中重复代码，选择在不同的scope里生成新方法。
 
-```js
+``` js
 //before
 function one(msg) {
     console.log(msg);
@@ -189,7 +191,7 @@ function newFunction(msg) {
 
 调试主要的配置在.vscode/launch.json中。
 
-```json
+``` json
     {
         "type": "node",
         "request": "launch",
@@ -251,7 +253,7 @@ launch配置的智能感知依赖于type属性的值。
 
 preLaunchTask配置的task会在launch之前执行。
 
-```json
+``` json
     "compounds": [
         {
             "name": "Server/Client",
@@ -268,7 +270,7 @@ preLaunchTask配置的task会在launch之前执行。
 
 位置配置：
 
-```json
+``` json
 //可选值："floating","docked","hidden"
 "debug.toolBarLocation":"floating"
 ```
@@ -277,10 +279,10 @@ preLaunchTask配置的task会在launch之前执行。
 
 记录点可以以非代码侵入的方式打印一些信息，{}内的内容会当做表达式被执行。
 
-```js
-const msg='Hello World';
+``` js
+const msg = 'Hello World';
 //add log point below
-let logPointStr='Message：{msg}'
+let logPointStr = 'Message：{msg}'
 ```
 
 #### 内置变量
@@ -293,7 +295,7 @@ VSCode支持在配置中变量插值的功能。
 
 2、${file}，当前打开的文件
 
-3、${env:Name}，环境变量Name的值。
+3、${env: Name}，环境变量Name的值。
 
 其它变量：[其它变量](https://code.visualstudio.com/docs/editor/variables-reference)
 
@@ -301,7 +303,7 @@ VSCode支持在配置中变量插值的功能。
 
 支持：windows，linux，osx。
 
-```json
+``` json
     "args": [
         "--windows"
     ],
@@ -316,13 +318,11 @@ VSCode支持在配置中变量插值的功能。
 
 可以在用户设置中添加launch字段，如果在工作区中包含了launch.json文件，那么用户设置中的launch字段会被忽略。
 
-
 ## 集成的终端
 
 快捷键Ctrl+`可以打开终端。
 
 快捷键Shift+Cmd+C可以打开外部的终端。
-
 
 ### 配置
 
@@ -338,7 +338,7 @@ VSCode支持在配置中变量插值的功能。
 
 可以Cmd+Shift+P打开命令面板，然后选择runSelectedText。
 
-```bash
+``` bash
 echo 'Hello World!';
 ```
 
@@ -348,14 +348,14 @@ echo 'Hello World!';
 
 如果你感觉到性能问题，可以使用"terminal.integrated.rendererType":"dom"配置来使用DOM渲染。
 
-```json
+``` json
 //canvas dom experimentalWebgl
 "terminal.integrated.rendererType" :"dom"
 ```
 
 另一个提升性能的小技巧是忽略GPU的黑名单。
 
-```bash
+``` bash
 code --ignore-gpu-blacklist
 ```
 
@@ -365,7 +365,7 @@ code --ignore-gpu-blacklist
 
 可以另存为工作区文件。工作区文件以.code-workspace为后缀，文件内容为json格式。
 
-```json
+``` json
 {
 	"folders": [
 		{
@@ -409,7 +409,6 @@ Task主要用于完成自动化任务。eg：lint，build，package，test，dep
 
 VSCode会在工作区内自动检测gulp，grunt，npm，ts，Jake的命令。后期会增加Maven和C#。
 
-
 ### 自定义任务
 
 并不是所有的Task会被自动检测出来，一些情况下需要自定义Task。
@@ -429,6 +428,149 @@ VSCode会在工作区内自动检测gulp，grunt，npm，ts，Jake的命令。�
 6、options，cwd，env，shell。
 
 7、runOptions，运行配置。
+
+## Snippets
+
+代码片段是可以使输入重复代码更加高效。eg：loop或条件语句。
+
+代码片段语法大致跟[TextMate sinppet syntax](https://macromates.com/manual/en/snippets)语法类似，除了不支持插值shell命令和\u。
+
+### 创建snippets
+
+创建snippets不用装插件，也不用写代码。
+
+创建以.code-snippets为后缀的文件名。
+
+``` js
+{
+    "For loop": {
+        "scope": "javascript,typescript",
+        "prefix": [
+            "for",
+            "for-const"
+        ],
+        "body": [
+            "for (const ${2:element} of ${1:array}) {",
+            "\t$0",
+            "}"
+        ],
+        "description": "A for loop"
+    }
+}
+```
+
+$num是占位符，从$1开始，$0是最后一个。${num:array}，array为默认名称。
+
+#### Snippet的作用范围
+
+单语言的用户自定义snippet可以以该语言为名称命名。eg：javascript.json
+
+多语言或用户自定义全局的snippet需要以.code-snippets为后缀，然后指定scope属性。
+
+项目范围：在.vscode文件夹下，新建一个以.code-snippets为后缀的文件，可以指定scope属性。
+
+#### Snippet语法
+
+body属性中有特定的方法来控制cursor和插入的文字。
+
+tabStops，$1，$2这种。
+
+placeholders，${1:foo}这种。
+
+choice，${1|one, two, three|}这种。
+
+variables，$name或${name:default}这种。变量包含编辑器相关，时间相关，语言相关(语言行注释，块注释)。
+
+``` json
+{
+	"For loop": {
+		"scope": "javascript,typescript",
+		"prefix": [
+			"for",
+			"for-const"
+		],
+		"body": [
+			"for (const ${2|element,item,part|} of ${1:array}) {",
+			"\t$0",
+			"\tconsole.log('$TM_FILENAME');",
+			"\tconsole.log('$TM_DIRECTORY');",
+			"\tconsole.log('$TM_FILEPATH');",
+			"\tconsole.log('$WORKSPACE_NAME');",
+			"}"
+		],
+		"description": "A for loop"
+    },
+
+    "Comment Here": {
+        "prefix":["comment"],
+        "body":[
+            "$BLOCK_COMMENT_START Hello World $BLOCK_COMMENT_END"
+        ],
+        "description": "block comment here"
+    }
+}
+```
+
+变量转换，变量转换允许你在变量插入之前进行处理。
+
+定义变量转换分三步：
+
+1、一个正则捕获文字。
+
+2、引用正则匹配组中的文字。
+
+3、传递给正则的选项。
+
+```json
+    "${TM_FILENAME/(.*)\\..+$/This is  $1/ig}"
+```
+
+#### snippets绑定快捷键
+
+```json
+    {
+        "key": "cmd+p cmd+i",
+        "command": "-editor.action.insertSnippet",
+        "when": "editorTextFocus",
+        "args": {
+             //"snippet": "console.log($1)$0",
+             "name": "Comment Here" //snippet or name
+        }
+    }
+```
+
+#### Emment
+
+使用自定义的Emment sinppets需要定义在一个snippets.json文件中。
+
+
+#### 命令行
+
+如果你想要快速打开一个文件，一个文件夹，可以执行code命令。
+
+```bash
+# -n 新开一个窗口 -w 等待窗口关闭后再返回 -d 打开对比框
+code index.html index2.html
+code .
+code -d index.html index2.html
+code -n -w
+```
+打开多个文件夹会创建一个工作区。
+
+使用-g参数，可以打开文件，并跳转到指定的行和字符。eg：code hello.go:2:5 -g
+
+
+#### 命令行管理插件
+
+主要是安装，卸载，禁用，展示版本，启用计划的API等。
+
+#### 使用URLS打开VSCode
+
+打开文件，并导航到特定的字符位置。vscode://file/users/liuhao/desktop/temp:10:6。
+
+
+
+
 
 
 
