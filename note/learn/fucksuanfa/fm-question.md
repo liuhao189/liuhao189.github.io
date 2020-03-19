@@ -28,8 +28,8 @@ function addStrings(num1, num2) {
     let num2Arr = num2.split('');
     let fromPrev = 0;
     for (let i = 1; i <= maxLen; ++i) {
-        let curr1 = Number.parseInt(num1Arr[i]) || 0;
-        let curr2 = Number.parseInt(num2Arr[i]) || 0;
+        let curr1 = Number.parseInt(num1Arr[maxLen - i]) || 0;
+        let curr2 = Number.parseInt(num2Arr[maxLen - i]) || 0;
         let sum = curr1 + curr2 + fromPrev;
         fromPrev = sum >= 10 ? 1 : 0;
         sum = sum >= 10 ? sum - 10 : sum;
@@ -164,6 +164,9 @@ function levelOrder(tree) {
             }
         })
         resArr.push(layerVals);
+        if (newLayerNodes.length) {
+            nodes.push(newLayerNodes);
+        }
     }
     return resArr;
 }
@@ -181,7 +184,6 @@ function levelOrder(tree) {
 var sortArray = function(nums) {
     if (!nums || !nums.length) return [];
     for (let i = 0; i < nums.length; ++i) {
-        let minIndex = i;
         for (let j = i + 1; j < nums.length; ++j) {
             if (nums[i] > nums[j]) {
                 let temp = nums[i];
@@ -214,6 +216,8 @@ function sortArray(nums) {
 ```
 
 ### 归并排序
+
+时间复杂度O(nlogn)，空间复杂度O(nlogn)。
 
 ``` js
 function sortArray(nums) {
@@ -301,7 +305,7 @@ function partion(nums, left, right) {
 ]
 输出: [1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7]
 
-```js
+``` js
 /**
  * @param {number[][]} matrix
  * @return {number[]}
@@ -346,18 +350,20 @@ function spiralOrder(matrix) {
 
 示例 1:
 
-输入: [7,1,5,3,6,4]
+输入: [7, 1, 5, 3, 6, 4]
 输出: 5
 解释: 在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+
      注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格。
+
 示例 2:
 
-输入: [7,6,4,3,1]
+输入: [7, 6, 4, 3, 1]
 输出: 0
 解释: 在这种情况下, 没有交易完成, 所以最大利润为 0。
 
-```js
-var maxProfit = function (prices) {
+``` js
+var maxProfit = function(prices) {
     if (!prices || !prices.length) return 0;
 
     let max = 0;
@@ -375,7 +381,7 @@ function maxProfit(prices) {
     let start = 0;
     let end = 0;
     let res = 0;
-    for (; end < prices.length; ++end) {
+    for (end = 1; end < prices.length; ++end) {
         if (prices[start] > prices[end]) {
             start = end;
         }
@@ -385,3 +391,4 @@ function maxProfit(prices) {
     return res;
 }
 ```
+
