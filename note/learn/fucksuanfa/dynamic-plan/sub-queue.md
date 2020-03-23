@@ -10,10 +10,6 @@
 
 最长递增子序列，因为这样符合归纳法，可以找到状态转移的关系。
 
-## 二维的dp数组
-
-这种思路运用相对更多一些，尤其是涉及到两个字符串/数组的子序列。eg：最长公共子序列。
-
 ```js
 var lengthOfLIS = function (nums) {
     if (!nums || !nums.length) return 0;
@@ -32,9 +28,13 @@ var lengthOfLIS = function (nums) {
 };
 ```
 
+## 二维的dp数组
+
+这种思路运用相对更多一些，尤其是涉及到两个字符串/数组的子序列。eg：最长公共子序列。
+
 ### 涉及两个字符串/数组时
 
-在子数组arr1[i]和子数组arr[j]中，我们要求的子序列长度为dp[i][j]。
+在子数组arr1[i]和子数组arr2[j]中，我们要求的子序列长度为dp[i][j]。
 
 最长公共子序列
 
@@ -107,9 +107,9 @@ var minDistance = function (word1, word2) {
             res = minDistanceHelper(i - 1, j - 1);
         } else {
             res = Math.min(
-                minDistanceHelper(i - 1, j - 1),
-                minDistanceHelper(i - 1, j),
-                minDistanceHelper(i, j - 1)
+                minDistanceHelper(i - 1, j - 1),//编辑
+                minDistanceHelper(i - 1, j),//删除
+                minDistanceHelper(i, j - 1)// 插入
             ) + 1;
         }
         cache[key] = res;
