@@ -21,7 +21,8 @@
   "devDependencies": {
     "chalk": "^3.0.0",
     "glob": "^7.1.6",
-    "markdown-to-html": "0.0.13"
+    "markdown-to-html": "0.0.13",
+    "three": "^0.130.1"
   },
   "dependencies": {
     "sass": "^1.24.4"

@@ -1,4 +1,4 @@
-const cacheNamePrefix = 'liuhao189';
+const cacheNamePrefix = 'beibianliu';
 
 const CACHE_TYPES = {
     ALWAYS_CACHE: 1,

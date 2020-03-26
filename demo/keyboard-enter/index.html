@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>测试改变keyborad的回车键文字</title>
+</head>
+
+<body>
+  <h1>Enter</h1>
+  <input type="text"
+    enterkeyhint="enter">
+
+  <h1>done</h1>
+  <input type="text"
+    enterkeyhint="done">
+
+  <h1>go</h1>
+  <input type="text"
+    enterkeyhint="go">
+
+  <h1>next</h1>
+  <input type="text"
+    enterkeyhint="next">
+
+  <h1>previous</h1>
+  <input type="text"
+    enterkeyhint="previous">
+
+  <h1>search</h1>
+  <input type="text"
+    enterkeyhint="search">
+
+  <h1>send</h1>
+  <input type="text"
+    enterkeyhint="send"
+    id="btnSend">
+
+  <script>
+    let btnSend = document.querySelector('#btnSend')
+    btnSend.addEventListener('keyup', (ev) => {
+      if (ev.keyCode === 13) {
+        alert('发送成功')
+      }
+    })
+  </script>
+  </form>
+</body>
+
+</html>

@@ -2,11 +2,15 @@
 
 ## 概述
 
-VSCode 创建之初，就以非常重视扩展性。几乎所有的部分都可以通过插件自定义和增强功能。实际上，许多VSCode 的核心功能都是通过插件实现的。
+VSCode创建之初，就非常重视插件。几乎所有的功能都可以通过插件自定义。实际上，许多VSCode的核心功能都是通过插件实现的。
 
 ## 插件能做什么
 
-改变 VS Code 的外观；增加自定义组件和视图；创建一个展示信息的 Webpage；支持一个新编程语言；支持特定的运行时调试。
+改变 VS Code 的外观；
+增加自定义组件和视图；
+创建一个展示信息的 Webpage；
+支持一个新编程语言；
+支持特定的运行时调试。
 
 ## 第一个插件
 
@@ -21,7 +25,7 @@ npm i -g yo generator-code
 yo code
 ```
 
-在新生成的编辑器内部，按F5键，VSCode 会新起一个插件开发模式的 VSCode 窗口运行你的插件。
+在新生成的编辑器内部，按F5键，VSCode 会新起一个“插件开发模式”的VSCode窗口运行你的插件。
 
 打开命令面板，执行 Hello World 命令，然后可以看到 Hello World 的通知弹框。
 
@@ -36,7 +40,7 @@ yo code
 		"onCommand:extension.helloWorld"
 	],
 ```
-注意，激活事件可以定义多个。
+注意，激活事件可以定义多个。多种条件下均可以激活插件。
 
 2、package.json 里面contributes.commands里定义“extension.helloWorld”。
 
@@ -50,11 +54,12 @@ yo code
 		]
 	}
 ```
+插件想 VSCode 注入了什么。可以注入配置，命令，菜单，快捷键，视图等。
 
-3、使用 commands.registerCommand 的 VS Code API 去注册一个方法。
+3、使用 commands.registerCommand(VSCode API 提供的一个方法)去注册一个方法去响应命令执行。
 
 ```ts
-let disposable = vscode.commands.registerCommand('extension.helloWorld', () => {      dd
+let disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
 		vscode.window.showErrorMessage('Hello World!');
 	});
 
@@ -73,7 +78,7 @@ package.json 中可以有VS Code 独有的字段。eg：publisher，activationEv
 
 2、main，插件的入口文件。
 
-3、activationEvents&&contributes，激活事件和功能列表。
+3、activationEvents&&contributes，激活事件和注入功能点列表。
 
 4、engines.vscode，最低的 VS Code API 版本。
 
@@ -87,7 +92,7 @@ package.json 中可以有VS Code 独有的字段。eg：publisher，activationEv
 
 你也可以将插件打包为 VSIX 格式的安装包，然后线下分发。
 
-VSIX 后缀可以改为 zip，可以解压缩查看文件信息。
+提示：VSIX 后缀可以改为 zip，可以解压缩查看文件信息。
 
 
 ### vsce
@@ -116,7 +121,7 @@ Note：因为安全因素，vsce 不会发布用户提供的 SVG 图片。
 
 VS Code 应用商店使用 Azure DevOps服务。vsce 使用[personal Access Tokens](https://docs.microsoft.com/azure/devops/integrate/get-started/authentication/pats) 来发布插件。 
 
-### 插件地址
+### 插件安装地址
 
 要装载插件，你需要将文件 copy 到.vscode/extensions 文件夹。
 
@@ -135,11 +140,11 @@ VS Code 应用商店使用 Azure DevOps服务。vsce 使用[personal Access Toke
 
 1、注册命令、配置、快捷键或右键菜单。
 
-2、存储工作区或全局的数据。
+2、存储工作区维度或全局维度的数据。
 
 3、显示通知消息。
 
-4、使用快速输入工具收集用户输入。
+4、使用快速输入弹框收集用户输入。
 
 5、打开系统文件选择器选择文件。
 
@@ -159,7 +164,7 @@ VS Code 应用商店使用 Azure DevOps服务。vsce 使用[personal Access Toke
 
 ### 声明语言能力
 
-该类型插件新增编程语言的基本编辑支持。eg：缩进，换行，高亮展示等。这些功能都是声明式的，不用写任何代码、。
+该类型插件为编程语言的基本编辑提供支持。eg：缩进，换行，高亮展示等。这些功能都是声明式的，不用写任何代码、。
 
 能力包括：
 
@@ -181,17 +186,17 @@ VS Code 应用商店使用 Azure DevOps服务。vsce 使用[personal Access Toke
 
 举例：
 
-1、hover 展示 API 使用方法的示例。
+1、hover展示API使用方法的示例。
 
-2、使用 diagnostics报告拼写或 linter 错误。
+2、使用diagnostics报告拼写或lint错误。
 
-3、注册一个新的HTML 的代码格式
+3、注册一个新的HTML的代码格式
 
 4、提供丰富的，上下文感知的智能提示。
 
 ### 工作台插件
 
-工作台插件更改 VS Code 的工作台 UI，或者创建自己的文件浏览组件。也可以使用 webview API 创建展示页面。
+工作台插件更改VS Code的工作台 UI，或者创建自己的文件浏览组件。也可以使用 webview API 创建展示页面。
 
 举例：
 
@@ -210,7 +215,7 @@ VS Code 应用商店使用 Azure DevOps服务。vsce 使用[personal Access Toke
 
 ### 调试
 
-调试功能插件可以连接运行时和 VS Code 的调试 UI。
+调试功能插件可以连接代码运行时和 VS Code 的调试 UI。
 
 插件想法：
 
@@ -232,6 +237,6 @@ VS Code 应用商店使用 Azure DevOps服务。vsce 使用[personal Access Toke
 
 ### 插件限制
 
-#### No DOM Access
-
 为了保证插件不会影响 VS Code 的性能和稳定性，插件没有权限访问 VS Code UI 的 DOM。
+
+

@@ -6,9 +6,6 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
-        "**/.npmrc": true,
-        "**/.gitignore": true,
-        "**/sw.js": true,
     },
     "files.associations": {
         ".database": "json"
@@ -47,5 +44,7 @@
     "breadcrumbs.icons": false,
     "breadcrumbs.symbolPath": "last",
     "breadcrumbs.enabled": false,
-    "emmet.extensionsPath": ".vscode"
+    "emmet.extensionsPath": [
+        ".vscode"
+    ]
 }

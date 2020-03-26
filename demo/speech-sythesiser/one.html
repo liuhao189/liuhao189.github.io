@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+        <title>Speech sythesiser Api</title>
+        <script>
+            function getVoices() {
+                return speechSynthesis.getVoices();
+            }
+
+            function initVoiceSelect() {
+                let start = performance.now();
+                let voices = speechSynthesis.getVoices();
+                let str = '';
+                for (let voiceItem of voices) {
+                    let voiceOptionStr = `<option selected='${voiceItem.default ? true : false}' data-lang='${voiceItem.lang}' data-name='${voiceItem.name}'>${voiceItem.name}(${voiceItem.lang})${voiceItem.default ? '--DEFAULT' : ''}</option>`;
+                    str += voiceOptionStr;
+                }
+                let selEl = document.querySelector('select[name="voice"]');
+                if (selEl) {
+                    selEl.innerHTML = str;
+                }
+                let end = performance.now();
+                console.log(end - start);
+            }
+            //
+            // console.log(performance.now());
+            speechSynthesis.onvoiceschanged = (ev) => {
+                console.log('voices changed')
+                // console.log(performance.now());
+            }
+
+            function speakMsg() {
+                debugger;
+                let msg = document.querySelector('textarea[name="msg"]').value;
+                let utter = new SpeechSynthesisUtterance(msg);
+                let voices = getVoices();
+                // let selEl = document.querySelector('select[name="voice"]');
+                // if (selEl && selEl.selectedOptions.length) {
+                //     let selVoiceName = selEl.selectedOptions[0].getAttribute('data-name');
+                //     let voice = voices.find((voiceItem) => voiceItem.name === selVoiceName);
+                //     if (voice) {
+                //         utter.voice = voice;
+                //     }
+                // }
+                //
+                let rate = Number.parseFloat(document.querySelector('#rate').value);
+                let pitch = Number.parseFloat(document.querySelector('#pitch').value);
+                utter.pitch = pitch;
+                utter.rate = rate;
+                // utter.volume = .5;
+                speechSynthesis.speak(utter);
+            }
+            //
+            window.addEventListener('load', (ev) => {
+                let btnGetVoices = document.querySelector('#btnGetVoices');
+                btnGetVoices.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ev.stopImmediatePropagation();
+                    initVoiceSelect();
+                });
+
+                let btnSpeak = document.querySelector('#btnSpeak');
+                btnSpeak.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ev.stopImmediatePropagation();
+                    speakMsg();
+                })
+            })
+
+        </script>
+        <style>
+            form {
+                width: 600px;
+                margin: 20px auto;
+            }
+
+            form textarea {
+                width: 100%;
+            }
+
+            form>div {
+                display: flex;
+                line-height: 30px;
+            }
+
+            form>div input,
+            form>div select {
+                margin-left: 15px;
+                flex: 1;
+            }
+
+            form>div button {
+                margin-right: 20px;
+                margin-top: 10px;
+                padding: 10px 12px;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="app">
+            <form>
+                <textarea name="msg"
+                    rows="5"></textarea>
+                <div>
+                    <label for="rate">Rate</label>
+                    <input type="range"
+                        id="rate"
+                        min=".5"
+                        max="5"
+                        value="1"
+                        step=".1"
+                        name="rate">1</input>
+                </div>
+                <div>
+                    <label for="pitch">Pitch</label>
+                    <input type="range"
+                        id="pitch"
+                        min=".5"
+                        max="5"
+                        value="1"
+                        name="pitch"
+                        step=".1" >1</input>
+                </div>
+                <div>
+                    <label>Voice</label>
+                    <select name="voice">
+
+                    </select>
+                </div>
+                <div>
+                    <button id="btnGetVoices">Get Voices</button>
+                    <button id="btnSpeak">Speak Voices</button>
+                </div>
+            </form>
+        </div>
+    </body>
+
+</html>

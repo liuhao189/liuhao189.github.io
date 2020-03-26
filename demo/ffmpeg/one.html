@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+        <title>FFMpeg Demo</title>
+    </head>
+
+    <body>
+        <div>
+            <input type="file"
+                id="fileInput" />
+            <select id="processType">
+                <option value="audio-only">提取音频</option>
+                <option value="compress">压缩大小</option>
+                <option value="format">转换格式</option>
+                <option value="capture">截图</option>
+                <option value="cut">裁剪视频</option>
+            </select>
+            <button id="btnProcess">Process</button>
+        </div>
+        <div id="msg"></div>
+        <script>
+            let msgEl = document.querySelector('#msg');
+            let worker = new Worker('worker.js');
+            worker.onmessage = function (ev) {
+                let msg = ev.data;
+                if (msg.type === 'ready') {
+                    msgEl.innerHTML = 'loaded';
+                    worker.postMessage({
+                        type: 'command',
+                        arguments: ['-help']
+                    })
+                } else if (msg.type === 'stdout') {
+                    msgEl.innerHTML += msg.data + '<br/>';
+                } else if (msg.type === 'start') {
+                    msgEl.innerHTML = 'worker has received command<br/>';
+                } else if (msg.type === 'done') {
+                    let results = msg.data;
+                    if (results && results.length) {
+                        console.log('结束时间：', new Date().getTime());
+                    }
+                    results.forEach(file => {
+                        getDownloadLink(file.data, file.name);
+                    });
+                }
+            }
+
+            function getDownloadLink(fileData, fileName) {
+                let a = document.createElement('a');
+                a.download = fileName;
+                let blob = new Blob([fileData]);
+                let src = window.URL.createObjectURL(blob);
+                a.href = src;
+                a.textContent = `Click here to download ${fileName}!`;
+                document.body.appendChild(a);
+            }
+        </script>
+        <script>
+            let btnProcessEl = document.querySelector('#btnProcess');
+            let fileInputEl = document.querySelector('#fileInput');
+            let processTypeEl = document.querySelector('#processType');
+            //
+            btnProcessEl.addEventListener('click', (ev) => {
+                if (fileInputEl && fileInputEl.files && fileInputEl.files.length) {
+                    let targetFile = fileInputEl.files[0];
+                    let reader = new FileReader();
+                    reader.onload = function (ev) {
+                        let arrBuf = ev.target.result;
+                        let uintArr = new Uint8Array(arrBuf);
+                        let seleVal = processTypeEl.value;
+                        let args = [];
+                        switch (seleVal) {
+                            case "encoders":
+                                args = ['-encoders'];
+                                break;
+                            case 'compress':
+                                args = ['-i', targetFile.name, '-s', '228x480', '-c:a', 'copy', 'output_small.mp4'];
+                                break;
+                            case "audio-only":
+                                args = ['-i', targetFile.name, '-vn', '-c:a', 'copy', 'output.aac'];
+                                break;
+                            case "format":
+                                args = ['-i', targetFile.name, '-c:a', 'copy', 'output.avi']
+                                break;
+                            case "capture":
+                                args = ['-i', targetFile.name, '-ss', '00:00:02', '-vframes', '1', 'output.jpg'];
+                                break;
+                            case "cut":
+                                args = ['-ss', '00:00:01', '-i', targetFile.name, '-t', '2', '-c', 'copy', 'cut.mp4']
+                                break;
+                        }
+                        let data = {
+                            files: [{
+                                data: uintArr,
+                                name: targetFile.name
+                            }],
+                            arguments: args
+                        }
+                        console.log(data.arguments.join(' '));
+                        console.log('开始时间：', new Date().getTime());
+                        worker.postMessage(data);
+                    };
+                    reader.readAsArrayBuffer(targetFile);
+                }
+            })
+        </script>
+    </body>
+
+</html>

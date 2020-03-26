@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible"
+    content="IE=edge">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>Three JS Learn</title>
+  <script src="./scripts/three.js"></script>
+  <script src="./scripts/GLTFLoader.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <script type="module">
+    import { VRButton } from './scripts/VRButton.js';
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
+    
+    let renderEl = VRButton.createButton(renderer);
+    debugger;
+    document.body.appendChild(renderEl);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const material = new THREE.LineBasicMaterial({ color: 'yellow' });
+    const points = [];
+    points.push(new THREE.Vector3(-10, 0, 0));
+    points.push(new THREE.Vector3(0, 10, 0));
+    points.push(new THREE.Vector3(10, 0, 0));
+    points.push(new THREE.Vector3(0, -10, 0))
+    points.push(new THREE.Vector3(-10, 0, 0))
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+
+    // const loader = new THREE.GLTFLoader();
+    // loader.load('./asserts/one.glb', function (gltf) {
+
+    //   const scene = new THREE.Scene();
+    //   scene.add(gltf.scene);
+
+    //   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 500);
+    //   camera.position.set(0, 0, 100);
+    //   camera.lookAt(0, 0, 0);
+
+    //   renderer.render(scene, camera);
+
+    // }, undefined, (err) => {
+    //   console.error(err);
+    // })
+
+  </script>
+  <script type="module">
+    // const renderer = new THREE.WebGLRenderer();
+    // renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 500);
+    // camera.position.set(0, 0, 20);
+    // camera.lookAt(0, 0, 0);
+
+    // const scene = new THREE.Scene();
+
+    // const material = new THREE.LineBasicMaterial({ color: 'yellow' });
+    // const points = [];
+    // points.push(new THREE.Vector3(-10, 0, 0));
+    // points.push(new THREE.Vector3(0, 10, 0));
+    // points.push(new THREE.Vector3(10, 0, 0));
+    // points.push(new THREE.Vector3(0, -10, 0))
+    // points.push(new THREE.Vector3(-10, 0, 0))
+
+    // const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    // const line = new THREE.Line(geometry, material);
+    // scene.add(line);
+
+    // document.body.appendChild(renderer.domElement);
+
+    // function animate() {
+    //   requestAnimationFrame(animate);
+    //   camera.position.z += 0.1;
+
+    //   renderer.render(scene, camera);
+    // }
+
+    // animate();
+
+  </script>
+  <script type="module">
+    // const scene = new THREE.Scene();
+    // const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // const renderer = new THREE.WebGLRenderer();
+    // renderer.setSize(window.innerWidth, window.innerHeight);
+    // document.body.appendChild(renderer.domElement);
+
+    // const geometry = new THREE.BoxGeometry();
+    // const material = new THREE.MeshBasicMaterial({ color: 'red' });
+    // const cube = new THREE.Mesh(geometry, material);
+    // scene.add(cube);
+    // camera.position.z = 5;
+
+    // function animate() {
+    //   requestAnimationFrame(animate);
+    //   cube.rotation.x += 0.01;
+    //   cube.rotation.y += 0.01;
+
+    //   // camera.position.z += 0.01;
+    //   renderer.render(scene, camera);
+    // }
+
+    // animate();
+
+  </script>
+</body>
+
+</html>

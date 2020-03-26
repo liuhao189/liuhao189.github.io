@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible"
+    content="IE=edge">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>查找子图片位置</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-container {
+      display: grid;
+      grid-template-columns: 2fr auto 1fr;
+      min-height: 150px;
+    }
+
+    .main-container_left,
+    .main-container_center {
+      border-right: 1px dashed #ddd;
+      overflow: auto;
+    }
+
+    .main-container_left,
+    .main-container_right {
+      padding: 12px;
+      overflow: auto;
+    }
+
+    canvas {
+      margin-top: 12px;
+    }
+
+    .main-container_center {
+      justify-items: center;
+      padding: 12px;
+    }
+  </style>
+  <script>
+    function getInputFirstFile(inputEl) {
+      if (!inputEl) return;
+
+      let files = inputEl.files || [];
+      return files[0];
+    }
+
+    async function getImageInfo(ev) {
+      if (!ev || !ev.target) return;
+
+      let imgFile = getInputFirstFile(ev.target);
+      if (!imgFile) return;
+
+      return new Promise((resolve, reject) => {
+
+        let reader = new FileReader();
+        reader.readAsDataURL(imgFile);
+        reader.onload = (ev) => {
+          let imgEl = document.createElement('img');
+          imgEl.src = ev.target.result;
+          imgEl.onload = (ev) => {
+            let imgEl = ev.target;
+            resolve({
+              width: imgEl.naturalWidth,
+              height: imgEl.naturalHeight,
+              imgEl: imgEl
+            });
+          }
+        }
+
+        reader.onerror = (err) => {
+          reject(ev);
+        }
+      })
+    }
+
+    function drawImageToCanvas(imgInfo, canvasEl) {
+      if (!imgInfo || !canvasEl) return;
+
+      let ctx = canvasEl.getContext('2d');
+
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, 1000000, 1000000);
+
+      let imgWidth = imgInfo.width;
+      let imgHeight = imgInfo.height;
+      canvasEl.width = imgWidth;
+      canvasEl.height = imgHeight;
+
+      ctx.drawImage(imgInfo.imgEl, 0, 0, imgWidth, imgHeight);
+
+    }
+
+    async function handleFileChanged(ev, type) {
+      try {
+        let imgInfo = await getImageInfo(ev);
+        if (!imgInfo) return;
+        let mainCanvas = document.querySelector('#mainImageCanvas');
+        let subCanvas = document.querySelector('#subImageCanvas');
+
+        const canvasEl = { main: mainCanvas, sub: subCanvas }[type];
+
+        drawImageToCanvas(imgInfo, canvasEl);
+
+        let mainLogEl = document.querySelector('#mainLog');
+        let subLogEl = document.querySelector('#subLog');
+        let logEl = { main: mainLogEl, sub: subLogEl }[type];
+        showImgInfo(logEl, imgInfo);
+
+      }
+      catch (ex) {
+        console.error(ex);
+      }
+    }
+
+    function getCanvasImageData(canvasEl) {
+      if (!canvasEl || !canvasEl.width || !canvasEl.height) return null;
+      let ctx = canvasEl.getContext('2d');
+
+      return ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+    }
+
+    function showError(msg) {
+      if (!msg) return;
+      alert(msg);
+    }
+
+    function showPreCheckError(msg) {
+      showError(`前置校验错误：${msg}`)
+    }
+
+    function showImgInfo(el, info) {
+      if (!el || !info) return;
+
+      el.innerText = `width：${info.width}，height：${info.height}`
+    }
+
+    function showFindInfo(el, info) {
+      if (!el || !info) return;
+
+      el.innerText = `x：${info.x}，y：${info.y}`;
+    }
+
+
+    window.addEventListener('load', () => {
+      let mainImageInputEl = document.querySelector('#mainImageInput');
+      let subImageInputEl = document.querySelector('#subImageInput');
+
+      mainImageInputEl.addEventListener('change', (ev) => {
+        handleFileChanged(ev, 'main');
+      })
+
+      subImageInputEl.addEventListener('change', (ev) => {
+        handleFileChanged(ev, 'sub');
+      })
+
+      let btnFind = document.querySelector('#btnFind');
+
+      btnFind.addEventListener('click', (ev) => {
+        let mainCanvas = document.querySelector('#mainImageCanvas');
+        let subCanvas = document.querySelector('#subImageCanvas');
+
+        let mainImageData = getCanvasImageData(mainCanvas);
+        let subImageData = getCanvasImageData(subCanvas);
+        if (!mainImageData) {
+          showPreCheckError(`请选择主图`);
+          return;
+        }
+        if (!subImageData) {
+          showPreCheckError(`请选择子图`)
+          return;
+        }
+
+        if (mainImageData.width < subImageData.width || mainImageData.height < subImageData.height) {
+          showPreCheckError(`主图尺寸小于子图`);
+          return;
+        }
+
+
+        let findInfo = findSubImage(mainImageData, subImageData);
+
+        showFindInfo(document.querySelector('#findLog'), findInfo);
+
+      });
+
+    })
+
+    function findSubImage(mainImgData, subImgData) {
+      if (!mainImgData || !subImgData) return null;
+      let data = mainImgData.data;
+      let mainPreLineLen = mainImgData.width * 4;
+      let mainImgHeight = data.length / mainPreLineLen;
+
+      let subData = subImgData.data;
+      let subDataLen = subData.length;
+      let subPreLineLen = subImgData.width * 4;
+      let subImgHeight = subDataLen / subPreLineLen;
+
+      let isFound = false;
+      let startIndex;
+      let maxSameCount = 0;
+
+      for (let i = 0; i < data.length; i = i + 4) {
+        let mainIndex = i;
+        let sameCount = 0;
+        let diffCount = 0;
+        if ((mainIndex % mainPreLineLen) + subPreLineLen - 1 > mainPreLineLen) {
+          continue;
+        }
+
+        if (mainIndex + mainPreLineLen * (subImgHeight - 1) > data.length) {
+          break;
+        }
+
+        for (let j = 0; j < subDataLen; ++j) {
+          if (j > 0 && j % subPreLineLen === 0) {
+            //move to next line
+            mainIndex = mainIndex + mainPreLineLen - subPreLineLen;
+            if (mainIndex > data.length || mainIndex < 0) {
+              break;
+            }
+          }
+          if (Math.abs(data[mainIndex] - subData[j]) < 10) {
+            mainIndex++;
+            sameCount++;
+          } else {
+            break;
+            // diffCount++;
+            // mainIndex++;
+          }
+
+          // if (diffCount > subDataLen / 20) {
+          //   break;
+          // }
+
+          if (j === subDataLen - 1) {
+            isFound = true;
+          }
+        }
+
+        maxSameCount = Math.max(maxSameCount, sameCount);
+
+        if (isFound) {
+          startIndex = i;
+          break;
+        }
+      }
+
+      console.log(`SameCount is ${maxSameCount}`)
+
+      if (typeof startIndex === 'number') {
+        console.log(`StartIndex is ${startIndex}`);
+
+        let y = Math.ceil(startIndex / mainPreLineLen);
+        let x = (startIndex % mainPreLineLen) / 4;
+
+        return {
+          x: x,
+          y: y
+        }
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div id="app">
+    <div class="main-container">
+      <div class="main-container_left">
+        <h2>主图</h2>
+        <div><input type="file"
+            accept="image/*"
+            id="mainImageInput" /></div>
+        <div id="mainLog"></div>
+        <canvas width="0"
+          height="0"
+          id="mainImageCanvas"></canvas>
+      </div>
+
+      <div class="main-container_center">
+        <button id="btnFind">查找</button>
+        <div id="findLog"></div>
+      </div>
+
+      <div class="main-container_right">
+        <h2>子图</h2>
+        <div><input type="file"
+            accept="image/*"
+            id="subImageInput" /></div>
+        <div id="subLog"></div>
+        <canvas width="0"
+          height="0"
+          id="subImageCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
