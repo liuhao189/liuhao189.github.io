@@ -34,41 +34,6 @@ function longestPalindrome(s) {
     }
     return res;
 }
-//动态规划法，时间复杂度一样，但是空间复杂度至少O(N^2)来存储DP Table。没有经过验证。。。
-var longestPalindrome = function (s) {
-    if (!s) return '';
-    let cache = {};
-
-    function helper(left, right) {
-        if (left === right) return s[left];
-        if (left > right) return '';
-        let key = `L${left}R${right}`;
-        if (cache[key] !== undefined) {
-            return cache[key];
-        }
-        let res = '';
-        let currLeft = left;
-        let currRight = right;
-        while (currLeft < currRight) {
-            if (s[currLeft] === s[currRight]) {
-                currLeft++;
-                currRight--;
-            } else {
-                let rightBack = helper(left, right - 1);
-                let leftNext = helper(left + 1, right);
-                res = leftNext.length > rightBack.length ? leftNext : rightBack;
-                break;
-            }
-        }
-        if (currLeft >= currRight) {
-            res = s.slice(left, right + 1);
-        }
-        cache[key] = res;
-        return res;
-    }
-
-    return helper(0, s.length - 1);
-};
 ```
 
 这道题是少有的动态规划非最优解法的问题。
