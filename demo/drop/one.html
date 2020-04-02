@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>One</title>
+    <script>
+        window.addEventListener('load', () => {
+            const ele = document.getElementById('p1');
+            ele.addEventListener('dragstart', (ev) => {
+                // let img = new Image();
+                // img.src = "https://img-oss.stage.yunshanmeicai.com/cem/7529702175851-102354-61440";
+                // ev.dataTransfer.setDragImage(img, 100, 100);
+                ev.dataTransfer.dropEffect = "link";
+                ev.dataTransfer.setData('text/palin', ev.target.id)
+                ev.dataTransfer.setData('text/html', ev.target.outerHTML);
+                ev.dataTransfer.setData('text/uri-list', ev.target.ownerDocument.location.href);
+            });
+        })
+
+        function drageOverHandler(ev) {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+        }
+
+        function ondropHandler(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getDate('text/palin');
+            ev.target.appendChild(document.getElementById(data));
+        }
+    </script>
+    <style>
+        #target {
+            width: 100%;
+            height: 500px;
+            background-color: #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <p id="p1"
+        draggable="true">This element is draggable.</p>
+    <div id="target"
+        dropzone="move"
+        ondrop="ondropHandler"
+        ondragover="drageOverHandler">Drop Zone</div>
+</body>
+
+</html>

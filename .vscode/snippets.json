@@ -1,0 +1,12 @@
+{
+    "html": {
+        "snippets": {
+            "ull": "<ul><li></li></ul>"
+        }
+    },
+    "css": {
+        "snippets": {
+            "cb": "color: black"
+        }
+    }
+}
