@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>Drag And Drop</title>
+  <style>
+    #p1 {
+      width: 100%;
+      height: 30px;
+      font-size: 22px;
+      line-height: 30px;
+    }
+
+    #target {
+      height: 500px;
+      padding: 15px;
+      background-color: #ddd;
+      border: 1px dashed #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <p id="p1"
+      draggable="true">This element is draggable.</p>
+    <div id="target">
+
+    </div>
+  </div>
+  <script>
+    let pEl = document.querySelector('#p1');
+    pEl.addEventListener('dragstart', (ev) => {
+      ev.dataTransfer.setData('text/plain', ev.target.id);
+      ev.dataTransfer.setData('text/html', ev.target.innerHTML);
+      ev.dataTransfer.setData('text/custom', 'Hello custom message!');
+      ev.dataTransfer.dropEffect = "link";
+    })
+    //
+    let targetEl = document.querySelector('#target');
+    targetEl.addEventListener('dragover', (ev) => {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      ev.target.style.borderWidth = "10px"
+    })
+    targetEl.addEventListener('drop', (ev) => {
+      ev.preventDefault();
+      let msg = ev.dataTransfer.getData('text/custom');
+      ev.target.innerText += msg;
+      ev.target.innerHTML += '<br/>';
+      ev.target.style.borderWidth = "1px"
+    })
+  </script>
+</body>
+
+</html>

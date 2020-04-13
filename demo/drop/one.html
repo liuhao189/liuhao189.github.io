@@ -8,16 +8,29 @@
     <title>One</title>
     <script>
         window.addEventListener('load', () => {
-            const ele = document.getElementById('p1');
-            ele.addEventListener('dragstart', (ev) => {
-                // let img = new Image();
-                // img.src = "https://img-oss.stage.yunshanmeicai.com/cem/7529702175851-102354-61440";
-                // ev.dataTransfer.setDragImage(img, 100, 100);
-                ev.dataTransfer.dropEffect = "link";
-                ev.dataTransfer.setData('text/palin', ev.target.id)
-                ev.dataTransfer.setData('text/html', ev.target.outerHTML);
-                ev.dataTransfer.setData('text/uri-list', ev.target.ownerDocument.location.href);
-            });
+            const items = document.querySelectorAll('#sourceList li');
+            for (let item of items) {
+                item.addEventListener('dragstart', (ev) => {
+                    ev.dataTransfer.dropEffect = "link";
+                    ev.dataTransfer.setData('text/palin', ev.target.id)
+                });
+            }
+            let targetEl = document.querySelector('#target .list');
+            targetEl.addEventListener('drop', (ev) => {
+                ondropHandler(ev);
+            })
+            targetEl.addEventListener('dragover', (ev) => {
+                drageOverHandler(ev);
+            })
+
+            let sourceEl = document.querySelector('#source .list');
+            sourceEl.addEventListener('drop', (ev) => {
+                ondropHandler(ev);
+            })
+            sourceEl.addEventListener('dragover', (ev) => {
+                drageOverHandler(ev);
+            })
+
         })
 
         function drageOverHandler(ev) {
@@ -27,27 +40,86 @@
 
         function ondropHandler(ev) {
             ev.preventDefault();
-            const data = ev.dataTransfer.getDate('text/palin');
+            const data = ev.dataTransfer.getData('text/palin');
             ev.target.appendChild(document.getElementById(data));
+            ev.target.parentNode.style.borderWidth = "1px";
         }
+
+        CSS.paintWorklet.addModule('./paint.js')
+
+
+        document.addEventListener("dragleave", function (event) {
+            // 当拖动元素离开可放置目标节点，重置其背景
+            if (event.target.className == "list") {
+                event.target.parentNode.style.borderWidth = "1px";
+            }
+
+        }, false);
+
+        document.addEventListener("dragenter", function (event) {
+            // 当可拖动的元素进入可放置的目标高亮目标节点
+            if (event.target.className == "list") {
+                event.target.parentNode.style.borderWidth = "10px";
+            }
+
+        }, false);
     </script>
     <style>
-        #target {
+        .area {
             width: 100%;
             height: 500px;
-            background-color: #ddd;
+            background-image: #ccc;
+            border: 1px dashed #ddd;
             border-radius: 5px;
+            padding: 15px;
+            margin-right: 15px;
+        }
+
+        #app {
+            display: flex;
+        }
+
+        #app>div {
+            flex: 0;
+            flex-basis: 300px;
+        }
+
+        #app .list {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .list li {
+            cursor: move;
         }
     </style>
 </head>
 
 <body>
-    <p id="p1"
-        draggable="true">This element is draggable.</p>
-    <div id="target"
-        dropzone="move"
-        ondrop="ondropHandler"
-        ondragover="drageOverHandler">Drop Zone</div>
+    <div id="app">
+        <div id="source"
+            class="area">Source
+            <ul id="sourceList"
+                class="list">
+                <li id="item1"
+                    draggable="true">One</li>
+                <li id="item2"
+                    draggable="true">Two</li>
+                <li id="item3"
+                    draggable="true">Three</li>
+                <li id="item4"
+                    draggable="true">Four</li>
+            </ul>
+        </div>
+        <div id="target"
+            dropzone="move"
+            class="area">Target
+            <ul id="targetList"
+                class="list">
+
+            </ul>
+        </div>
+    </div>
 </body>
 
 </html>
