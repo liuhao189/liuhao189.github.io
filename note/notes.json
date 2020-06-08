@@ -1,1 +1,97 @@
-[{"sourceFilePath":"note\\algorithm\\childqueue.md","link":"/note/dist/childqueue.html","name":"子序列问题通用思路"},{"sourceFilePath":"note\\algorithm\\childresult.md","link":"/note/dist/childresult.html","name":"最优子结构"},{"sourceFilePath":"note\\algorithm\\dataalgorithmbasethink.md","link":"/note/dist/dataalgorithmbasethink.html","name":"数据结构和算法的基础思考"},{"sourceFilePath":"note\\algorithm\\dp1.md","link":"/note/dist/dp1.html","name":"动态规划一"},{"sourceFilePath":"note\\algorithm\\dp2.md","link":"/note/dist/dp2.html","name":"动态规划二"},{"sourceFilePath":"note\\algorithm\\dp3.md","link":"/note/dist/dp3.html","name":"动态规划三"},{"sourceFilePath":"note\\algorithm\\dropeggs.md","link":"/note/dist/dropeggs.html","name":"高楼扔鸡蛋问题"},{"sourceFilePath":"note\\algorithm\\twopartfind.md","link":"/note/dist/twopartfind.html","name":"二分查找细节详解"},{"sourceFilePath":"note\\algorithm\\wisequestion.md","link":"/note/dist/wisequestion.html","name":"脑筋急转弯题目"},{"sourceFilePath":"note\\develop\\jenkinsdoc.md","link":"/note/dist/jenkinsdoc.html","name":"Jenkins官方文档笔记"},{"sourceFilePath":"note\\develop\\jenkinslearn.md","link":"/note/dist/jenkinslearn.html","name":"Jenkins和持续集成环境"},{"sourceFilePath":"note\\fework\\serviceWorkerCache.md","link":"/note/dist/serviceWorkerCache.html","name":"Service-Worker缓存实践"},{"sourceFilePath":"note\\learn\\femicroservice.md","link":"/note/dist/femicroservice.html","name":"微前端工程实现"},{"sourceFilePath":"note\\learn\\gridLayout.md","link":"/note/dist/gridLayout.html","name":"CSS网格布局"},{"sourceFilePath":"note\\learn\\IntersectionObserver.md","link":"/note/dist/IntersectionObserver.html","name":"Intersection Observer"},{"sourceFilePath":"note\\learn\\singleSpa.md","link":"/note/dist/singleSpa.html","name":"single-spa学习笔记"},{"sourceFilePath":"note\\learn\\vsCodePlugin.md","link":"/note/dist/vsCodePlugin.html","name":"VSCode 插件"},{"sourceFilePath":"note\\learn\\webcomponent.md","link":"/note/dist/webcomponent.html","name":"Web Components 入门实例教程"},{"sourceFilePath":"note\\learn\\webrtc.md","link":"/note/dist/webrtc.html","name":"WebRTC协议简介"},{"sourceFilePath":"note\\softquality\\cache-downgrade-limit.md","link":"/note/dist/cache-downgrade-limit.html","name":"降级、限流、熔断"},{"sourceFilePath":"note\\softquality\\career-plan.md","link":"/note/dist/career-plan.html","name":"职业规划"},{"sourceFilePath":"note\\softquality\\data-tracer.md","link":"/note/dist/data-tracer.html","name":"数据埋点的基础认识"},{"sourceFilePath":"note\\softquality\\do-less-things.md","link":"/note/dist/do-less-things.html","name":"做事要学会做减法"},{"sourceFilePath":"note\\softquality\\fault-availability-disaster.md","link":"/note/dist/fault-availability-disaster.html","name":"容错、高可用、灾备"},{"sourceFilePath":"note\\softquality\\human-resources-check.md","link":"/note/dist/human-resources-check.html","name":"人才盘点"},{"sourceFilePath":"note\\softquality\\jinzita-biz-show.md","link":"/note/dist/jinzita-biz-show.html","name":"金字塔原理"},{"sourceFilePath":"note\\softquality\\mind-mapping-think.md","link":"/note/dist/mind-mapping-think.html","name":"思维导图"},{"sourceFilePath":"note\\softquality\\okr-trouble.md","link":"/note/dist/okr-trouble.html","name":"OKR实施困境和解决方案"},{"sourceFilePath":"note\\softquality\\pay-design.md","link":"/note/dist/pay-design.html","name":"薪酬思考"},{"sourceFilePath":"note\\softquality\\performance-interview.md","link":"/note/dist/performance-interview.html","name":"如何做好绩效面谈"},{"sourceFilePath":"note\\softquality\\sixpage.md","link":"/note/dist/sixpage.html","name":"对Six-Page思考"},{"sourceFilePath":"note\\softquality\\xuanyongyuliu.md","link":"/note/dist/xuanyongyuliu.html","name":"选用育留用心打造优秀团队"},{"sourceFilePath":"note\\think\\pwaThink.md","link":"/note/dist/pwaThink.html","name":"我理解的PWA"},{"sourceFilePath":"note\\think\\visual-data-tracer.md","link":"/note/dist/visual-data-tracer.html","name":"可视化埋点思考"},{"sourceFilePath":"note\\vscode\\doc\\learn.md","link":"/note/dist/learn.html","name":"VSCode使用教程"},{"sourceFilePath":"note\\vscode\\doc\\user-guide.md","link":"/note/dist/user-guide.html","name":"用户指导"}]
+[
+    {
+        "sourceFilePath": "note\\develop\\jenkinsdoc.md",
+        "link": "/note/dist/jenkinsdoc.html",
+        "name": "Jenkins官方文档笔记"
+    },
+    {
+        "sourceFilePath": "note\\develop\\jenkinslearn.md",
+        "link": "/note/dist/jenkinslearn.html",
+        "name": "Jenkins和持续集成环境"
+    },
+    {
+        "sourceFilePath": "note\\fework\\serviceWorkerCache.md",
+        "link": "/note/dist/serviceWorkerCache.html",
+        "name": "Service-Worker缓存实践"
+    },
+    {
+        "sourceFilePath": "note\\learn\\femicroservice.md",
+        "link": "/note/dist/femicroservice.html",
+        "name": "微前端工程实现"
+    },
+    {
+        "sourceFilePath": "note\\learn\\gridLayout.md",
+        "link": "/note/dist/gridLayout.html",
+        "name": "CSS网格布局"
+    },
+    {
+        "sourceFilePath": "note\\learn\\IntersectionObserver.md",
+        "link": "/note/dist/IntersectionObserver.html",
+        "name": "Intersection Observer"
+    },
+    {
+        "sourceFilePath": "note\\learn\\singleSpa.md",
+        "link": "/note/dist/singleSpa.html",
+        "name": "single-spa学习笔记"
+    },
+    {
+        "sourceFilePath": "note\\learn\\vsCodePlugin.md",
+        "link": "/note/dist/vsCodePlugin.html",
+        "name": "VSCode 插件"
+    },
+    {
+        "sourceFilePath": "note\\learn\\webcomponent.md",
+        "link": "/note/dist/webcomponent.html",
+        "name": "Web Components 入门实例教程"
+    },
+    {
+        "sourceFilePath": "note\\learn\\webrtc.md",
+        "link": "/note/dist/webrtc.html",
+        "name": "WebRTC协议简介"
+    },
+    {
+        "sourceFilePath": "note\\softquality\\cache-downgrade-limit.md",
+        "link": "/note/dist/cache-downgrade-limit.html",
+        "name": "降级、限流、熔断"
+    },
+    {
+        "sourceFilePath": "note\\softquality\\data-tracer.md",
+        "link": "/note/dist/data-tracer.html",
+        "name": "数据埋点的基础认识"
+    },
+    {
+        "sourceFilePath": "note\\softquality\\do-less-things.md",
+        "link": "/note/dist/do-less-things.html",
+        "name": "做事要学会做减法"
+    },
+    {
+        "sourceFilePath": "note\\softquality\\fault-availability-disaster.md",
+        "link": "/note/dist/fault-availability-disaster.html",
+        "name": "容错、高可用、灾备"
+    },
+    {
+        "sourceFilePath": "note\\softquality\\jinzita-biz-show.md",
+        "link": "/note/dist/jinzita-biz-show.html",
+        "name": "金字塔原理"
+    },
+    {
+        "sourceFilePath": "note\\softquality\\mind-mapping-think.md",
+        "link": "/note/dist/mind-mapping-think.html",
+        "name": "思维导图"
+    },
+    {
+        "sourceFilePath": "note\\softquality\\sixpage.md",
+        "link": "/note/dist/sixpage.html",
+        "name": "对Six-Page思考"
+    },
+    {
+        "sourceFilePath": "note\\think\\pwaThink.md",
+        "link": "/note/dist/pwaThink.html",
+        "name": "我理解的PWA"
+    },
+    {
+        "sourceFilePath": "note\\vscode\\doc\\learn.md",
+        "link": "/note/dist/learn.html",
+        "name": "VSCode使用教程"
+    }
+]

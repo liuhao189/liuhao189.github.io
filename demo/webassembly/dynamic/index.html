@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>Shard Memory and Table</title>
+    <script>
+        function getInstance(url, importObject) {
+            return fetch(url).then(res => res.arrayBuffer()).then(bytes => {
+                return WebAssembly.instantiate(bytes, importObject);
+            }).then(result => {
+                return result.instance.exports;
+            })
+        }
+
+        let importObject = {
+            js: {
+                memory: new WebAssembly.Memory({ initial: 1 }),
+                table: new WebAssembly.Table({ initial: 1, element: 'anyfunc' })
+            }
+        }
+
+        Promise.all([getInstance('./shared0.wasm', importObject),
+        getInstance('./shared1.wasm', importObject)]).then(resultArr => {
+            console.log(resultArr[1].doIt());
+        })
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>
