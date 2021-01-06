@@ -11,7 +11,7 @@ const SWUtils = (function (SWUtils) {
 
   const defaultConfig = {
     useSW: true,
-    swUrl: 'sw.js?version=' + new Date().getTime(),
+    swUrl: 'sw.js',
     cacheSpaceThreshold: 1024 * 1024 * 3,
     onRemainSpaceReachThresholded: () => { },
     checkSpaceTimeout: 3000,
