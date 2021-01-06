@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>SW支持测试</title>
+</head>
+
+<body>
+  <h1>log信息</h1>
+  <div id="app"></div>
+  <script>
+    let appEl = document.querySelector('#app');
+    function log(msg) {
+      appEl.innerHTML = `${appEl.innerHTML}<p>${msg}</p>`
+    }
+    if (navigator.serviceWorker) {
+      log('support service worker')
+    }
+
+    log(`UA：${navigator.userAgent}`);
+
+    if (navigator.storage) {
+      if (navigator.storage.estimate) {
+        navigator.storage.estimate().then(res => {
+          let quota = res.quota / 1024 / 1024;
+          let used = res.usage / 1024 / 1024;
+          log(`quota ${quota.toFixed(2)}Mb`)
+          log(`used ${used.toFixed(2)}Mb`)
+        })
+      }
+    }
+
+  </script>
+</body>
+
+</html>
