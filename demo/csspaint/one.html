@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+        <title>CSS Paint API</title>
+        <script>
+            document.documentElement.style.setProperty('--user-name', 'liuhao');
+            document.documentElement.style.setProperty('--user-code', '654321')
+            CSS.paintWorklet.addModule('./paint.js');
+        </script>
+        <style>
+            #app {
+                height: 400px;
+                background-image: paint(myPaintImage);
+                border: 1px dashed #ddd;
+                background-repeat: repeat;
+                background-size: 10% 10%;
+                padding: 15px;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="app"></div>
+    </body>
+
+</html>

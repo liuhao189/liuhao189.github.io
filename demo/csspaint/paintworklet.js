@@ -18,6 +18,7 @@ limitations under the License.
 registerPaint('ripple', class {
   static get inputProperties() { return ['background-color', '--ripple-color', '--animation-tick', '--ripple-x', '--ripple-y']; }
   paint(ctx, geom, properties) {
+    debugger;
     const bgColor = properties.get('background-color').toString();
     const rippleColor = properties.get('--ripple-color').toString();
     const x = parseFloat(properties.get('--ripple-x').toString());
