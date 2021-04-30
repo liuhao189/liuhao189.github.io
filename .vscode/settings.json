@@ -47,5 +47,7 @@
     "breadcrumbs.icons": false,
     "breadcrumbs.symbolPath": "last",
     "breadcrumbs.enabled": false,
-    "emmet.extensionsPath": ".vscode"
+    "emmet.extensionsPath": [
+        ".vscode"
+    ]
 }
