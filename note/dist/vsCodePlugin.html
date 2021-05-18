@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>VSCode</title>
+  <title>VSCode 插件</title>
   <link rel="stylesheet" href="/note/note.css">
 </head>
 <body>
 <h1 id="vscode-">VSCode 插件</h1>
 <h2 id="-">概述</h2>
-<p>VSCode 创建之初，就以非常重视扩展性。几乎所有的部分都可以通过插件自定义和增强功能。实际上，许多VSCode 的核心功能都是通过插件实现的。</p>
+<p>VSCode创建之初，就非常重视插件。几乎所有的功能都可以通过插件自定义。实际上，许多VSCode的核心功能都是通过插件实现的。</p>
 <h2 id="-">插件能做什么</h2>
-<p>改变 VS Code 的外观；增加自定义组件和视图；创建一个展示信息的 Webpage；支持一个新编程语言；支持特定的运行时调试。</p>
+<p>改变 VS Code 的外观；<br>增加自定义组件和视图；<br>创建一个展示信息的 Webpage；<br>支持一个新编程语言；<br>支持特定的运行时调试。</p>
 <h2 id="-">第一个插件</h2>
 <p>插件开发依赖Node.js和Git，请先安装Node.js和Git。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">i</span> <span class="o">-</span><span class="nx">g</span> <span class="nx">yo</span> <span class="nx">generator</span><span class="o">-</span><span class="nx">code</span>
@@ -20,7 +20,7 @@
 <pre><code><div class="highlight"><pre><span class="nx">yo</span> <span class="nx">code</span>
 </pre></div>
 
-</code></pre><p>在新生成的编辑器内部，按F5键，VSCode 会新起一个插件开发模式的 VSCode 窗口运行你的插件。</p>
+</code></pre><p>在新生成的编辑器内部，按F5键，VSCode 会新起一个“插件开发模式”的VSCode窗口运行你的插件。</p>
 <p>打开命令面板，执行 Hello World 命令，然后可以看到 Hello World 的通知弹框。</p>
 <h3 id="-">插件剖析</h3>
 <p>这个插件干了三件事：</p>
@@ -31,7 +31,7 @@
 </pre></div>
 
 </code></pre>
-<p>注意，激活事件可以定义多个。</p>
+<p>注意，激活事件可以定义多个。多种条件下均可以激活插件。</p>
 <p>2、package.json 里面contributes.commands里定义“extension.helloWorld”。</p>
 <pre><code class="lang-json"><div class="highlight"><pre><span class="s2">&quot;contributes&quot;</span><span class="err">:</span> <span class="p">{</span>
         <span class="nt">&quot;commands&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -44,8 +44,9 @@
 </pre></div>
 
 </code></pre>
-<p>3、使用 commands.registerCommand 的 VS Code API 去注册一个方法。</p>
-<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">disposable</span> <span class="o">=</span> <span class="nx">vscode</span><span class="p">.</span><span class="nx">commands</span><span class="p">.</span><span class="nx">registerCommand</span><span class="p">(</span><span class="s1">&#39;extension.helloWorld&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>      <span class="nx">dd</span>
+<p>插件想 VSCode 注入了什么。可以注入配置，命令，菜单，快捷键，视图等。</p>
+<p>3、使用 commands.registerCommand(VSCode API 提供的一个方法)去注册一个方法去响应命令执行。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">disposable</span> <span class="o">=</span> <span class="nx">vscode</span><span class="p">.</span><span class="nx">commands</span><span class="p">.</span><span class="nx">registerCommand</span><span class="p">(</span><span class="s1">&#39;extension.helloWorld&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
         <span class="nx">vscode</span><span class="p">.</span><span class="nb">window</span><span class="p">.</span><span class="nx">showErrorMessage</span><span class="p">(</span><span class="s1">&#39;Hello World!&#39;</span><span class="p">);</span>
     <span class="p">});</span>
 
@@ -59,14 +60,14 @@
 <p>比较重要的字段：</p>
 <p>1、name&amp;&amp;publisher，VS Code 使用&lt;publisher&gt;.&lt;name&gt;作为插件的唯一id。</p>
 <p>2、main，插件的入口文件。</p>
-<p>3、activationEvents&amp;&amp;contributes，激活事件和功能列表。</p>
+<p>3、activationEvents&amp;&amp;contributes，激活事件和注入功能点列表。</p>
 <p>4、engines.vscode，最低的 VS Code API 版本。</p>
 <h3 id="-">插件入口文件</h3>
 <p>插件入口文件需要导出两个方法，active 和 deactivate 方法。</p>
 <h2 id="-">发布插件</h2>
 <p>你写了一个高质量的插件，你可以将其发布到 VS Code 插件商店。</p>
 <p>你也可以将插件打包为 VSIX 格式的安装包，然后线下分发。</p>
-<p>VSIX 后缀可以改为 zip，可以解压缩查看文件信息。</p>
+<p>提示：VSIX 后缀可以改为 zip，可以解压缩查看文件信息。</p>
 <h3 id="vsce">vsce</h3>
 <p>vsce 是 Visual Studio Code Extentions 的简称，是一个打包、发布和管理VS Code 插件的一个命令行工具。</p>
 <pre><code class="lang-bash"><div class="highlight"><pre>npm i -g vsce
@@ -84,7 +85,7 @@ vsce publish
 <p>2、package.json 的badges 只能来自于可信 badge 提供商。<a href="https://code.visualstudio.com/api/references/extension-manifest#approved-badges">可信badge 提供商列表</a></p>
 <p>3、README.md 和 CHANGELOG.md 中的图片必须是 https链接。如果图片是 SVG 格式，必须来自于 可信badge提供商。</p>
 <p>VS Code 应用商店使用 Azure DevOps服务。vsce 使用<a href="https://docs.microsoft.com/azure/devops/integrate/get-started/authentication/pats">personal Access Tokens</a> 来发布插件。 </p>
-<h3 id="-">插件地址</h3>
+<h3 id="-">插件安装地址</h3>
 <p>要装载插件，你需要将文件 copy 到.vscode/extensions 文件夹。</p>
 <p>不同的平台上，.vscode/extensions 的文件夹位置不同。windows为%USERPROFILE%.vscode\extensions，MAC 和 linux 为~.vscode\extensions。</p>
 <h3 id="-">插件兼容性</h3>
@@ -93,9 +94,9 @@ vsce publish
 <h3 id="-">基础能力</h3>
 <p>基本包括：</p>
 <p>1、注册命令、配置、快捷键或右键菜单。</p>
-<p>2、存储工作区或全局的数据。</p>
+<p>2、存储工作区维度或全局维度的数据。</p>
 <p>3、显示通知消息。</p>
-<p>4、使用快速输入工具收集用户输入。</p>
+<p>4、使用快速输入弹框收集用户输入。</p>
 <p>5、打开系统文件选择器选择文件。</p>
 <p>6、使用Progress API 来展示长时间运行的任务。</p>
 <h3 id="-">主题能力</h3>
@@ -105,7 +106,7 @@ vsce publish
 <p>3、移植已有的 textMate 主题。</p>
 <p>4、添加自定义文件 icon。</p>
 <h3 id="-">声明语言能力</h3>
-<p>该类型插件新增编程语言的基本编辑支持。eg：缩进，换行，高亮展示等。这些功能都是声明式的，不用写任何代码、。</p>
+<p>该类型插件为编程语言的基本编辑提供支持。eg：缩进，换行，高亮展示等。这些功能都是声明式的，不用写任何代码、。</p>
 <p>能力包括：</p>
 <p>1、将通用 JS 片段打包到插件中</p>
 <p>2、告诉 VS Code 一个新的编程语言。</p>
@@ -116,12 +117,12 @@ vsce publish
 <p>该类插件可以添加丰富的功能。eg：hovers，转到定义，诊断错误，智能提示、代码历史记录等。</p>
 <p>这些功能都在 vscode.languages.* API 下。</p>
 <p>举例：</p>
-<p>1、hover 展示 API 使用方法的示例。</p>
-<p>2、使用 diagnostics报告拼写或 linter 错误。</p>
-<p>3、注册一个新的HTML 的代码格式</p>
+<p>1、hover展示API使用方法的示例。</p>
+<p>2、使用diagnostics报告拼写或lint错误。</p>
+<p>3、注册一个新的HTML的代码格式</p>
 <p>4、提供丰富的，上下文感知的智能提示。</p>
 <h3 id="-">工作台插件</h3>
-<p>工作台插件更改 VS Code 的工作台 UI，或者创建自己的文件浏览组件。也可以使用 webview API 创建展示页面。</p>
+<p>工作台插件更改VS Code的工作台 UI，或者创建自己的文件浏览组件。也可以使用 webview API 创建展示页面。</p>
 <p>举例：</p>
 <p>1、自定义右键菜单到文件浏览器。</p>
 <p>2、在侧边栏创建一个新的，交互式的 Treeview。</p>
@@ -130,7 +131,7 @@ vsce publish
 <p>5、使用 WebView API 来渲染自定义内容。</p>
 <p>6、扩展源代码管理功能。</p>
 <h3 id="-">调试</h3>
-<p>调试功能插件可以连接运行时和 VS Code 的调试 UI。</p>
+<p>调试功能插件可以连接代码运行时和 VS Code 的调试 UI。</p>
 <p>插件想法：</p>
 <p>1、通过实行Debug Adapter，连接 VS Code 的调试 UI和语言运行时。</p>
 <p>2、增加语言调试支持。</p>
@@ -141,7 +142,6 @@ vsce publish
 <p>2、跟踪调试会话的生命周期。</p>
 <p>3、程序化管理断点。</p>
 <h3 id="-">插件限制</h3>
-<h4 id="no-dom-access">No DOM Access</h4>
 <p>为了保证插件不会影响 VS Code 的性能和稳定性，插件没有权限访问 VS Code UI 的 DOM。</p>
 </body>
 </html>

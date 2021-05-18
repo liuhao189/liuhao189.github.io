@@ -1,86 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible"
-        content="ie=edge">
-    <title>刘浩的个人网站</title>
-    <link rel="stylesheet"
-        href="./style/main.css">
-    <script>
-        function registerSW() {
-            if (navigator.serviceWorker) {
-                navigator.serviceWorker.register('/sw.js');
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible"
+            content="ie=edge">
+        <title>北边柳的个人网站</title>
+        <link rel="stylesheet"
+            href="./style/main.css">
+        <script>
+            function registerSW() {
+                if (navigator.serviceWorker) {
+                    navigator.serviceWorker.register('/sw.js');
+                }
             }
-        }
 
-        function idleCallback(fn, context, args) {
-            if (!fn || typeof fn !== 'function') return;
-            if (window.requestIdleCallback) {
-                let cancelToken = window.requestIdleCallback(() => {
-                    fn.apply(context, args);
-                    cancelToken = null;
+            function idleCallback(fn, context, args) {
+                if (!fn || typeof fn !== 'function') return;
+                if (window.requestIdleCallback) {
+                    let cancelToken = window.requestIdleCallback(() => {
+                        fn.apply(context, args);
+                        cancelToken = null;
+                    });
+                    return function () {
+                        if (!cancelToken) return;
+                        window.cancelIdleCallback(cancelToken);
+                    }
+                } else {
+                    let timerId = setTimeout(() => {
+                        fn.apply(context, args);
+                        timerId = null;
+                    }, 3000)
+                    return function () {
+                        if (!timerId) return;
+                        clearTimeout(timerId);
+                    }
+                }
+            }
+
+            function checkCache() {
+                idleCallback(() => {
+                    let storage = navigator.storage || null;
+                    if (storage && storage.estimate) {
+                        storage.estimate().then((result) => {
+                            let left = result.quota - result.usage;
+                            if (left < 1024 * 1024 * 1024 * 3) {
+                                caches.delete('beibianliuALWAYS_CACHE');
+                            }
+                        })
+                    }
                 });
-                return function () {
-                    if (!cancelToken) return;
-                    window.cancelIdleCallback(cancelToken);
-                }
-            } else {
-                let timerId = setTimeout(() => {
-                    fn.apply(context, args);
-                    timerId = null;
-                }, 3000)
-                return function () {
-                    if (!timerId) return;
-                    clearTimeout(timerId);
-                }
             }
-        }
 
-        function checkCache() {
-            idleCallback(() => {
-                let storage = navigator.storage || null;
-                if (storage && storage.estimate) {
-                    storage.estimate().then((result) => {
-                        let left = result.quota - result.usage;
-                        if (left < 1024 * 1024 * 1024 * 3) {
-                            caches.delete('liuhao189ALWAYS_CACHE');
+            window.addEventListener('load', (ev) => {
+                registerSW();
+                checkCache();
+            });
+        </script>
+    </head>
+
+    <body>
+        <div id="app">
+            <h2 class="note-part-title">读书笔记</h2>
+            <ul id="noteList">
+            </ul>
+            <script>
+                fetch('/note/notes.json').then(res => {
+                    res.json().then(list => {
+                        let noteList = list || [];
+                        let notesHtmlStr = noteList.map((noteItem) => {
+                            return `<li><a href="${noteItem.link}">${noteItem.name}</a></li>`
+                        }).join('');
+                        let notesListEl = document.querySelector('#noteList');
+                        if (notesListEl) {
+                            notesListEl.innerHTML = notesHtmlStr;
                         }
                     })
-                }
-            });
-        }
-
-        window.addEventListener('load', (ev) => {
-            registerSW();
-            checkCache();
-        });
-    </script>
-</head>
-
-<body>
-    <div id="app">
-        <h2 class="note-part-title">读书笔记</h2>
-        <ul id="noteList">
-        </ul>
-        <script>
-            fetch('/note/notes.json').then(res => {
-                res.json().then(list => {
-                    let noteList = list || [];
-                    let notesHtmlStr = noteList.map((noteItem) => {
-                        return `<li><a href="${noteItem.link}">${noteItem.name}</a></li>`
-                    }).join('');
-                    let notesListEl = document.querySelector('#noteList');
-                    if (notesListEl) {
-                        notesListEl.innerHTML = notesHtmlStr;
-                    }
                 })
-            })
-        </script>
-    </div>
-</body>
+            </script>
+        </div>
+    </body>
 
 </html>

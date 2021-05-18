@@ -6,9 +6,6 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
-        "**/.npmrc": true,
-        "**/.gitignore": true,
-        "**/sw.js": true,
     },
     "files.associations": {
         ".database": "json"

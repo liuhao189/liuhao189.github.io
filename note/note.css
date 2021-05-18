@@ -11,7 +11,7 @@ body {
   box-sizing: content-box;
 }
 
-body>h1:first-child {
+body > h1:first-child {
   text-align: center;
 }
 
@@ -25,7 +25,7 @@ body>h1:first-child {
   --normal-margin: 15px;
   --larger-padding: 20px;
   --code-color: rgb(241, 241, 241);
-  --blockquote-color: rgb(212, 212, 212);
+  --blockquote-color: rgb(143, 56, 56);
   --code-green-color: #519a46;
 }
 
@@ -170,4 +170,8 @@ td {
 
 tbody tr:hover {
   background-color: #f5f7fa;
+}
+
+body > pre {
+  overflow: auto;
 }
