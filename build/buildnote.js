@@ -20,8 +20,23 @@ function getBuildPath() {
     return distPath;
 }
 
+const blackFileArr = [
+    'note/algorithm/',
+    'note/learn/fucksuanfa',
+    'note/softquality',
+    'note/vscode'
+];
+
 function getSourceFiles() {
     let files = glob.sync(getBasePath() + '/**/*.md');
+    if (blackFileArr && blackFileArr.length) {
+        files = files.filter(filePath => {
+            let fileInBlackList = blackFileArr.some((blackPath) => {
+                return filePath.includes(blackPath);
+            })
+            return !fileInBlackList;
+        })
+    }
     log(`Files:${files.join('\r\n')}`);
     return files;
 }
@@ -60,10 +75,11 @@ function buildFile(filePath, noteList) {
         link: `/note/dist/${fileName}.html`,
         name: fileTitle
     });
-    let cmdStr = `npx markdown ${filePath} -f gfm --highlight -t ${fileTitle} -s /note/note.css`;
+    let cmdStr = `npx markdown ${filePath} -f gfm --highlight -t "${fileTitle}" -s /note/note.css`;
     log(`Build command is ${cmdStr}`);
-    let result = childProcess.execSync(cmdStr);
-    fs.writeFileSync(getBuildPath() + `/${fileName}.html`, result, {
+    let result = childProcess.execSync(cmdStr).toString('utf-8');
+    let postProcessResult = result.replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\/&gt;/g, '<br/>');
+    fs.writeFileSync(getBuildPath() + `/${fileName}.html`, postProcessResult, {
         encoding: fileEncoding
     });
     log('Build Successfully!')
@@ -71,6 +87,7 @@ function buildFile(filePath, noteList) {
 
 function build() {
     let files = getSourceFiles();
+
     const noteList = [];
     files.forEach((file) => {
         buildFile(file, noteList);
