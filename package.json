@@ -7,6 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "buildnote": "node build/buildnote.js"
   },
+  "browser": {
+    "path": "vue"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/liuhao189/liuhao189.github.io.git"
@@ -20,11 +23,16 @@
   "homepage": "https://github.com/liuhao189/liuhao189.github.io#readme",
   "devDependencies": {
     "chalk": "^3.0.0",
+    "esbuild": "^0.12.15",
     "glob": "^7.1.6",
     "markdown-to-html": "0.0.13",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "three": "^0.130.1"
   },
   "dependencies": {
-    "sass": "^1.24.4"
+    "jquery": "^3.6.0",
+    "sass": "^1.24.4",
+    "vue": "^3.1.5"
   }
 }
