@@ -28,6 +28,8 @@
 
           let fileUrl = window.URL.createObjectURL(imgFile);
           let imgEl = document.createElement('img');
+          imgEl.style.width = "100%";
+          imgEl.style.display = 'block';
           imgEl.src = fileUrl;
           imgEl.onload = () => {
             EXIF.getData(imgEl, function () {
