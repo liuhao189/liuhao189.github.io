@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible"
+    content="IE=edge">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>Read Exif</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+</head>
+
+<body>
+  <div class="app">
+    <input type="file"
+      id="txtFile"
+      accept="image/*">
+    <div id="msg"></div>
+    <script>
+      window.onload = function () {
+        let fileInputEl = document.querySelector('#txtFile');
+        let msgEl = document.querySelector('#msg');
+
+        fileInputEl.addEventListener('change', (ev) => {
+          let targetEl = ev.target;
+          let imgFile = targetEl.files[0];
+
+          let fileUrl = window.URL.createObjectURL(imgFile);
+          let imgEl = document.createElement('img');
+          imgEl.src = fileUrl;
+          imgEl.onload = () => {
+            EXIF.getData(imgEl, function () {
+              let allMetaData = EXIF.getAllTags(this);
+              msgEl.innerHTML = JSON.stringify(allMetaData, null, '\t');
+            });
+          }
+          document.body.appendChild(imgEl);
+        });
+      }
+    </script>
+  </div>
+</body>
+
+</html>
