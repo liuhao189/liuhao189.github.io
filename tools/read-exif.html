@@ -18,26 +18,101 @@
       accept="image/*">
     <div id="msg"></div>
     <script>
+
+      function getImgElAsync(imgFile) {
+        return new Promise((resolve, reject) => {
+          let fileUrl = window.URL.createObjectURL(imgFile);
+          let imgEl = document.createElement('img');
+          imgEl.style.imageOrientation = '';
+          imgEl.src = fileUrl;
+          imgEl.onload = () => {
+            resolve(imgEl);
+          };
+
+          imgEl.onerror = (err) => {
+            reject(err);
+          };
+        });
+      }
+
+      function getImgFileInfoAsync(imgFile) {
+        return new Promise((resolve, reject) => {
+          getImgElAsync(imgFile).then(imgEl => {
+            let autoRotate;
+            if (getComputedStyle(imgEl).imageOrientation === undefined) {
+              autoRotate = false;
+            } else {
+              imgEl.style.imageOrientation = 'from-image';
+              autoRotate = true;
+            }
+            EXIF.getData(imgEl, function () {
+              let allMetaData = EXIF.getAllTags(this);
+              resolve({
+                width: imgEl.naturalWidth,
+                height: imgEl.naturalHeight,
+                orientation: allMetaData.Orientation,
+                autoRotate
+              })
+            });
+          }).catch(err => {
+            reject(err);
+          });
+
+        });
+      }
+
+      async function getCanvasWithImgAsync(imgFile, imgInfo) {
+        let canvasEl = document.createElement('canvas');
+        let ctx = canvasEl.getContext('2d');
+        let imgEl = await getImgElAsync(imgFile);
+        canvasEl.width = imgInfo.width;
+        canvasEl.height = imgInfo.height;
+        if (!imgInfo.autoRotate) {
+          switch (imgInfo.orientation) {
+            case 3:
+              ctx.rotate(-180 * Math.PI / 180);
+              ctx.drawImage(imgEl, -imgInfo.width, -imgInfo.height, imgInfo.width, imgInfo.height);
+              break;
+            case 6:
+              canvasEl.width = imgInfo.height;
+              canvasEl.height = imgInfo.width;
+              ctx.rotate(90 * Math.PI / 180);
+              ctx.drawImage(imgEl, 0, -imgInfo.height, imgInfo.width, imgInfo.height);
+              break;
+            case 8:
+              canvasEl.width = imgInfo.height;
+              canvasEl.height = imgInfo.width;
+              ctx.rotate(-90 * Math.PI / 180);
+              ctx.drawImage(imgEl, -imgInfo.width, 0, imgInfo.width, imgInfo.height);
+              break;
+            default:
+              ctx.drawImage(imgEl, 0, 0, imgInfo.width, imgInfo.height);
+              break;
+          }
+        } else {
+          ctx.drawImage(imgEl, 0, 0, imgInfo.width, imgInfo.height);
+        }
+        return canvasEl;
+      }
+
+
       window.onload = function () {
         let fileInputEl = document.querySelector('#txtFile');
         let msgEl = document.querySelector('#msg');
 
-        fileInputEl.addEventListener('change', (ev) => {
+        fileInputEl.addEventListener('change', async (ev) => {
           let targetEl = ev.target;
           let imgFile = targetEl.files[0];
 
-          let fileUrl = window.URL.createObjectURL(imgFile);
-          let imgEl = document.createElement('img');
-          imgEl.style.width = "100%";
-          imgEl.style.display = 'block';
-          imgEl.src = fileUrl;
-          imgEl.onload = () => {
-            EXIF.getData(imgEl, function () {
-              let allMetaData = EXIF.getAllTags(this);
-              msgEl.innerHTML = JSON.stringify(allMetaData, null, '\t');
-            });
-          }
-          document.body.appendChild(imgEl);
+          let info = await getImgFileInfoAsync(imgFile);
+
+          msgEl.innerHTML = `
+          UA: ${navigator.userAgent} 
+          ImageInfo: ${JSON.stringify(info)}`
+
+          let canvasEl = await getCanvasWithImgAsync(imgFile, info);
+          document.body.appendChild(canvasEl);
+
         });
       }
     </script>
