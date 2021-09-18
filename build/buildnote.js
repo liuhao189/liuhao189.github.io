@@ -71,6 +71,8 @@ function getMarkDownTitle(filePath) {
     }
 }
 
+const buildTs = new Date().getTime();
+
 function buildFile(filePath, noteList) {
     log(`Start to build '${filePath}'...`);
     let fileInfo = getFileNameInfo(filePath);
@@ -81,15 +83,16 @@ function buildFile(filePath, noteList) {
         link: `/note/dist/${fileName}.html`,
         name: fileTitle
     });
-    let cmdStr = `npx markdown ${filePath} -f gfm --highlight -t "${fileTitle}" -s /note/note.css`;
+    let cmdStr = `npx markdown ${filePath} -f gfm --highlight -t "${fileTitle}" -s /note/note.css?ts=${buildTs}`;
     log(`Build command is ${cmdStr}`);
     let result = childProcess.execSync(cmdStr).toString('utf-8');
     let postProcessResult = result.replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\/&gt;/g, '<br/>');
-    postProcessResult.replace('<body>', `<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><body>`)
+
+    postProcessResult = postProcessResult.replace('</head>', `<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"></head>`)
 
     let injectJSStr = getInjectScript();
     if (injectJSStr) {
-        postProcessResult = postProcessResult.replace('<body>', `<body>${getInjectScript()}`)
+        // postProcessResult = postProcessResult.replace('<body>', `<body>${getInjectScript()}`)
     }
 
     fs.writeFileSync(getBuildPath() + `/${fileName}.html`, postProcessResult, {
