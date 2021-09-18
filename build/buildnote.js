@@ -85,6 +85,7 @@ function buildFile(filePath, noteList) {
     log(`Build command is ${cmdStr}`);
     let result = childProcess.execSync(cmdStr).toString('utf-8');
     let postProcessResult = result.replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\/&gt;/g, '<br/>');
+    postProcessResult.replace('<body>', `<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><body>`)
 
     let injectJSStr = getInjectScript();
     if (injectJSStr) {
@@ -97,17 +98,89 @@ function buildFile(filePath, noteList) {
     log('Build Successfully!')
 }
 
+function getBuildTargetNotes() {
+    let argv = process.env.npm_config_argv;
+    log(argv);
+    if (!argv) {
+        return null;
+    }
+    //
+    try {
+        argvObj = JSON.parse(argv);
+        let originalArgvArr = argvObj.original || [];
+        let noteArgvArr = originalArgvArr.filter(argvItem => {
+            return argvItem.startsWith('--note');
+        });
+
+        if (!noteArgvArr || !noteArgvArr.length) {
+            return null;
+        }
+
+        return noteArgvArr.map(noteArgvItem => {
+            let parts = noteArgvItem.split('=');
+            if (parts && parts.length >= 2) {
+                let notePath = parts[1];
+                if (!notePath) return null;
+                return {
+                    path: path.join(process.cwd(), notePath.replace(/^\s+|\s+$/g, ''))
+                }
+            }
+        })
+
+    } catch (ex) {
+        console.error(ex);
+        return null;
+    }
+}
+/**
+ * 
+ * @returns 
+ */
+function getNoteListFromJsonFile() {
+    let jsonFilePath = path.resolve(getBasePath(), 'notes.json');
+    let noteContent = fs.readFileSync(jsonFilePath, { encoding: 'utf-8' });
+    return JSON.parse(noteContent);
+}
+
 function build() {
-    let files = getSourceFiles();
+
+    let targetNotes = getBuildTargetNotes();
+    let files;
+    log(`TargetNotes:${JSON.stringify(targetNotes)}`)
+
+    let targetNotesMode = !!(targetNotes && targetNotes.length);
+
+    if (targetNotesMode) {
+        files = targetNotes;
+    } else {
+        files = getSourceFiles();
+    }
 
     const noteList = [];
     files.forEach((file) => {
-        buildFile(file, noteList);
+        if (!file) return;
+        buildFile(targetNotesMode ? file.path : file, noteList);
     });
     if (noteList && noteList.length) {
-        let listStr = JSON.stringify(noteList);
+        let noteListForWrite;
+        if (targetNotesMode) {
+            let currentNoteList = getNoteListFromJsonFile();
+            noteList.forEach((noticeItem) => {
+                let noteInCurrentList = currentNoteList.find(item => {
+                    return item.sourceFilePath === noticeItem.sourceFilePath;
+                })
+                if (!noteInCurrentList) {
+                    currentNoteList.push(noticeItem);
+                }
+            });
+            noteListForWrite = currentNoteList;
+        } else {
+            noteListForWrite = noteList;
+        }
+
+        let listStrForWrite = JSON.stringify(noteListForWrite);
         let basePath = getBasePath();
-        fs.writeFileSync(basePath + '/notes.json', listStr, {
+        fs.writeFileSync(basePath + '/notes.json', listStrForWrite, {
             encoding: fileEncoding
         });
         log('Write notelist Successfully!')
