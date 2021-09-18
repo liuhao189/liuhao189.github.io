@@ -13,6 +13,7 @@ body {
 
 body > h1:first-child {
   text-align: center;
+  margin-bottom: 25px;
 }
 
 :root {
@@ -27,6 +28,8 @@ body > h1:first-child {
   --code-color: rgb(241, 241, 241);
   --blockquote-color: rgb(143, 56, 56);
   --code-green-color: #519a46;
+  --text-line-height: 1.8em;
+  --text-font-size: 16px;
 }
 
 html {
@@ -43,11 +46,28 @@ h6 {
   margin-bottom: var(--normal-margin);
 }
 
+h2 {
+  font-size: 26px;
+}
+
+h3 {
+  font-size: 23px;
+}
+
+h4 {
+  font-size: 19px;
+}
+
+h5 {
+  font-size: 17px;
+}
+
 p {
   color: var(--context-color);
-  font-size: 16px;
-  line-height: 1.8em;
+  font-size: var(--text-font-size, 16px);
+  line-height: var(--text-line-height);
   margin-bottom: var(--normal-margin);
+  word-break: break-all;
 }
 
 pre {
@@ -69,7 +89,8 @@ pre pre {
 
 .highlight .kd,
 .highlight .nt,
-.highlight .k {
+.highlight .k,
+.highlight .kr {
   color: rgb(86, 156, 214);
 }
 

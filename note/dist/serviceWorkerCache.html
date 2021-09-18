@@ -4,7 +4,47 @@
   <title>Service-Worker缓存实践</title>
   <link rel="stylesheet" href="/note/note.css">
 </head>
-<body>
+<body><script>function getReadCatalogDomEl(headerList) {
+    if (!headerList || !headerList.length) {
+        return null;
+    }
+    //
+    let listTemplate;
+    headerList.forEach(headerItem => {
+        let currItemHtmlStr = `<li> <a href="#/${headerItem.partId}">${headerItem.title}</a></li>`;
+        listTemplate += currItemHtmlStr;
+    });
+
+    let divEl = document.createElement('div');
+    divEl.innerHTML = `<ul>${listTemplate}</ul>`;
+    divEl.classList.add(`read-catalog`)
+
+    return divEl;
+}
+
+function generateReadCatalog() {
+    let h2Headers = document.querySelectorAll('body>h2');
+    let uid = 1;
+    let h2HeaderArr = Array.prototype.slice.call(h2Headers);
+    let headListForRender = [];
+    h2HeaderArr.forEach(headerEl => {
+        headerEl.id = `h2-title-${uid++}`;
+        headListForRender.push({
+            partId: headerEl.id,
+            title: headerEl.innerText
+        });
+    })
+
+    let el = getReadCatalogDomEl(headListForRender);
+    if (!el) {
+        return;
+    }
+    document.body.prepend(el);
+}
+
+// window.addEventListener('load', () => {
+//     generateReadCatalog();
+// });</script>
 <h1 id="service-worker-">Service-Worker缓存实践</h1>
 <h1 id="-">背景</h1>
 <p>开发的Web App的首字节时间(TP90)，可交互时间(TP90)，完全加载时间(TP90)比较长，严重影响用户体验。</p>

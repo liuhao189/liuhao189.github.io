@@ -4,7 +4,47 @@
   <title>低代码编程</title>
   <link rel="stylesheet" href="/note/note.css">
 </head>
-<body>
+<body><script>function getReadCatalogDomEl(headerList) {
+    if (!headerList || !headerList.length) {
+        return null;
+    }
+    //
+    let listTemplate;
+    headerList.forEach(headerItem => {
+        let currItemHtmlStr = `<li> <a href="#/${headerItem.partId}">${headerItem.title}</a></li>`;
+        listTemplate += currItemHtmlStr;
+    });
+
+    let divEl = document.createElement('div');
+    divEl.innerHTML = `<ul>${listTemplate}</ul>`;
+    divEl.classList.add(`read-catalog`)
+
+    return divEl;
+}
+
+function generateReadCatalog() {
+    let h2Headers = document.querySelectorAll('body>h2');
+    let uid = 1;
+    let h2HeaderArr = Array.prototype.slice.call(h2Headers);
+    let headListForRender = [];
+    h2HeaderArr.forEach(headerEl => {
+        headerEl.id = `h2-title-${uid++}`;
+        headListForRender.push({
+            partId: headerEl.id,
+            title: headerEl.innerText
+        });
+    })
+
+    let el = getReadCatalogDomEl(headListForRender);
+    if (!el) {
+        return;
+    }
+    document.body.prepend(el);
+}
+
+// window.addEventListener('load', () => {
+//     generateReadCatalog();
+// });</script>
 <h1 id="-">低代码编程</h1>
 <p>结论：中台之后，便是无代码编程。</p>
 <p>规模化的组织，经常要面临这样的挑战。每个应用的基础设施是相同的，部分的代码也是相同的，甚至于它们可能只是数据模型不同而已。但是他们还是需要一次又一次地重新编写一个应用。</p>

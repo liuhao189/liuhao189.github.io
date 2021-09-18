@@ -56,6 +56,12 @@ function getFileNameInfo(filePath) {
     }
 }
 
+function getInjectScript() {
+    let scriptPath = path.join(__dirname, './note-script.js');
+    let jsContent = fs.readFileSync(scriptPath, { encoding: 'utf-8' });
+    return `<script>${jsContent}</script>`
+}
+
 function getMarkDownTitle(filePath) {
     let fileContent = fs.readFileSync(filePath, { encoding: fileEncoding });
     let titleReg = /^#+\s+(.*)\n?/;
@@ -79,6 +85,12 @@ function buildFile(filePath, noteList) {
     log(`Build command is ${cmdStr}`);
     let result = childProcess.execSync(cmdStr).toString('utf-8');
     let postProcessResult = result.replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\/&gt;/g, '<br/>');
+
+    let injectJSStr = getInjectScript();
+    if (injectJSStr) {
+        postProcessResult = postProcessResult.replace('<body>', `<body>${getInjectScript()}`)
+    }
+
     fs.writeFileSync(getBuildPath() + `/${fileName}.html`, postProcessResult, {
         encoding: fileEncoding
     });
