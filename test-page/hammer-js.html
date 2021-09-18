@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible"
+    content="IE=edge">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0,user-scalable=no,maximum-scale=1">
+  <title>hammer-js</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+  <style>
+    html,
+    body {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0;
+      overflow: hidden;
+      touch-action: none !important;
+    }
+
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      overflow-y: hidden;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      touch-action: none;
+    }
+
+    .box-wrapper {
+      width: 200%;
+      padding: 0;
+      margin: 0;
+      overflow-x: hidden;
+      transition: all .25s linear;
+      display: flex;
+      transform: translateX(var(--translateXNum));
+    }
+
+    .box-1,
+    .box-2 {
+      flex: 1;
+      min-height: 100px;
+      font-size: 20px;
+      color: black;
+      line-height: 100px;
+      text-align: center;
+    }
+
+    .box-1 {
+      background-color: red;
+    }
+
+    .box-2 {
+      background-color: gray;
+    }
+
+    .btn {
+      padding: 6px 8px;
+      font-size: 16px;
+    }
+
+    #msg {
+      overflow-y: auto;
+      /* touch-action: pan-y; */
+      flex: 1;
+    }
+
+    #msg p {
+      font-size: 40px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="box-wrapper">
+      <div class="box-1">1</div>
+      <div class="box-2">2</div>
+    </div>
+    <div style="margin:12px 8px">
+      <button class="btn"
+        id="btnRefresh">Refresh</button>
+    </div>
+    <div id="msg"></div>
+  </div>
+  <script>
+    let btnRefreshEl = document.querySelector('#btnRefresh');
+    btnRefreshEl.addEventListener('click', handleBtnRefreshClick);
+
+    function handleBtnRefreshClick() {
+      window.location.reload(true);
+    }
+
+    let appEl = document.querySelector('#app');
+    let msgEl = document.querySelector('#msg');
+    let boxWrapperEl = document.querySelector('.box-wrapper');
+
+    let mc = new Hammer.Manager(document.body);
+
+    mc.add(new Hammer.Swipe({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 }));
+
+    mc.on('swipeleft', function (ev) {
+      msgEl.innerHTML += `<p>swipeleft</p>`;
+      boxWrapperEl.style.setProperty('--translateXNum', '-50%')
+    });
+
+    mc.on('swiperight', function (ev) {
+      console.log(ev);
+      msgEl.innerHTML += `<p>swiperight</p>`;
+      boxWrapperEl.style.setProperty('--translateXNum', '0')
+    })
+
+    mc.on('swipeup swipedown', function (ev) {
+      console.log(ev);
+      ev.preventDefault();
+    })
+
+    document.body.addEventListener('touchstart', (ev) => {
+      msgEl.innerHTML += `<p>body touchstart</p>`;
+    })
+
+    document.body.addEventListener('touchmove', (ev) => {
+      // msgEl.innerHTML += `touchmove`;
+      // ev.preventDefault();
+      // ev.stopPropagation();
+    })
+
+    let index = 1;
+
+    msgEl.addEventListener('touchmove', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      console.log('touchmove', ev);
+    })
+
+    msgEl.addEventListener('touchstart', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      // console.log(ev);
+      console.log('touchstart', ev);
+      // msgEl.innerHTML += `<p>${index++} msgEl touchstart</p>`;
+    })
+
+    msgEl.addEventListener('touchend', (ev) => {
+      // msgEl.innerHTML += `<p>msgEl touchend</p>`;
+      console.log(touchend, ev);
+    })
+
+
+    // document.body.addEventListener('touchend', (ev) => {
+    //   msgEl.innerHTML += `<p>body touchend</p>`;
+    // })
+
+    // document.body.addEventListener('touchcancel', (ev) => {
+    //   msgEl.innerHTML += `<p>body touchcancel</p>`;
+    // })
+
+  </script>
+</body>
+
+</html>

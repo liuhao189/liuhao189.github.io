@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible"
+    content="IE=edge">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>Image压缩测试</title>
+  <style>
+    #canvasContainer {
+      position: relative;
+      padding: 0;
+      margin: 0;
+    }
+
+    #canvasContainer::before {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      content: ' ';
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      z-index: 10;
+    }
+  </style>
+  <script>
+
+    const MAX_UPLOAD_IMG_SIZE = 0.5 * 1024 * 1024;
+
+    const COMPRESS_MIN_PIXELS = 1080;
+
+    function checkImageFileSize(imgFile) {
+      if (!imgFile) return;
+
+      if (imgFile.size > MAX_UPLOAD_IMG_SIZE) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    function getImageInfo(imgFile) {
+      return new Promise((resolve, reject) => {
+        let imgEl = document.createElement('img');
+        let imgUrl = URL.createObjectURL(imgFile);
+        imgEl.src = imgUrl;
+        imgEl.onload = function (ev) {
+          let targetEl = ev.target;
+          let imgInfo = {
+            width: targetEl.naturalWidth,
+            height: targetEl.naturalHeight,
+          };
+          imgInfo.ratio = imgInfo.height / imgInfo.width;
+          resolve(imgInfo);
+          setTimeout(() => {
+            URL.revokeObjectURL(imgUrl);
+            imgEl = null;
+          }, 0);
+        }
+        imgEl.onerror = function (ex) {
+          reject(ex);
+        }
+      })
+    }
+
+    function clearInputValue(inputEl) {
+      setTimeout(() => {
+        inputEl.value = '';
+      }, 0);
+    }
+
+    function getImgElAsync(imgFile) {
+      return new Promise((resolve, reject) => {
+        let imgEl = document.createElement('img');
+        imgEl.src = URL.createObjectURL(imgFile);
+        imgEl.onload = () => {
+          resolve(imgEl);
+        }
+        imgEl.onerror = (err) => {
+          reject(err)
+        }
+      })
+    }
+
+    async function drawImgToCanvas(imgFile, imgInfo) {
+      try {
+        let canvasEl = document.createElement('canvas');
+        let ctx = canvasEl.getContext('2d');
+        canvasEl.width = imgInfo.height;
+        canvasEl.height = imgInfo.width;
+        let imgEl = await getImgElAsync(imgFile);
+        window.imgEl = imgEl;
+        window.ctx = ctx;
+        ctx.translate(Number.parseInt(canvasEl.width / 2), Number.parseInt(canvasEl.height / 2));
+        ctx.rotate(90 * Math.PI / 180);
+        ctx.drawImage(imgEl, -imgInfo.width / 2, -imgInfo.height / 2, imgInfo.width, imgInfo.height);
+        // document.body.appendChild(canvasEl);
+
+        window.canvasContainer.appendChild(canvasEl);
+        return;
+
+        let quality = Number.parseFloat(document.querySelector('#txtQuality').value) || 0.75;
+        log(`压缩质量：${quality}`);
+
+        canvasEl.toBlob(async (res) => {
+          log(`压缩后图片大小：${Number.parseInt(res.size / 1024)}Kb`);
+          log(`压缩后图片宽高：Width：${imgInfo.width}，Height：${imgInfo.height}`)
+          let newImgEl = await getImgElAsync(res);
+          document.body.appendChild(newImgEl);
+        }, 'image/jpeg', quality);
+
+      } catch (ex) {
+        console.error(ex);
+      }
+    }
+
+    function addInputEvent() {
+      let fileInputEl = document.querySelector('#txtFile');
+      fileInputEl.addEventListener('change', async (ev) => {
+        let targetEl = ev.target;
+        let imgFile = targetEl.files[0];
+        if (!imgFile) return;
+        clearInputValue(targetEl);
+        log(`原始图片大小：${Number.parseInt(imgFile.size / 1024)}Kb`)
+
+        if (!checkImageFileSize(imgFile)) {
+          let imgInfo = await getImageInfo(imgFile);
+          log(`原始图片宽高：Width: ${imgInfo.width}，Height：${imgInfo.height}`)
+          let compressInfo = {};
+
+          if (imgInfo.ratio > 1 & imgInfo.width > COMPRESS_MIN_PIXELS) {
+            compressInfo.width = COMPRESS_MIN_PIXELS;
+            compressInfo.height = Number.parseInt(compressInfo.width * imgInfo.ratio);
+          } else if (imgInfo.ratio < 1 & imgInfo.height > COMPRESS_MIN_PIXELS) {
+            compressInfo.height = COMPRESS_MIN_PIXELS;
+            compressInfo.width = Number.parseFloat(compressInfo.height / imgInfo.ratio);
+          } else {
+            //不大于
+            compressInfo.width = imgInfo.width;
+            compressInfo.height = imgInfo.height;
+          }
+
+          drawImgToCanvas(imgFile, compressInfo);
+        }
+      })
+    }
+
+    function log(msg) {
+      let msgEl = document.getElementById('msg');
+
+      msgEl.innerHTML += `<p>${msg}</p>`;
+    }
+
+    window.addEventListener('load', () => {
+      addInputEvent();
+    })
+  </script>
+</head>
+
+<body>
+  <div id="app">
+    <h1>文件压缩测试</h1>
+    <div>
+      <label>质量</label>
+      <input type="range"
+        id="txtQuality"
+        value="0.8"
+        min="0.1"
+        step="0.1"
+        max="1" />
+    </div>
+    <div id="msg">
+
+    </div>
+    <input id="txtFile"
+      type="file"
+      accept="image/*">
+  </div>
+  <div id="canvasContainer">
+
+  </div>
+</body>
+
+</html>
