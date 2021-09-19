@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vue-Router原理</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1632036197901">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"></head>
+<body>
+<h1 id="vue-router-">Vue-Router原理</h1>
+<h2 id="-">前端路由</h2>
+<p>单页应用中，页面的跳转是无刷新的，为了实现这种效果，需要使用前端路由。</p>
+<p>类似于服务器端路由，前端路由实现起来大概就是匹配不同的url路径，进行解析，然后动态渲染出区域的HTML内容。</p>
+<h3 id="hash-">hash模式</h3>
+<p>URL的#后面的值的变化，并不会导致浏览器向服务器发出请求，也就不会刷新页面。每次hash值的变化，还会触发hashchange这个事件。</p>
+<h3 id="history-">history模式</h3>
+<p>14年后，因为HTML5标准发布，多了两个API，pushState和replaceState，通过这两个API可以改变url地址且不会发送请求。<br>同时还有popState事件，通过这些就能用另一种方式来实现前端路由。</p>
+<p>跟hash模式不同，history模式需要服务器配合，将前端路由覆盖的请求都返回单页的html文档。</p>
+<h2 id="vue-router-">Vue-Router的使用</h2>
+<p>使用代码：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">VueRouter</span> <span class="nx">from</span> <span class="s1">&#39;vue-router&#39;</span>
+<span class="nx">Vue</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">VueRouter</span><span class="p">)</span>
+
+<span class="kr">const</span> <span class="nx">router</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">VueRouter</span><span class="p">({</span>
+  <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;history&#39;</span><span class="p">,</span>
+  <span class="nx">routes</span><span class="o">:</span> <span class="p">[...]</span>
+<span class="p">})</span>
+
+<span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
+  <span class="nx">router</span>
+  <span class="p">...</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>首先，使用了Vue.use安装了Vue-router这个插件。<br>然后new VueRouter来实例化一个VueRouter对象。<br>最后，将实例化的对象router添加到根Vue组件的options中。</p>
+<h2 id="vue-router-install-">Vue-router实现之install方法</h2>
+<p>Vue通过use方法，加载VueRouter中的install方法。下面来看一下具体的执行过程。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kd">let</span> <span class="nx">_Vue</span>
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">install</span> <span class="p">(</span><span class="nx">Vue</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//首先判断是否在当前Vue对象中安装过，if 安装过，直接返回</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">install</span><span class="p">.</span><span class="nx">installed</span> <span class="o">&amp;&amp;</span> <span class="nx">_Vue</span> <span class="o">===</span> <span class="nx">Vue</span><span class="p">)</span> <span class="k">return</span>
+  <span class="nx">install</span><span class="p">.</span><span class="nx">installed</span> <span class="o">=</span> <span class="kc">true</span>
+
+  <span class="nx">_Vue</span> <span class="o">=</span> <span class="nx">Vue</span>
+
+  <span class="kr">const</span> <span class="nx">isDef</span> <span class="o">=</span> <span class="nx">v</span> <span class="o">=&gt;</span> <span class="nx">v</span> <span class="o">!==</span> <span class="kc">undefined</span>
+
+  <span class="kr">const</span> <span class="nx">registerInstance</span> <span class="o">=</span> <span class="p">(</span><span class="nx">vm</span><span class="p">,</span> <span class="nx">callVal</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$options</span><span class="p">.</span><span class="nx">_parentVnode</span>
+    <span class="c1">// 通过registerRouteInstance方法来实现对router-view的挂载操作</span>
+    <span class="c1">// 因为只有router-view定义了data.registerRouteInstance函数</span>
+    <span class="c1">// registerRouteInstance主要用来执行render操作。</span>
+    <span class="c1">// data.registerRouteInstance = (vm, val) =&gt; {</span>
+    <span class="c1">// ...</span>
+    <span class="c1">//    return h(component, data, children)</span>
+    <span class="c1">//  }</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="nx">i</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="nx">i</span><span class="p">.</span><span class="nx">registerRouteInstance</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nx">i</span><span class="p">(</span><span class="nx">vm</span><span class="p">,</span> <span class="nx">callVal</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">Vue</span><span class="p">.</span><span class="nx">mixin</span><span class="p">({</span>
+    <span class="nx">beforeCreate</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="c1">// 如果定义了router属性，说明是根组件</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">$options</span><span class="p">.</span><span class="nx">router</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_routerRoot</span> <span class="o">=</span> <span class="k">this</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_router</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$options</span><span class="p">.</span><span class="nx">router</span>
+        <span class="c1">//执行router的init方法</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_router</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+        <span class="c1">//为Vue根组件设置_route属性</span>
+        <span class="nx">Vue</span><span class="p">.</span><span class="nx">util</span><span class="p">.</span><span class="nx">defineReactive</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;_route&#39;</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">_router</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">current</span><span class="p">)</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">//不是根组件则直接取父组件的_routerRoot</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_routerRoot</span> <span class="o">=</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">$parent</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">$parent</span><span class="p">.</span><span class="nx">_routerRoot</span><span class="p">)</span> <span class="o">||</span> <span class="k">this</span>
+      <span class="p">}</span>
+      <span class="nx">registerInstance</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="k">this</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="nx">destroyed</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="nx">registerInstance</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+  <span class="c1">// 设置代理 当访问$router时，代理到this._routerRoot._router</span>
+  <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">,</span> <span class="s1">&#39;$router&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">get</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_routerRoot</span><span class="p">.</span><span class="nx">_router</span> <span class="p">}</span>
+  <span class="p">})</span>
+  <span class="c1">// 设置代理，当访问$route时，代理到 this._routerRoot._route</span>
+  <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">,</span> <span class="s1">&#39;$route&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">get</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_routerRoot</span><span class="p">.</span><span class="nx">_route</span> <span class="p">}</span>
+  <span class="p">})</span>
+  <span class="c1">//注册RouterView和RouterLink组件</span>
+  <span class="nx">Vue</span><span class="p">.</span><span class="nx">component</span><span class="p">(</span><span class="s1">&#39;RouterView&#39;</span><span class="p">,</span> <span class="nx">View</span><span class="p">)</span>
+  <span class="nx">Vue</span><span class="p">.</span><span class="nx">component</span><span class="p">(</span><span class="s1">&#39;RouterLink&#39;</span><span class="p">,</span> <span class="nx">Link</span><span class="p">)</span>
+
+  <span class="c1">// Vue钩子合并策略 同created</span>
+  <span class="kr">const</span> <span class="nx">strats</span> <span class="o">=</span> <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">optionMergeStrategies</span>
+  <span class="c1">// use the same hook merging strategy for route hooks</span>
+  <span class="nx">strats</span><span class="p">.</span><span class="nx">beforeRouteEnter</span> <span class="o">=</span> <span class="nx">strats</span><span class="p">.</span><span class="nx">beforeRouteLeave</span> <span class="o">=</span> <span class="nx">strats</span><span class="p">.</span><span class="nx">beforeRouteUpdate</span> <span class="o">=</span> <span class="nx">strats</span><span class="p">.</span><span class="nx">created</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>整体上install方法：</p>
+<p>1、判断是否安装过Vue-Router，安装过，直接返回。</p>
+<p>2、Vue.mixin beforeCreate和destoryed生命周期。</p>
+<p>3、定义vm.$router和vm.$route变量。</p>
+<p>4、注册RouterView和RouteLink组件。</p>
+<p>5、设置Router添加的生命周期的合并策略。</p>
+<h2 id="vue-router-new-router-options-">vue-router实现之new Router(options)</h2>
+<p>代码使用方式：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">router</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">VueRouter</span><span class="p">({</span>
+  <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;history&#39;</span><span class="p">,</span>
+  <span class="nx">routes</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span> <span class="nx">path</span><span class="o">:</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;home&#39;</span><span class="p">,</span> <span class="nx">component</span><span class="o">:</span> <span class="nx">Home</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="nx">path</span><span class="o">:</span> <span class="s1">&#39;/foo&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="nx">component</span><span class="o">:</span> <span class="nx">Foo</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="nx">path</span><span class="o">:</span> <span class="s1">&#39;/bar/:id&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="nx">component</span><span class="o">:</span> <span class="nx">Bar</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>VueRouter类的构造方法：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">VueRouter</span> <span class="p">{</span>
+  <span class="c1">// ...</span>
+  <span class="nx">constructor</span> <span class="p">(</span><span class="nx">options</span><span class="o">:</span> <span class="nx">RouterOptions</span> <span class="o">=</span> <span class="p">{})</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">app</span> <span class="o">=</span> <span class="kc">null</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">apps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">beforeHooks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">resolveHooks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">afterHooks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">matcher</span> <span class="o">=</span> <span class="nx">createMatcher</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">routes</span> <span class="o">||</span> <span class="p">[],</span> <span class="k">this</span><span class="p">)</span>
+
+    <span class="c1">//默认为hash mode</span>
+    <span class="kd">let</span> <span class="nx">mode</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">mode</span> <span class="o">||</span> <span class="s1">&#39;hash&#39;</span>
+    <span class="c1">// 如果指定为history，但是浏览器不支持pushState，且没有指定不可以fallback，则fallback到hash</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">fallback</span> <span class="o">=</span>
+      <span class="nx">mode</span> <span class="o">===</span> <span class="s1">&#39;history&#39;</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">supportsPushState</span> <span class="o">&amp;&amp;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">fallback</span> <span class="o">!==</span> <span class="kc">false</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">fallback</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">mode</span> <span class="o">=</span> <span class="s1">&#39;hash&#39;</span>
+    <span class="p">}</span>
+    <span class="c1">// 不在浏览器中，mode为abstract</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">inBrowser</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">mode</span> <span class="o">=</span> <span class="s1">&#39;abstract&#39;</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">mode</span> <span class="o">=</span> <span class="nx">mode</span>
+
+    <span class="k">switch</span> <span class="p">(</span><span class="nx">mode</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">case</span> <span class="s1">&#39;history&#39;</span><span class="o">:</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">history</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HTML5History</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">base</span><span class="p">)</span>
+        <span class="k">break</span>
+      <span class="k">case</span> <span class="s1">&#39;hash&#39;</span><span class="o">:</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">history</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HashHistory</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">base</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">fallback</span><span class="p">)</span>
+        <span class="k">break</span>
+      <span class="k">case</span> <span class="s1">&#39;abstract&#39;</span><span class="o">:</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">history</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AbstractHistory</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">base</span><span class="p">)</span>
+        <span class="k">break</span>
+      <span class="k">default</span><span class="o">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">assert</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="err">`</span><span class="nx">invalid</span> <span class="nx">mode</span><span class="o">:</span> <span class="nx">$</span><span class="p">{</span><span class="nx">mode</span><span class="p">}</span><span class="err">`</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">match</span> <span class="p">(</span><span class="nx">raw</span><span class="o">:</span> <span class="nx">RawLocation</span><span class="p">,</span> <span class="nx">current</span><span class="o">?:</span> <span class="nx">Route</span><span class="p">,</span> <span class="nx">redirectedFrom</span><span class="o">?:</span> <span class="nx">Location</span><span class="p">)</span><span class="o">:</span> <span class="nx">Route</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">matcher</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="nx">current</span><span class="p">,</span> <span class="nx">redirectedFrom</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="nx">get</span> <span class="nx">currentRoute</span> <span class="p">()</span><span class="o">:</span> <span class="o">?</span><span class="nx">Route</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">history</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">current</span>
+  <span class="p">}</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>上一个章节提到，VueRouter的install方法会调用VueRouter.init方法</p>
+<p>VueRouter的实例方法init：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">init</span> <span class="p">(</span><span class="nx">app</span><span class="o">:</span> <span class="nx">any</span> <span class="cm">/* Vue component instance */</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//未安装，则给出错误提示</span>
+    <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span> <span class="o">&amp;&amp;</span>
+      <span class="nx">assert</span><span class="p">(</span>
+        <span class="nx">install</span><span class="p">.</span><span class="nx">installed</span><span class="p">,</span>
+        <span class="err">`</span><span class="nx">not</span> <span class="nx">installed</span><span class="p">.</span> <span class="nx">Make</span> <span class="nx">sure</span> <span class="nx">to</span> <span class="nx">call</span> <span class="err">\`</span><span class="nx">Vue</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">VueRouter</span><span class="p">)</span><span class="err">\`</span> <span class="err">`</span> <span class="o">+</span>
+          <span class="err">`</span><span class="nx">before</span> <span class="nx">creating</span> <span class="nx">root</span> <span class="nx">instance</span><span class="p">.</span><span class="err">`</span>
+      <span class="p">)</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">apps</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span>
+
+    <span class="c1">// set up app destroyed handler</span>
+    <span class="c1">// https://github.com/vuejs/vue-router/issues/2639</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">$once</span><span class="p">(</span><span class="s1">&#39;hook:destroyed&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// clean out app from this.apps array once destroyed</span>
+      <span class="kr">const</span> <span class="nx">index</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">apps</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">index</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">apps</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+      <span class="c1">// ensure we still have a main app or null if no apps</span>
+      <span class="c1">// we do not release the router so it can be reused</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">app</span> <span class="o">===</span> <span class="nx">app</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">app</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">apps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">||</span> <span class="kc">null</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">app</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">teardown</span><span class="p">()</span>
+    <span class="p">})</span>
+
+    <span class="c1">// main app previously initialized</span>
+    <span class="c1">// return as we don&#39;t need to set up new history listener</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">app</span> <span class="o">=</span> <span class="nx">app</span>
+
+    <span class="kr">const</span> <span class="nx">history</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">history</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">history</span> <span class="k">instanceof</span> <span class="nx">HTML5History</span> <span class="o">||</span> <span class="nx">history</span> <span class="k">instanceof</span> <span class="nx">HashHistory</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">handleInitialScroll</span> <span class="o">=</span> <span class="nx">routeOrError</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">from</span> <span class="o">=</span> <span class="nx">history</span><span class="p">.</span><span class="nx">current</span>
+        <span class="kr">const</span> <span class="nx">expectScroll</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">scrollBehavior</span>
+        <span class="kr">const</span> <span class="nx">supportsScroll</span> <span class="o">=</span> <span class="nx">supportsPushState</span> <span class="o">&amp;&amp;</span> <span class="nx">expectScroll</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">supportsScroll</span> <span class="o">&amp;&amp;</span> <span class="s1">&#39;fullPath&#39;</span> <span class="k">in</span> <span class="nx">routeOrError</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">handleScroll</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">routeOrError</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="kr">const</span> <span class="nx">setupListeners</span> <span class="o">=</span> <span class="nx">routeOrError</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">history</span><span class="p">.</span><span class="nx">setupListeners</span><span class="p">()</span>
+        <span class="nx">handleInitialScroll</span><span class="p">(</span><span class="nx">routeOrError</span><span class="p">)</span>
+      <span class="p">}</span>
+      <span class="c1">//</span>
+      <span class="nx">history</span><span class="p">.</span><span class="nx">transitionTo</span><span class="p">(</span>
+        <span class="nx">history</span><span class="p">.</span><span class="nx">getCurrentLocation</span><span class="p">(),</span>
+        <span class="nx">setupListeners</span><span class="p">,</span>
+        <span class="nx">setupListeners</span>
+      <span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">history</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">route</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">apps</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">app</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">_route</span> <span class="o">=</span> <span class="nx">route</span>
+      <span class="p">})</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>init方法主要执行了history.transitionTo和history.listen方法来改变app._route。</p>
+<h2 id="vuerouter-hashhistory">VueRouter实现之HashHistory</h2>
+<p>hash模式使用得比较多，让我们先来看下HashHistory的实现。</p>
+<p>上文构造函数章节，我们得知mode为hash时，会执行下面的代码。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="k">this</span><span class="p">.</span><span class="nx">history</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HashHistory</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">base</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">fallback</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>HashHistory构造方法：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kr">class</span> <span class="nx">HashHistory</span> <span class="kr">extends</span> <span class="nx">History</span> <span class="p">{</span>
+  <span class="nx">constructor</span> <span class="p">(</span><span class="nx">router</span><span class="o">:</span> <span class="nx">Router</span><span class="p">,</span> <span class="nx">base</span><span class="o">:</span> <span class="o">?</span><span class="nx">string</span><span class="p">,</span> <span class="nx">fallback</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 基类构造器</span>
+    <span class="kr">super</span><span class="p">(</span><span class="nx">router</span><span class="p">,</span> <span class="nx">base</span><span class="p">)</span>
+    <span class="c1">// check history fallback deeplinking </span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">fallback</span> <span class="o">&amp;&amp;</span> <span class="nx">checkFallback</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">base</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="c1">//保证hash以/开头</span>
+    <span class="nx">ensureSlash</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 将history模式转换为hash模式</span>
+<span class="kd">function</span> <span class="nx">checkFallback</span> <span class="p">(</span><span class="nx">base</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">location</span> <span class="o">=</span> <span class="nx">getLocation</span><span class="p">(</span><span class="nx">base</span><span class="p">)</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="sr">/^\/#/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">location</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">cleanPath</span><span class="p">(</span><span class="nx">base</span> <span class="o">+</span> <span class="s1">&#39;/#&#39;</span> <span class="o">+</span> <span class="nx">location</span><span class="p">))</span>
+    <span class="k">return</span> <span class="kc">true</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">ensureSlash</span> <span class="p">()</span><span class="o">:</span> <span class="kr">boolean</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">getHash</span><span class="p">()</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">===</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">true</span>
+  <span class="p">}</span>
+  <span class="nx">replaceHash</span><span class="p">(</span><span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nx">path</span><span class="p">)</span>
+  <span class="k">return</span> <span class="kc">false</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">replaceHash</span> <span class="p">(</span><span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">supportsPushState</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">replaceState</span><span class="p">(</span><span class="nx">getUrl</span><span class="p">(</span><span class="nx">path</span><span class="p">))</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">getUrl</span><span class="p">(</span><span class="nx">path</span><span class="p">))</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">getHash</span> <span class="p">()</span><span class="o">:</span> <span class="nx">string</span> <span class="p">{</span>
+  <span class="c1">// We can&#39;t use window.location.hash here because it&#39;s not</span>
+  <span class="c1">// consistent across browsers - Firefox will pre-decode it!</span>
+  <span class="kd">let</span> <span class="nx">href</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span>
+  <span class="kr">const</span> <span class="nx">index</span> <span class="o">=</span> <span class="nx">href</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
+  <span class="c1">// empty path</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+
+  <span class="nx">href</span> <span class="o">=</span> <span class="nx">href</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="nx">href</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>HashHistory构造函数初始化时：</p>
+<p>1、针对不支持history模式的降级处理</p>
+<p>2、保证hash值是以/开头的。</p>
+<h3 id="transitionto-">transitionTo方法</h3>
+<p>init方法中调用了history实例的transitionTo方法。</p>
+<p>transitionTo方法源码：</p>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="nx">transitionTo</span> <span class="p">(</span>
+    <span class="nx">location</span><span class="o">:</span> <span class="nx">RawLocation</span><span class="p">,</span>
+    <span class="nx">onComplete</span><span class="o">?:</span> <span class="nb">Function</span><span class="p">,</span>
+    <span class="nx">onAbort</span><span class="o">?:</span> <span class="nb">Function</span>
+  <span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">route</span>
+    <span class="c1">// catch redirect option https://github.com/vuejs/vue-router/issues/3201</span>
+    <span class="k">try</span> <span class="p">{</span>
+      <span class="c1">//location为当前的hash值，this.current在构造函数中赋值为createRoute(null, { path: &#39;/&#39;})</span>
+      <span class="nx">route</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">location</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">)</span>
+      <span class="c1">//match代码在下面</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">errorCbs</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">cb</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+      <span class="p">})</span>
+      <span class="c1">// Exception should still be thrown</span>
+      <span class="k">throw</span> <span class="nx">e</span>
+    <span class="p">}</span>
+    <span class="kr">const</span> <span class="nx">prev</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">confirmTransition</span><span class="p">(</span>
+      <span class="nx">route</span><span class="p">,</span>
+      <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">updateRoute</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+        <span class="nx">onComplete</span> <span class="o">&amp;&amp;</span> <span class="nx">onComplete</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">ensureURL</span><span class="p">()</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">afterHooks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">hook</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="nx">hook</span> <span class="o">&amp;&amp;</span> <span class="nx">hook</span><span class="p">(</span><span class="nx">route</span><span class="p">,</span> <span class="nx">prev</span><span class="p">)</span>
+        <span class="p">})</span>
+
+        <span class="c1">// fire ready cbs once</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">ready</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">ready</span> <span class="o">=</span> <span class="kc">true</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">readyCbs</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">cb</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+          <span class="p">})</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">onAbort</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">onAbort</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">err</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">ready</span><span class="p">)</span> <span class="p">{</span>
+          <span class="c1">// Initial redirection should not mark the history as ready yet</span>
+          <span class="c1">// because it&#39;s triggered by the redirection instead</span>
+          <span class="c1">// https://github.com/vuejs/vue-router/issues/3225</span>
+          <span class="c1">// https://github.com/vuejs/vue-router/issues/3331</span>
+          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isNavigationFailure</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">NavigationFailureType</span><span class="p">.</span><span class="nx">redirected</span><span class="p">)</span> <span class="o">||</span> <span class="nx">prev</span> <span class="o">!==</span> <span class="nx">START</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">ready</span> <span class="o">=</span> <span class="kc">true</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">readyErrorCbs</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+              <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+            <span class="p">})</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">)</span>
+  <span class="p">}</span>
+
+<span class="c1">// createRoute 方法源代码</span>
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">createRoute</span> <span class="p">(</span>
+  <span class="nx">record</span><span class="o">:</span> <span class="o">?</span><span class="nx">RouteRecord</span><span class="p">,</span>
+  <span class="nx">location</span><span class="o">:</span> <span class="nx">Location</span><span class="p">,</span>
+  <span class="nx">redirectedFrom</span><span class="o">?:</span> <span class="o">?</span><span class="nx">Location</span><span class="p">,</span>
+  <span class="nx">router</span><span class="o">?:</span> <span class="nx">VueRouter</span>
+<span class="p">)</span><span class="o">:</span> <span class="nx">Route</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">stringifyQuery</span> <span class="o">=</span> <span class="nx">router</span> <span class="o">&amp;&amp;</span> <span class="nx">router</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">stringifyQuery</span>
+
+  <span class="kd">let</span> <span class="nx">query</span><span class="o">:</span> <span class="nx">any</span> <span class="o">=</span> <span class="nx">location</span><span class="p">.</span><span class="nx">query</span> <span class="o">||</span> <span class="p">{}</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="c1">//深度赋值，以免被修改</span>
+    <span class="nx">query</span> <span class="o">=</span> <span class="nx">clone</span><span class="p">(</span><span class="nx">query</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="kr">const</span> <span class="nx">route</span><span class="o">:</span> <span class="nx">Route</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="nx">location</span><span class="p">.</span><span class="nx">name</span> <span class="o">||</span> <span class="p">(</span><span class="nx">record</span> <span class="o">&amp;&amp;</span> <span class="nx">record</span><span class="p">.</span><span class="nx">name</span><span class="p">),</span>
+    <span class="nx">meta</span><span class="o">:</span> <span class="p">(</span><span class="nx">record</span> <span class="o">&amp;&amp;</span> <span class="nx">record</span><span class="p">.</span><span class="nx">meta</span><span class="p">)</span> <span class="o">||</span> <span class="p">{},</span>
+    <span class="nx">path</span><span class="o">:</span> <span class="nx">location</span><span class="p">.</span><span class="nx">path</span> <span class="o">||</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
+    <span class="nx">hash</span><span class="o">:</span> <span class="nx">location</span><span class="p">.</span><span class="nx">hash</span> <span class="o">||</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="nx">query</span><span class="p">,</span>
+    <span class="nx">params</span><span class="o">:</span> <span class="nx">location</span><span class="p">.</span><span class="nx">params</span> <span class="o">||</span> <span class="p">{},</span>
+    <span class="nx">fullPath</span><span class="o">:</span> <span class="nx">getFullPath</span><span class="p">(</span><span class="nx">location</span><span class="p">,</span> <span class="nx">stringifyQuery</span><span class="p">),</span>
+    <span class="nx">matched</span><span class="o">:</span> <span class="nx">record</span> <span class="o">?</span> <span class="nx">formatMatch</span><span class="p">(</span><span class="nx">record</span><span class="p">)</span> <span class="o">:</span> <span class="p">[]</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">redirectedFrom</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">route</span><span class="p">.</span><span class="nx">redirectedFrom</span> <span class="o">=</span> <span class="nx">getFullPath</span><span class="p">(</span><span class="nx">redirectedFrom</span><span class="p">,</span> <span class="nx">stringifyQuery</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="c1">//冻结route对象</span>
+  <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">freeze</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">//match源代码</span>
+  <span class="nx">match</span> <span class="p">(</span><span class="nx">raw</span><span class="o">:</span> <span class="nx">RawLocation</span><span class="p">,</span> <span class="nx">current</span><span class="o">?:</span> <span class="nx">Route</span><span class="p">,</span> <span class="nx">redirectedFrom</span><span class="o">?:</span> <span class="nx">Location</span><span class="p">)</span><span class="o">:</span> <span class="nx">Route</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">matcher</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="nx">current</span><span class="p">,</span> <span class="nx">redirectedFrom</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="c1">// matcher对象是通过createMatcher方法生成的</span>
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">createMatcher</span> <span class="p">(</span>
+  <span class="nx">routes</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteConfig</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">router</span><span class="o">:</span> <span class="nx">VueRouter</span>
+<span class="p">)</span><span class="o">:</span> <span class="nx">Matcher</span> <span class="p">{</span>
+  <span class="c1">// ...</span>
+  <span class="kd">function</span> <span class="nx">match</span> <span class="p">(</span>
+    <span class="nx">raw</span><span class="o">:</span> <span class="nx">RawLocation</span><span class="p">,</span>
+    <span class="nx">currentRoute</span><span class="o">?:</span> <span class="nx">Route</span><span class="p">,</span>
+    <span class="nx">redirectedFrom</span><span class="o">?:</span> <span class="nx">Location</span>
+  <span class="p">)</span><span class="o">:</span> <span class="nx">Route</span> <span class="p">{</span>
+    <span class="c1">//解析当前url，得到hash，path，query和name等信息</span>
+    <span class="kr">const</span> <span class="nx">location</span> <span class="o">=</span> <span class="nx">normalizeLocation</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="nx">currentRoute</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">router</span><span class="p">)</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">name</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">location</span>
+    <span class="c1">// 如果是命名路由</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">record</span> <span class="o">=</span> <span class="nx">nameMap</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">warn</span><span class="p">(</span><span class="nx">record</span><span class="p">,</span> <span class="err">`</span><span class="nx">Route</span> <span class="kd">with</span> <span class="nx">name</span> <span class="s1">&#39;${name}&#39;</span> <span class="nx">does</span> <span class="nx">not</span> <span class="nx">exist</span><span class="err">`</span><span class="p">)</span>
+      <span class="p">}</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">record</span><span class="p">)</span> <span class="k">return</span> <span class="nx">_createRoute</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">location</span><span class="p">)</span>
+      <span class="kr">const</span> <span class="nx">paramNames</span> <span class="o">=</span> <span class="nx">record</span><span class="p">.</span><span class="nx">regex</span><span class="p">.</span><span class="nx">keys</span>
+        <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">key</span> <span class="o">=&gt;</span> <span class="o">!</span><span class="nx">key</span><span class="p">.</span><span class="nx">optional</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">key</span> <span class="o">=&gt;</span> <span class="nx">key</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">location</span><span class="p">.</span><span class="nx">params</span> <span class="o">!==</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">location</span><span class="p">.</span><span class="nx">params</span> <span class="o">=</span> <span class="p">{}</span>
+      <span class="p">}</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="nx">currentRoute</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">currentRoute</span><span class="p">.</span><span class="nx">params</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">currentRoute</span><span class="p">.</span><span class="nx">params</span><span class="p">)</span> <span class="p">{</span>
+          <span class="c1">// 复制currentRoute中的params参数(如果不在location.params)中</span>
+          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nx">key</span> <span class="k">in</span> <span class="nx">location</span><span class="p">.</span><span class="nx">params</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">paramNames</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">location</span><span class="p">.</span><span class="nx">params</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">currentRoute</span><span class="p">.</span><span class="nx">params</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+
+      <span class="nx">location</span><span class="p">.</span><span class="nx">path</span> <span class="o">=</span> <span class="nx">fillParams</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="nx">location</span><span class="p">.</span><span class="nx">params</span><span class="p">,</span> <span class="err">`</span><span class="nx">named</span> <span class="nx">route</span> <span class="s2">&quot;${name}&quot;</span><span class="err">`</span><span class="p">)</span>
+      <span class="k">return</span> <span class="nx">_createRoute</span><span class="p">(</span><span class="nx">record</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">redirectedFrom</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">location</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">//</span>
+      <span class="nx">location</span><span class="p">.</span><span class="nx">params</span> <span class="o">=</span> <span class="p">{}</span>
+      <span class="c1">//遍历pathList，找到合适的record，因此命名路由的record查找效率更高</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">pathList</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">pathList</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+        <span class="kr">const</span> <span class="nx">record</span> <span class="o">=</span> <span class="nx">pathMap</span><span class="p">[</span><span class="nx">path</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">matchRoute</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">regex</span><span class="p">,</span> <span class="nx">location</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="nx">location</span><span class="p">.</span><span class="nx">params</span><span class="p">))</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">_createRoute</span><span class="p">(</span><span class="nx">record</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">redirectedFrom</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// no match</span>
+    <span class="k">return</span> <span class="nx">_createRoute</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">location</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>这里可能需要理解一下pathList，pathMap和nameMap这几个变量，它们是通过createRouteMap来创建的。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kd">function</span> <span class="nx">createRouteMap</span> <span class="p">(</span>
+  <span class="nx">routes</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteConfig</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">oldPathList</span><span class="o">?:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">string</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">oldPathMap</span><span class="o">?:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">oldNameMap</span><span class="o">?:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">parentRoute</span><span class="o">?:</span> <span class="nx">RouteRecord</span>
+<span class="p">)</span><span class="o">:</span> <span class="p">{</span>
+  <span class="nx">pathList</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">string</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">pathMap</span><span class="o">:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">nameMap</span><span class="o">:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span>
+<span class="p">}</span> <span class="p">{</span>
+  <span class="c1">// the path list is used to control path matching priority</span>
+  <span class="kr">const</span> <span class="nx">pathList</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">string</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nx">oldPathList</span> <span class="o">||</span> <span class="p">[]</span>
+  <span class="c1">// $flow-disable-line</span>
+  <span class="kr">const</span> <span class="nx">pathMap</span><span class="o">:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nx">oldPathMap</span> <span class="o">||</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+  <span class="c1">// $flow-disable-line</span>
+  <span class="kr">const</span> <span class="nx">nameMap</span><span class="o">:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nx">oldNameMap</span> <span class="o">||</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+
+  <span class="nx">routes</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">route</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">//定义的route传递给addRouteRecord</span>
+    <span class="nx">addRouteRecord</span><span class="p">(</span><span class="nx">pathList</span><span class="p">,</span> <span class="nx">pathMap</span><span class="p">,</span> <span class="nx">nameMap</span><span class="p">,</span> <span class="nx">route</span><span class="p">,</span> <span class="nx">parentRoute</span><span class="p">)</span>
+  <span class="p">})</span>
+
+  <span class="c1">// ensure wildcard routes are always at the end</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">pathList</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">l</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">pathList</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">pathList</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">pathList</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+      <span class="nx">l</span><span class="o">--</span>
+      <span class="nx">i</span><span class="o">--</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="s1">&#39;development&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// warn if routes do not include leading slashes</span>
+    <span class="kr">const</span> <span class="nx">found</span> <span class="o">=</span> <span class="nx">pathList</span>
+    <span class="c1">// check for missing leading slash</span>
+      <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">path</span> <span class="o">=&gt;</span> <span class="nx">path</span> <span class="o">&amp;&amp;</span> <span class="nx">path</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!==</span> <span class="s1">&#39;*&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">path</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!==</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">found</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">pathNames</span> <span class="o">=</span> <span class="nx">found</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">path</span> <span class="o">=&gt;</span> <span class="err">`</span><span class="o">-</span> <span class="nx">$</span><span class="p">{</span><span class="nx">path</span><span class="p">}</span><span class="err">`</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;\n&#39;</span><span class="p">)</span>
+      <span class="nx">warn</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="err">`</span><span class="nx">Non</span><span class="o">-</span><span class="nx">nested</span> <span class="nx">routes</span> <span class="nx">must</span> <span class="nx">include</span> <span class="nx">a</span> <span class="nx">leading</span> <span class="nx">slash</span> <span class="nx">character</span><span class="p">.</span> <span class="nx">Fix</span> <span class="nx">the</span> <span class="nx">following</span> <span class="nx">routes</span><span class="o">:</span> <span class="err">\</span><span class="nx">n$</span><span class="p">{</span><span class="nx">pathNames</span><span class="p">}</span><span class="err">`</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">pathList</span><span class="p">,</span>
+    <span class="nx">pathMap</span><span class="p">,</span>
+    <span class="nx">nameMap</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// addRouteRecord源码 </span>
+<span class="kd">function</span> <span class="nx">addRouteRecord</span> <span class="p">(</span>
+  <span class="nx">pathList</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">string</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">pathMap</span><span class="o">:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">nameMap</span><span class="o">:</span> <span class="nx">Dictionary</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">route</span><span class="o">:</span> <span class="nx">RouteConfig</span><span class="p">,</span>
+  <span class="nx">parent</span><span class="o">?:</span> <span class="nx">RouteRecord</span><span class="p">,</span>
+  <span class="nx">matchAs</span><span class="o">?:</span> <span class="nx">string</span>
+<span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">name</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">route</span>
+
+  <span class="kr">const</span> <span class="nx">pathToRegexpOptions</span><span class="o">:</span> <span class="nx">PathToRegexpOptions</span> <span class="o">=</span>
+    <span class="nx">route</span><span class="p">.</span><span class="nx">pathToRegexpOptions</span> <span class="o">||</span> <span class="p">{}</span>
+    <span class="c1">//  normalizePath 源码</span>
+    <span class="c1">//   function normalizePath (</span>
+    <span class="c1">//   path: string,</span>
+    <span class="c1">//   parent?: RouteRecord,</span>
+    <span class="c1">//   strict?: boolean</span>
+    <span class="c1">// ): string {</span>
+    <span class="c1">//   if (!strict) path = path.replace(/\/$/, &#39;&#39;)</span>
+    <span class="c1">//   if (path[0] === &#39;/&#39;) return path</span>
+    <span class="c1">//   if (parent == null) return path</span>
+    <span class="c1">//   return cleanPath(`${parent.path}/${path}`)</span>
+    <span class="c1">// }</span>
+   <span class="c1">// 规范化path，非严格匹配模式，去掉最后的/，如果以 / 开头，直接返回 path，</span>
+   <span class="c1">// 如果 parent为null或undefined，直接返回path，否则返回 `${parent.path}/${path}`</span>
+  <span class="kr">const</span> <span class="nx">normalizedPath</span> <span class="o">=</span> <span class="nx">normalizePath</span><span class="p">(</span><span class="nx">path</span><span class="p">,</span> <span class="nx">parent</span><span class="p">,</span> <span class="nx">pathToRegexpOptions</span><span class="p">.</span><span class="nx">strict</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">route</span><span class="p">.</span><span class="nx">caseSensitive</span> <span class="o">===</span> <span class="s1">&#39;boolean&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">pathToRegexpOptions</span><span class="p">.</span><span class="nx">sensitive</span> <span class="o">=</span> <span class="nx">route</span><span class="p">.</span><span class="nx">caseSensitive</span>
+  <span class="p">}</span>
+
+  <span class="kr">const</span> <span class="nx">record</span><span class="o">:</span> <span class="nx">RouteRecord</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">path</span><span class="o">:</span> <span class="nx">normalizedPath</span><span class="p">,</span>
+    <span class="c1">//</span>
+    <span class="c1">// function compileRouteRegex (</span>
+    <span class="c1">//   path: string,</span>
+    <span class="c1">//   pathToRegexpOptions: PathToRegexpOptions</span>
+    <span class="c1">// ): RouteRegExp {</span>
+    <span class="c1">//   const regex = Regexp(path, [], pathToRegexpOptions)</span>
+    <span class="c1">//   if (process.env.NODE_ENV !== &#39;production&#39;) {</span>
+    <span class="c1">//     const keys: any = Object.create(null)</span>
+    <span class="c1">//     regex.keys.forEach(key =&gt; {</span>
+    <span class="c1">//       warn(</span>
+    <span class="c1">//         !keys[key.name],</span>
+    <span class="c1">//         `Duplicate param keys in route with path: &quot;${path}&quot;`</span>
+    <span class="c1">//       )</span>
+    <span class="c1">//       keys[key.name] = true</span>
+    <span class="c1">//     })</span>
+    <span class="c1">//   }</span>
+    <span class="c1">//   return regex</span>
+    <span class="c1">// }</span>
+    <span class="c1">// 通过path-to-regexp构造一个正则</span>
+    <span class="nx">regex</span><span class="o">:</span> <span class="nx">compileRouteRegex</span><span class="p">(</span><span class="nx">normalizedPath</span><span class="p">,</span> <span class="nx">pathToRegexpOptions</span><span class="p">),</span>
+    <span class="nx">components</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">components</span> <span class="o">||</span> <span class="p">{</span> <span class="k">default</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">component</span> <span class="p">},</span>
+    <span class="nx">alias</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">alias</span>
+      <span class="o">?</span> <span class="k">typeof</span> <span class="nx">route</span><span class="p">.</span><span class="nx">alias</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span>
+        <span class="o">?</span> <span class="p">[</span><span class="nx">route</span><span class="p">.</span><span class="nx">alias</span><span class="p">]</span>
+        <span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">alias</span>
+      <span class="o">:</span> <span class="p">[],</span>
+    <span class="nx">instances</span><span class="o">:</span> <span class="p">{},</span>
+    <span class="nx">enteredCbs</span><span class="o">:</span> <span class="p">{},</span>
+    <span class="nx">name</span><span class="p">,</span>
+    <span class="nx">parent</span><span class="p">,</span>
+    <span class="nx">matchAs</span><span class="p">,</span>
+    <span class="nx">redirect</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">redirect</span><span class="p">,</span>
+    <span class="nx">beforeEnter</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">beforeEnter</span><span class="p">,</span>
+    <span class="nx">meta</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">meta</span> <span class="o">||</span> <span class="p">{},</span>
+    <span class="nx">props</span><span class="o">:</span>
+      <span class="nx">route</span><span class="p">.</span><span class="nx">props</span> <span class="o">==</span> <span class="kc">null</span>
+        <span class="o">?</span> <span class="p">{}</span>
+        <span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">components</span>
+          <span class="o">?</span> <span class="nx">route</span><span class="p">.</span><span class="nx">props</span>
+          <span class="o">:</span> <span class="p">{</span> <span class="k">default</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">props</span> <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">route</span><span class="p">.</span><span class="nx">children</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Warn if route is named, does not redirect and has a default child route.</span>
+    <span class="c1">// If users navigate to this route by name, the default child will</span>
+    <span class="c1">// not be rendered (GH Issue #629)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span>
+        <span class="nx">route</span><span class="p">.</span><span class="nx">name</span> <span class="o">&amp;&amp;</span>
+        <span class="o">!</span><span class="nx">route</span><span class="p">.</span><span class="nx">redirect</span> <span class="o">&amp;&amp;</span>
+        <span class="nx">route</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">some</span><span class="p">(</span><span class="nx">child</span> <span class="o">=&gt;</span> <span class="sr">/^\/?$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">child</span><span class="p">.</span><span class="nx">path</span><span class="p">))</span>
+      <span class="p">)</span> <span class="p">{</span>
+        <span class="nx">warn</span><span class="p">(</span>
+          <span class="kc">false</span><span class="p">,</span>
+          <span class="err">`</span><span class="nx">Named</span> <span class="nx">Route</span> <span class="s1">&#39;${route.name}&#39;</span> <span class="nx">has</span> <span class="nx">a</span> <span class="k">default</span> <span class="nx">child</span> <span class="nx">route</span><span class="p">.</span> <span class="err">`</span> <span class="o">+</span>
+            <span class="err">`</span><span class="nx">When</span> <span class="nx">navigating</span> <span class="nx">to</span> <span class="k">this</span> <span class="nx">named</span> <span class="nx">route</span> <span class="p">(</span><span class="o">:</span><span class="nx">to</span><span class="o">=</span><span class="s2">&quot;{name: &#39;${</span>
+<span class="s2">              route.name</span>
+<span class="s2">            }&#39;&quot;</span><span class="p">),</span> <span class="err">`</span> <span class="o">+</span>
+            <span class="err">`</span><span class="nx">the</span> <span class="k">default</span> <span class="nx">child</span> <span class="nx">route</span> <span class="nx">will</span> <span class="nx">not</span> <span class="nx">be</span> <span class="nx">rendered</span><span class="p">.</span> <span class="nx">Remove</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">from</span> <span class="err">`</span> <span class="o">+</span>
+            <span class="err">`</span><span class="k">this</span> <span class="nx">route</span> <span class="nx">and</span> <span class="nx">use</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">of</span> <span class="nx">the</span> <span class="k">default</span> <span class="nx">child</span> <span class="nx">route</span> <span class="k">for</span> <span class="nx">named</span> <span class="err">`</span> <span class="o">+</span>
+            <span class="err">`</span><span class="nx">links</span> <span class="nx">instead</span><span class="p">.</span><span class="err">`</span>
+        <span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nx">route</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">child</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">childMatchAs</span> <span class="o">=</span> <span class="nx">matchAs</span>
+        <span class="o">?</span> <span class="nx">cleanPath</span><span class="p">(</span><span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">matchAs</span><span class="p">}</span><span class="o">/</span><span class="nx">$</span><span class="p">{</span><span class="nx">child</span><span class="p">.</span><span class="nx">path</span><span class="p">}</span><span class="err">`</span><span class="p">)</span>
+        <span class="o">:</span> <span class="kc">undefined</span>
+      <span class="nx">addRouteRecord</span><span class="p">(</span><span class="nx">pathList</span><span class="p">,</span> <span class="nx">pathMap</span><span class="p">,</span> <span class="nx">nameMap</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">record</span><span class="p">,</span> <span class="nx">childMatchAs</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">pathMap</span><span class="p">[</span><span class="nx">record</span><span class="p">.</span><span class="nx">path</span><span class="p">])</span> <span class="p">{</span>
+    <span class="nx">pathList</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span>
+    <span class="nx">pathMap</span><span class="p">[</span><span class="nx">record</span><span class="p">.</span><span class="nx">path</span><span class="p">]</span> <span class="o">=</span> <span class="nx">record</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">route</span><span class="p">.</span><span class="nx">alias</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">aliases</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">route</span><span class="p">.</span><span class="nx">alias</span><span class="p">)</span> <span class="o">?</span> <span class="nx">route</span><span class="p">.</span><span class="nx">alias</span> <span class="o">:</span> <span class="p">[</span><span class="nx">route</span><span class="p">.</span><span class="nx">alias</span><span class="p">]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">aliases</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">alias</span> <span class="o">=</span> <span class="nx">aliases</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">alias</span> <span class="o">===</span> <span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">warn</span><span class="p">(</span>
+          <span class="kc">false</span><span class="p">,</span>
+          <span class="err">`</span><span class="nx">Found</span> <span class="nx">an</span> <span class="nx">alias</span> <span class="kd">with</span> <span class="nx">the</span> <span class="nx">same</span> <span class="nx">value</span> <span class="nx">as</span> <span class="nx">the</span> <span class="nx">path</span><span class="o">:</span> <span class="s2">&quot;${path}&quot;</span><span class="p">.</span> <span class="nx">You</span> <span class="nx">have</span> <span class="nx">to</span> <span class="nx">remove</span> <span class="nx">that</span> <span class="nx">alias</span><span class="p">.</span> <span class="nx">It</span> <span class="nx">will</span> <span class="nx">be</span> <span class="nx">ignored</span> <span class="k">in</span> <span class="nx">development</span><span class="p">.</span><span class="err">`</span>
+        <span class="p">)</span>
+        <span class="c1">// skip in dev to make it work</span>
+        <span class="k">continue</span>
+      <span class="p">}</span>
+
+      <span class="kr">const</span> <span class="nx">aliasRoute</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">path</span><span class="o">:</span> <span class="nx">alias</span><span class="p">,</span>
+        <span class="nx">children</span><span class="o">:</span> <span class="nx">route</span><span class="p">.</span><span class="nx">children</span>
+      <span class="p">}</span>
+      <span class="nx">addRouteRecord</span><span class="p">(</span>
+        <span class="nx">pathList</span><span class="p">,</span>
+        <span class="nx">pathMap</span><span class="p">,</span>
+        <span class="nx">nameMap</span><span class="p">,</span>
+        <span class="nx">aliasRoute</span><span class="p">,</span>
+        <span class="nx">parent</span><span class="p">,</span>
+        <span class="nx">record</span><span class="p">.</span><span class="nx">path</span> <span class="o">||</span> <span class="s1">&#39;/&#39;</span> <span class="c1">// matchAs</span>
+      <span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">nameMap</span><span class="p">[</span><span class="nx">name</span><span class="p">])</span> <span class="p">{</span>
+      <span class="nx">nameMap</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">record</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">matchAs</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">warn</span><span class="p">(</span>
+        <span class="kc">false</span><span class="p">,</span>
+        <span class="err">`</span><span class="nx">Duplicate</span> <span class="nx">named</span> <span class="nx">routes</span> <span class="nx">definition</span><span class="o">:</span> <span class="err">`</span> <span class="o">+</span>
+          <span class="err">`</span><span class="p">{</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;${name}&quot;</span><span class="p">,</span> <span class="nx">path</span><span class="o">:</span> <span class="s2">&quot;${record.path}&quot;</span> <span class="p">}</span><span class="err">`</span>
+      <span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>通过上面的代码，大概可以了解到pathList是整个path的完整路径的数据，pathMap是path为key，值为routeRecond的map,nameMap是key为name，值为routeRecord的数组。</p>
+<p>match的主要功能是通过目标路径匹配定义的routeRecord数据，根据routeRecord来_createRoute。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="kd">function</span> <span class="nx">_createRoute</span> <span class="p">(</span>
+    <span class="nx">record</span><span class="o">:</span> <span class="o">?</span><span class="nx">RouteRecord</span><span class="p">,</span>
+    <span class="nx">location</span><span class="o">:</span> <span class="nx">Location</span><span class="p">,</span>
+    <span class="nx">redirectedFrom</span><span class="o">?:</span> <span class="nx">Location</span>
+  <span class="p">)</span><span class="o">:</span> <span class="nx">Route</span> <span class="p">{</span>
+    <span class="c1">// 如果跳转，直接跳转</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">record</span> <span class="o">&amp;&amp;</span> <span class="nx">record</span><span class="p">.</span><span class="nx">redirect</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">redirect</span><span class="p">(</span><span class="nx">record</span><span class="p">,</span> <span class="nx">redirectedFrom</span> <span class="o">||</span> <span class="nx">location</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="c1">// alias</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">record</span> <span class="o">&amp;&amp;</span> <span class="nx">record</span><span class="p">.</span><span class="nx">matchAs</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">alias</span><span class="p">(</span><span class="nx">record</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">record</span><span class="p">.</span><span class="nx">matchAs</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="c1">//普通路由</span>
+    <span class="k">return</span> <span class="nx">createRoute</span><span class="p">(</span><span class="nx">record</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">redirectedFrom</span><span class="p">,</span> <span class="nx">router</span><span class="p">)</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>然后，我们再回到transitionTo，得到正确的route后，接下来看看confirmTransition操作。</p>
+<h3 id="confirmtransition">confirmTransition</h3>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="nx">confirmTransition</span> <span class="p">(</span><span class="nx">route</span><span class="o">:</span> <span class="nx">Route</span><span class="p">,</span> <span class="nx">onComplete</span><span class="o">:</span> <span class="nb">Function</span><span class="p">,</span> <span class="nx">onAbort</span><span class="o">?:</span> <span class="nb">Function</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">pending</span> <span class="o">=</span> <span class="nx">route</span>
+    <span class="kr">const</span> <span class="nx">abort</span> <span class="o">=</span> <span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// changed after adding errors with</span>
+      <span class="c1">// https://github.com/vuejs/vue-router/pull/3047 before that change,</span>
+      <span class="c1">// redirect and aborted navigation would produce an err == null</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isNavigationFailure</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">isError</span><span class="p">(</span><span class="nx">err</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">errorCbs</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">errorCbs</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+          <span class="p">})</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">warn</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="s1">&#39;uncaught error during route navigation:&#39;</span><span class="p">)</span>
+          <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="nx">onAbort</span> <span class="o">&amp;&amp;</span> <span class="nx">onAbort</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kr">const</span> <span class="nx">lastRouteIndex</span> <span class="o">=</span> <span class="nx">route</span><span class="p">.</span><span class="nx">matched</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="kr">const</span> <span class="nx">lastCurrentIndex</span> <span class="o">=</span> <span class="nx">current</span><span class="p">.</span><span class="nx">matched</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="p">(</span>
+      <span class="nx">isSameRoute</span><span class="p">(</span><span class="nx">route</span><span class="p">,</span> <span class="nx">current</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+      <span class="c1">// in the case the route map has been dynamically appended to</span>
+      <span class="nx">lastRouteIndex</span> <span class="o">===</span> <span class="nx">lastCurrentIndex</span> <span class="o">&amp;&amp;</span>
+      <span class="nx">route</span><span class="p">.</span><span class="nx">matched</span><span class="p">[</span><span class="nx">lastRouteIndex</span><span class="p">]</span> <span class="o">===</span> <span class="nx">current</span><span class="p">.</span><span class="nx">matched</span><span class="p">[</span><span class="nx">lastCurrentIndex</span><span class="p">]</span>
+    <span class="p">)</span> <span class="p">{</span>
+      <span class="c1">//相同的route，abort跳转</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">ensureURL</span><span class="p">()</span>
+      <span class="k">return</span> <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationDuplicatedError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">updated</span><span class="p">,</span> <span class="nx">deactivated</span><span class="p">,</span> <span class="nx">activated</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">resolveQueue</span><span class="p">(</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">matched</span><span class="p">,</span>
+      <span class="nx">route</span><span class="p">.</span><span class="nx">matched</span>
+    <span class="p">)</span>
+
+    <span class="c1">//切换route的hook队列</span>
+    <span class="kr">const</span> <span class="nx">queue</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;?</span><span class="nx">NavigationGuard</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">[].</span><span class="nx">concat</span><span class="p">(</span>
+      <span class="c1">// in-component leave guards</span>
+      <span class="nx">extractLeaveGuards</span><span class="p">(</span><span class="nx">deactivated</span><span class="p">),</span>
+      <span class="c1">// global before hooks</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">beforeHooks</span><span class="p">,</span>
+      <span class="c1">// in-component update hooks</span>
+      <span class="nx">extractUpdateHooks</span><span class="p">(</span><span class="nx">updated</span><span class="p">),</span>
+      <span class="c1">// in-config enter guards</span>
+      <span class="nx">activated</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">m</span> <span class="o">=&gt;</span> <span class="nx">m</span><span class="p">.</span><span class="nx">beforeEnter</span><span class="p">),</span>
+      <span class="c1">// async components</span>
+      <span class="nx">resolveAsyncComponents</span><span class="p">(</span><span class="nx">activated</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="kr">const</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="p">(</span><span class="nx">hook</span><span class="o">:</span> <span class="nx">NavigationGuard</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">pending</span> <span class="o">!==</span> <span class="nx">route</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 中间跳转到新的route</span>
+        <span class="k">return</span> <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationCancelledError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+      <span class="p">}</span>
+      <span class="k">try</span> <span class="p">{</span>
+        <span class="nx">hook</span><span class="p">(</span><span class="nx">route</span><span class="p">,</span> <span class="nx">current</span><span class="p">,</span> <span class="p">(</span><span class="nx">to</span><span class="o">:</span> <span class="nx">any</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">to</span> <span class="o">===</span> <span class="kc">false</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// next(false) -&gt; abort navigation, ensure current URL</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">ensureURL</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+            <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationAbortedError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isError</span><span class="p">(</span><span class="nx">to</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">ensureURL</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+            <span class="nx">abort</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span>
+            <span class="k">typeof</span> <span class="nx">to</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span> <span class="o">||</span>
+            <span class="p">(</span><span class="k">typeof</span> <span class="nx">to</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">&amp;&amp;</span>
+              <span class="p">(</span><span class="k">typeof</span> <span class="nx">to</span><span class="p">.</span><span class="nx">path</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span> <span class="o">||</span> <span class="k">typeof</span> <span class="nx">to</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">))</span>
+          <span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// next(&#39;/&#39;) or next({ path: &#39;/&#39; }) -&gt; redirect</span>
+            <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationRedirectedError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">to</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">to</span><span class="p">.</span><span class="nx">replace</span><span class="p">)</span> <span class="p">{</span>
+              <span class="k">this</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+              <span class="k">this</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+            <span class="p">}</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// confirm transition and pass on the value</span>
+            <span class="nx">next</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+          <span class="p">}</span>
+        <span class="p">})</span>
+      <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">abort</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// </span>
+    <span class="nx">runQueue</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">iterator</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// wait until async components are resolved before</span>
+      <span class="c1">// extracting in-component enter guards</span>
+      <span class="kr">const</span> <span class="nx">enterGuards</span> <span class="o">=</span> <span class="nx">extractEnterGuards</span><span class="p">(</span><span class="nx">activated</span><span class="p">)</span>
+      <span class="kr">const</span> <span class="nx">queue</span> <span class="o">=</span> <span class="nx">enterGuards</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">resolveHooks</span><span class="p">)</span>
+      <span class="nx">runQueue</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">iterator</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">pending</span> <span class="o">!==</span> <span class="nx">route</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationCancelledError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">pending</span> <span class="o">=</span> <span class="kc">null</span>
+        <span class="nx">onComplete</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">app</span><span class="p">.</span><span class="nx">$nextTick</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">handleRouteEntered</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+          <span class="p">})</span>
+        <span class="p">}</span>
+      <span class="p">})</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>这里是一个很关键的方法，路由跳转需要依次执行resolveQueue，extractLeaveGuards，extractUpdateHooks，resolveAsyncComponents，runQueue等关键方法，我们先来看resolveQueue。</p>
+<h3 id="resolvequeue">resolveQueue</h3>
+<p>resolveQueue源码：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">resolveQueue</span> <span class="p">(</span>
+  <span class="nx">current</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">next</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span>
+<span class="p">)</span><span class="o">:</span> <span class="p">{</span>
+  <span class="nx">updated</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">activated</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">deactivated</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span>
+<span class="p">}</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">i</span>
+  <span class="kr">const</span> <span class="nx">max</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">current</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">next</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span>
+  <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">max</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">current</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">!==</span> <span class="nx">next</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="p">{</span>
+      <span class="k">break</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="c1">//返回哪些需要更新，哪些需要激活，哪些需要卸载</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">updated</span><span class="o">:</span> <span class="nx">next</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">i</span><span class="p">),</span>
+    <span class="nx">activated</span><span class="o">:</span> <span class="nx">next</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">i</span><span class="p">),</span>
+    <span class="nx">deactivated</span><span class="o">:</span> <span class="nx">current</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="extractleaveguards-extractupdatehooks">extractLeaveGuards &amp; extractUpdateHooks</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">extractLeaveGuards</span> <span class="p">(</span><span class="nx">deactivated</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">)</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;?</span><span class="nb">Function</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">extractGuards</span><span class="p">(</span><span class="nx">deactivated</span><span class="p">,</span> <span class="s1">&#39;beforeRouteLeave&#39;</span><span class="p">,</span> <span class="nx">bindGuard</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">extractUpdateHooks</span> <span class="p">(</span><span class="nx">updated</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">)</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;?</span><span class="nb">Function</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">extractGuards</span><span class="p">(</span><span class="nx">updated</span><span class="p">,</span> <span class="s1">&#39;beforeRouteUpdate&#39;</span><span class="p">,</span> <span class="nx">bindGuard</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">extractGuards</span> <span class="p">(</span>
+  <span class="nx">records</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span>
+  <span class="nx">bind</span><span class="o">:</span> <span class="nb">Function</span><span class="p">,</span>
+  <span class="nx">reverse</span><span class="o">?:</span> <span class="kr">boolean</span>
+<span class="p">)</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;?</span><span class="nb">Function</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="c1">// </span>
+  <span class="kr">const</span> <span class="nx">guards</span> <span class="o">=</span> <span class="nx">flatMapComponents</span><span class="p">(</span><span class="nx">records</span><span class="p">,</span> <span class="p">(</span><span class="nx">def</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">match</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">guard</span> <span class="o">=</span> <span class="nx">extractGuard</span><span class="p">(</span><span class="nx">def</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">guard</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">guard</span><span class="p">)</span>
+        <span class="o">?</span> <span class="nx">guard</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">guard</span> <span class="o">=&gt;</span> <span class="nx">bind</span><span class="p">(</span><span class="nx">guard</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">match</span><span class="p">,</span> <span class="nx">key</span><span class="p">))</span>
+        <span class="o">:</span> <span class="nx">bind</span><span class="p">(</span><span class="nx">guard</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">match</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+  <span class="k">return</span> <span class="nx">flatten</span><span class="p">(</span><span class="nx">reverse</span> <span class="o">?</span> <span class="nx">guards</span><span class="p">.</span><span class="nx">reverse</span><span class="p">()</span> <span class="o">:</span> <span class="nx">guards</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="c1">// guard通过apply将this指定为vm对象</span>
+<span class="kd">function</span> <span class="nx">bindGuard</span> <span class="p">(</span><span class="nx">guard</span><span class="o">:</span> <span class="nx">NavigationGuard</span><span class="p">,</span> <span class="nx">instance</span><span class="o">:</span> <span class="o">?</span><span class="nx">_Vue</span><span class="p">)</span><span class="o">:</span> <span class="o">?</span><span class="nx">NavigationGuard</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">instance</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kd">function</span> <span class="nx">boundRouteGuard</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">guard</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="resolveasynccomponents">resolveAsyncComponents</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kd">function</span> <span class="nx">resolveAsyncComponents</span> <span class="p">(</span><span class="nx">matched</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">RouteRecord</span><span class="o">&gt;</span><span class="p">)</span><span class="o">:</span> <span class="nb">Function</span> <span class="p">{</span>
+  <span class="c1">// </span>
+  <span class="k">return</span> <span class="p">(</span><span class="nx">to</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">hasAsync</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="kd">let</span> <span class="nx">pending</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="kd">let</span> <span class="nx">error</span> <span class="o">=</span> <span class="kc">null</span>
+
+    <span class="nx">flatMapComponents</span><span class="p">(</span><span class="nx">matched</span><span class="p">,</span> <span class="p">(</span><span class="nx">def</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">match</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// if it&#39;s a function and doesn&#39;t have cid attached,</span>
+      <span class="c1">// assume it&#39;s an async component resolve function.</span>
+      <span class="c1">// we are not using Vue&#39;s default async resolving mechanism because</span>
+      <span class="c1">// we want to halt the navigation until the incoming component has been</span>
+      <span class="c1">// resolved.</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">def</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">def</span><span class="p">.</span><span class="nx">cid</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">hasAsync</span> <span class="o">=</span> <span class="kc">true</span>
+        <span class="nx">pending</span><span class="o">++</span>
+
+        <span class="kr">const</span> <span class="nx">resolve</span> <span class="o">=</span> <span class="nx">once</span><span class="p">(</span><span class="nx">resolvedDef</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">isESModule</span><span class="p">(</span><span class="nx">resolvedDef</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">resolvedDef</span> <span class="o">=</span> <span class="nx">resolvedDef</span><span class="p">.</span><span class="k">default</span>
+          <span class="p">}</span>
+          <span class="c1">// save resolved on async factory in case it&#39;s used elsewhere</span>
+          <span class="nx">def</span><span class="p">.</span><span class="nx">resolved</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">resolvedDef</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span>
+            <span class="o">?</span> <span class="nx">resolvedDef</span>
+            <span class="o">:</span> <span class="nx">_Vue</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">resolvedDef</span><span class="p">)</span>
+          <span class="nx">match</span><span class="p">.</span><span class="nx">components</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">resolvedDef</span>
+          <span class="nx">pending</span><span class="o">--</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">pending</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">next</span><span class="p">()</span>
+          <span class="p">}</span>
+        <span class="p">})</span>
+
+        <span class="kr">const</span> <span class="nx">reject</span> <span class="o">=</span> <span class="nx">once</span><span class="p">(</span><span class="nx">reason</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="kr">const</span> <span class="nx">msg</span> <span class="o">=</span> <span class="err">`</span><span class="nx">Failed</span> <span class="nx">to</span> <span class="nx">resolve</span> <span class="nx">async</span> <span class="nx">component</span> <span class="nx">$</span><span class="p">{</span><span class="nx">key</span><span class="p">}</span><span class="o">:</span> <span class="nx">$</span><span class="p">{</span><span class="nx">reason</span><span class="p">}</span><span class="err">`</span>
+          <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">warn</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="nx">msg</span><span class="p">)</span>
+          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">error</span> <span class="o">=</span> <span class="nx">isError</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span>
+              <span class="o">?</span> <span class="nx">reason</span>
+              <span class="o">:</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span>
+            <span class="nx">next</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span>
+          <span class="p">}</span>
+        <span class="p">})</span>
+
+        <span class="kd">let</span> <span class="nx">res</span>
+        <span class="k">try</span> <span class="p">{</span>
+          <span class="nx">res</span> <span class="o">=</span> <span class="nx">def</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">reject</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">res</span><span class="p">.</span><span class="nx">then</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// new syntax in Vue 2.3</span>
+            <span class="kr">const</span> <span class="nx">comp</span> <span class="o">=</span> <span class="nx">res</span><span class="p">.</span><span class="nx">component</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">comp</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">comp</span><span class="p">.</span><span class="nx">then</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">comp</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span>
+            <span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">})</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">hasAsync</span><span class="p">)</span> <span class="nx">next</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>主要用来处理异步组建的问题，通过判断路由上定义的组件是函数且没有cid来确定是否是异步组件，然后在得到真正的异步组件之前将其路由挂起。</p>
+<h3 id="runqueue">runQueue</h3>
+<p>runQueue主要是执行一些异步函数队列。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kd">function</span> <span class="nx">runQueue</span> <span class="p">(</span><span class="nx">queue</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;?</span><span class="nx">NavigationGuard</span><span class="o">&gt;</span><span class="p">,</span> <span class="nx">fn</span><span class="o">:</span> <span class="nb">Function</span><span class="p">,</span> <span class="nx">cb</span><span class="o">:</span> <span class="nb">Function</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">step</span> <span class="o">=</span> <span class="nx">index</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">//全部执行完，执行回调</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">index</span> <span class="o">&gt;=</span> <span class="nx">queue</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">cb</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="c1">//如果队列有值</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">queue</span><span class="p">[</span><span class="nx">index</span><span class="p">])</span> <span class="p">{</span>
+        <span class="c1">//fn 是 iterator函数</span>
+        <span class="nx">fn</span><span class="p">(</span><span class="nx">queue</span><span class="p">[</span><span class="nx">index</span><span class="p">],</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="nx">step</span><span class="p">(</span><span class="nx">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">})</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">step</span><span class="p">(</span><span class="nx">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="nx">step</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>在confirmTransition中通过下面的方式来调度队列的执行：</p>
+<pre><code class="lang-js"><div class="highlight"><pre> <span class="nx">runQueue</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">iterator</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>fn传递为iterator函数。iterator函数的执行：</p>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="kr">const</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="p">(</span><span class="nx">hook</span><span class="o">:</span> <span class="nx">NavigationGuard</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+     <span class="c1">// 即将跳转的不是route，导航取消错误</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">pending</span> <span class="o">!==</span> <span class="nx">route</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationCancelledError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+      <span class="p">}</span>
+      <span class="k">try</span> <span class="p">{</span>
+        <span class="c1">// 导航守卫</span>
+        <span class="nx">hook</span><span class="p">(</span><span class="nx">route</span><span class="p">,</span> <span class="nx">current</span><span class="p">,</span> <span class="p">(</span><span class="nx">to</span><span class="o">:</span> <span class="nx">any</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="c1">// 导航守卫 调用next(false)，中断当前的导航</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">to</span> <span class="o">===</span> <span class="kc">false</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// next(false) -&gt; abort navigation, ensure current URL</span>
+            <span class="c1">// 重置到from路由对应的URL地址</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">ensureURL</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+            <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationAbortedError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+           <span class="c1">// 导航守卫 调用next(new Error(`msg`))</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isError</span><span class="p">(</span><span class="nx">to</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">ensureURL</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+            <span class="nx">abort</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span>
+            <span class="k">typeof</span> <span class="nx">to</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span> <span class="o">||</span>
+            <span class="p">(</span><span class="k">typeof</span> <span class="nx">to</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">&amp;&amp;</span>
+              <span class="p">(</span><span class="k">typeof</span> <span class="nx">to</span><span class="p">.</span><span class="nx">path</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span> <span class="o">||</span> <span class="k">typeof</span> <span class="nx">to</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">))</span>
+          <span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// next(&#39;/&#39;) or next({ path: &#39;/&#39; }) -&gt; redirect</span>
+            <span class="c1">// 跳转到其它路由</span>
+            <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationRedirectedError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">to</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">to</span><span class="p">.</span><span class="nx">replace</span><span class="p">)</span> <span class="p">{</span>
+              <span class="k">this</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+              <span class="k">this</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+            <span class="p">}</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// confirm transition and pass on the value</span>
+            <span class="c1">// 一般情况下没有参数 next()，当前钩子处理完成，交给下一个钩子</span>
+            <span class="nx">next</span><span class="p">(</span><span class="nx">to</span><span class="p">)</span>
+          <span class="p">}</span>
+        <span class="p">})</span>
+      <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">//执行错误，直接取消导航</span>
+        <span class="nx">abort</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>整理一下现在的流程：</p>
+<p>1、执行transitionTo函数，先得到需要跳转路由的match对象的route。</p>
+<p>2、执行confirmTransition函数</p>
+<p>3、confirmTransition函数内部判断是否需要跳转，如果不需要，则直接中断返回</p>
+<p>4、confirmTransition判断如果需要跳转，则先得到钩子函数的任务队列queue。</p>
+<p>5、通过runQueue函数来批次执行任务队列中的每个方法。</p>
+<p>6、一直到整个队列执行完毕后，开始处理完成后的回调函数。</p>
+<h3 id="-">导航完成后回调</h3>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="nx">runQueue</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">iterator</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// wait until async components are resolved before</span>
+      <span class="c1">// extracting in-component enter guards</span>
+      <span class="c1">// beforeRouteEnter钩子函数</span>
+      <span class="kr">const</span> <span class="nx">enterGuards</span> <span class="o">=</span> <span class="nx">extractEnterGuards</span><span class="p">(</span><span class="nx">activated</span><span class="p">)</span>
+      <span class="c1">// 获取beforeResolve钩子函数，并生成一个新的queue</span>
+      <span class="kr">const</span> <span class="nx">queue</span> <span class="o">=</span> <span class="nx">enterGuards</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">resolveHooks</span><span class="p">)</span>
+      <span class="nx">runQueue</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">iterator</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">pending</span> <span class="o">!==</span> <span class="nx">route</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">abort</span><span class="p">(</span><span class="nx">createNavigationCancelledError</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">route</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="c1">// 情况pending</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">pending</span> <span class="o">=</span> <span class="kc">null</span>
+        <span class="c1">// 调用onComplete函数</span>
+        <span class="nx">onComplete</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">app</span><span class="p">.</span><span class="nx">$nextTick</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// postEnterCbs所有回调</span>
+            <span class="nx">handleRouteEntered</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+          <span class="p">})</span>
+        <span class="p">}</span>
+      <span class="p">})</span>
+    <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="oncomplete-">onComplete参数</h3>
+<p>confirmTransition的onComplete参数的代码：</p>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">updateRoute</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+    <span class="nx">onComplete</span> <span class="o">&amp;&amp;</span> <span class="nx">onComplete</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+    <span class="c1">// 确保url更新</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">ensureURL</span><span class="p">()</span>
+    <span class="c1">// 执行router的afterHooks</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">afterHooks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">hook</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">hook</span> <span class="o">&amp;&amp;</span> <span class="nx">hook</span><span class="p">(</span><span class="nx">route</span><span class="p">,</span> <span class="nx">prev</span><span class="p">)</span>
+    <span class="p">})</span>
+
+    <span class="c1">// fire ready cbs once</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">ready</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">ready</span> <span class="o">=</span> <span class="kc">true</span>
+        <span class="c1">// 首次完成，执行readCbs</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">readyCbs</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="nx">cb</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+ <span class="p">}</span>
+<span class="c1">// updateRoute</span>
+  <span class="nx">updateRoute</span> <span class="p">(</span><span class="nx">route</span><span class="o">:</span> <span class="nx">Route</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="nx">route</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">cb</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">cb</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>至此，已经完成了route的更新，在install函数中设置了对route的数据劫持，变更route会通知相应的观察者。</p>
+<p>路由变更完成后，会执行onComplete，这个就是前面的setupHashListener。</p>
+<h3 id="setuphashlistener">setupHashListener</h3>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="kr">const</span> <span class="nx">setupListeners</span> <span class="o">=</span> <span class="nx">routeOrError</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">history</span><span class="p">.</span><span class="nx">setupListeners</span><span class="p">()</span>
+    <span class="nx">handleInitialScroll</span><span class="p">(</span><span class="nx">routeOrError</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">history</span><span class="p">.</span><span class="nx">transitionTo</span><span class="p">(</span>
+    <span class="nx">history</span><span class="p">.</span><span class="nx">getCurrentLocation</span><span class="p">(),</span>
+    <span class="nx">setupListeners</span><span class="p">,</span>
+    <span class="nx">setupListeners</span>
+    <span class="p">)</span>
+    <span class="c1">//</span>
+   <span class="c1">// this is delayed until the app mounts</span>
+  <span class="c1">// to avoid the hashchange listener being fired too early</span>
+  <span class="nx">setupListeners</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">listeners</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="kr">const</span> <span class="nx">router</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">router</span>
+    <span class="c1">//处理滚动</span>
+    <span class="kr">const</span> <span class="nx">expectScroll</span> <span class="o">=</span> <span class="nx">router</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">scrollBehavior</span>
+    <span class="kr">const</span> <span class="nx">supportsScroll</span> <span class="o">=</span> <span class="nx">supportsPushState</span> <span class="o">&amp;&amp;</span> <span class="nx">expectScroll</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">supportsScroll</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">listeners</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">setupScroll</span><span class="p">())</span>
+    <span class="p">}</span>
+
+    <span class="kr">const</span> <span class="nx">handleRoutingEvent</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">ensureSlash</span><span class="p">())</span> <span class="p">{</span>
+        <span class="k">return</span>
+      <span class="p">}</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">transitionTo</span><span class="p">(</span><span class="nx">getHash</span><span class="p">(),</span> <span class="nx">route</span> <span class="o">=&gt;</span> <span class="p">{</span>
+         <span class="c1">//处理滚动</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">supportsScroll</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">handleScroll</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">,</span> <span class="nx">route</span><span class="p">,</span> <span class="nx">current</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">supportsPushState</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">replaceHash</span><span class="p">(</span><span class="nx">route</span><span class="p">.</span><span class="nx">fullPath</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">})</span>
+    <span class="p">}</span>
+    <span class="kr">const</span> <span class="nx">eventType</span> <span class="o">=</span> <span class="nx">supportsPushState</span> <span class="o">?</span> <span class="s1">&#39;popstate&#39;</span> <span class="o">:</span> <span class="s1">&#39;hashchange&#39;</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span>
+      <span class="nx">eventType</span><span class="p">,</span>
+      <span class="nx">handleRoutingEvent</span>
+    <span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">listeners</span><span class="p">.</span><span class="nx">push</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nb">window</span><span class="p">.</span><span class="nx">removeEventListener</span><span class="p">(</span><span class="nx">eventType</span><span class="p">,</span> <span class="nx">handleRoutingEvent</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>可以看到setupListeners主要做了2件事情，一个是对路由切换滚动位置的处理。另一个是对路由变动做了一次监听window.addEventlistener(supportsPushState ? &#39;popstate&#39; : &#39;hashchange&#39;,() =&gt; {})。</p>
+<h2 id="vuerouter-">VueRouter之</h2>
+<h2 id="-">参考文档</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/37730038">https://zhuanlan.zhihu.com/p/37730038</a></p>
+</body>
+</html>
