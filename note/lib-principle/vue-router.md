@@ -1295,6 +1295,20 @@ export default {
 }
 ```
 
+## VueRouter原理口述
+
+一般大型单页应用都会采用前端路由系统，通过改变URL，在不重新请求页面的情况下，更新页面内部分区域的视图。
+
+目前主要采用两种方式：1、hash模式，URL中#号后面的部分，改变会触发hashchange事件；2、另外一种是history模式，通过pushstate和replaceState来改变url，通过popstate事件来监听url变化。
+
+VueRouter是Vue的路由插件，我大概讲一下它的原理。
+
+在使用之前，需要先用Vue.use安装VueRouter插件，在安装的过程中，VueRouter会mixin，beforeCreate生命周期函数，在beforeCreate中会定义一些router相关属性到vm上，然后将_route定义为响应式的，同时判断如果父级组件是RouterView，会调用RouterView组件的方法来注册当前组件实例。后面是Vue.prototype上定义$router和$route。最后是注册全局的RouterVie和RouteLink组件。
+
+在实例化VueRouter对象时，需要传递包含routes数组的选项，VueRouter会把这些定义的routes打平来构建pathList,pathMap和nameMap等对象以方便后期匹配查找。route的path会用path-to-regexp库转换为正则来匹配route的params。然后根据当前URL做初次导航，导航成功后。监听URL变化事件，URL变化时获取当前URL，然后去上文根据routes构造的数据结构中找到当前的route。
+
+找到route后，会依次执行导航守卫函数，导航守卫函数全部通过后，导航到新的route，因为route已经定义为响应式的，所以会触发RouterView的重新渲染，RoterView会渲染route对应的组件。
+
 ## 参考文档
 
 https://zhuanlan.zhihu.com/p/37730038

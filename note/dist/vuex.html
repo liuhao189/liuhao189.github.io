@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vuex原理</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1632070947745">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="vuex-">Vuex原理</h1>
+<p>Vuex是一个专为Vue.js应用程序开发的状态管理模式。它采用集中式存储管理应用的所有组件的状态。</p>
+<h2 id="-">最简单的使用</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">Vue</span> <span class="nx">from</span> <span class="s1">&#39;vue&#39;</span>
+<span class="kr">import</span> <span class="nx">Vuex</span> <span class="nx">from</span> <span class="s1">&#39;vuex&#39;</span>
+
+<span class="nx">Vue</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">Vuex</span><span class="p">)</span>
+
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vuex</span><span class="p">.</span><span class="nx">Store</span><span class="p">({</span>
+  <span class="nx">state</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">count</span><span class="o">:</span> <span class="mi">0</span>
+  <span class="p">},</span>
+  <span class="nx">mutations</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">increment</span> <span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">state</span><span class="p">.</span><span class="nx">count</span><span class="o">++</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
+  <span class="nx">el</span><span class="o">:</span> <span class="s1">&#39;#app&#39;</span><span class="p">,</span>
+  <span class="nx">store</span><span class="o">:</span> <span class="nx">store</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="vuex-install-">Vuex之install方法</h2>
+<p>Vuex使用之前需要使用Vue.use来安装。我们首先看一看install方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">Vue</span> <span class="c1">// bind on install</span>
+
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">install</span> <span class="p">(</span><span class="nx">_Vue</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">Vue</span> <span class="o">&amp;&amp;</span> <span class="nx">_Vue</span> <span class="o">===</span> <span class="nx">Vue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span>
+  <span class="p">}</span>
+  <span class="nx">Vue</span> <span class="o">=</span> <span class="nx">_Vue</span>
+  <span class="c1">//主要是执行applyMixin</span>
+  <span class="nx">applyMixin</span><span class="p">(</span><span class="nx">Vue</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="c1">// applyMixin代码</span>
+<span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">Vue</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">version</span> <span class="o">=</span> <span class="nb">Number</span><span class="p">(</span><span class="nx">Vue</span><span class="p">.</span><span class="nx">version</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">version</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//Vue大版本大于2，支持mixin</span>
+    <span class="nx">Vue</span><span class="p">.</span><span class="nx">mixin</span><span class="p">({</span> <span class="nx">beforeCreate</span><span class="o">:</span> <span class="nx">vuexInit</span> <span class="p">})</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// Vue 1.x的兼容代码，略过</span>
+    <span class="c1">// ...</span>
+  <span class="p">}</span>
+
+  <span class="kd">function</span> <span class="nx">vuexInit</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">options</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$options</span>
+    <span class="c1">// 只有根组件有store选项</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">store</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">$store</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">options</span><span class="p">.</span><span class="nx">store</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span>
+        <span class="o">?</span> <span class="nx">options</span><span class="p">.</span><span class="nx">store</span><span class="p">()</span>
+        <span class="o">:</span> <span class="nx">options</span><span class="p">.</span><span class="nx">store</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">parent</span> <span class="o">&amp;&amp;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">parent</span><span class="p">.</span><span class="nx">$store</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">//非根组件，直接返回parent的$store</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">$store</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">parent</span><span class="p">.</span><span class="nx">$store</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>install方法主要是将$store添加到Vue组件实例上。</p>
+<h2 id="vuex-store">Vuex之实例化Store</h2>
+<p>Vue.use(Vuex)后，我们需要new Vuex.Store({...})。让我们看下Store的构造函数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kr">class</span> <span class="nx">Store</span> <span class="p">{</span>
+  <span class="nx">constructor</span> <span class="p">(</span><span class="nx">options</span> <span class="o">=</span> <span class="p">{})</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+
+    <span class="kr">const</span> <span class="p">{</span>
+      <span class="nx">plugins</span> <span class="o">=</span> <span class="p">[],</span>
+      <span class="nx">strict</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="p">}</span> <span class="o">=</span> <span class="nx">options</span>
+
+    <span class="c1">// 定义一些内部属性</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_committing</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_actions</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_actionSubscribers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_mutations</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_wrappedGetters</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_modules</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ModuleCollection</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_modulesNamespaceMap</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_subscribers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_watcherVM</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vue</span><span class="p">()</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_makeLocalGettersCache</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+
+    <span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">dispatch</span><span class="p">,</span> <span class="nx">commit</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="c1">//绑定dispatch和commit的this为当前Store实例</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">dispatch</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">boundDispatch</span> <span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">dispatch</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">commit</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">boundCommit</span> <span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">commit</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// strict mode</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">strict</span> <span class="o">=</span> <span class="nx">strict</span>
+
+    <span class="kr">const</span> <span class="nx">state</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_modules</span><span class="p">.</span><span class="nx">root</span><span class="p">.</span><span class="nx">state</span>
+
+    <span class="c1">// init root module.</span>
+    <span class="c1">// this also recursively registers all sub-modules</span>
+    <span class="c1">// and collects all module getters inside this._wrappedGetters</span>
+    <span class="nx">installModule</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">state</span><span class="p">,</span> <span class="p">[],</span> <span class="k">this</span><span class="p">.</span><span class="nx">_modules</span><span class="p">.</span><span class="nx">root</span><span class="p">)</span>
+
+    <span class="c1">// initialize the store vm, which is responsible for the reactivity</span>
+    <span class="c1">// (also registers _wrappedGetters as computed properties)</span>
+    <span class="nx">resetStoreVM</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">state</span><span class="p">)</span>
+
+    <span class="c1">// apply plugins</span>
+    <span class="nx">plugins</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">plugin</span> <span class="o">=&gt;</span> <span class="nx">plugin</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>首先定义一些内部变量，然后重新定义this.dispatch和this.commit，主要是把这两个方法bind到当前Store的实例上。</p>
+<p>然后就是执行installModule和resetStoreVM方法，最后执行传入的plugins。</p>
+<h2 id="installmodule">installModule</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">installModule</span> <span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">rootState</span><span class="p">,</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">module</span><span class="p">,</span> <span class="nx">hot</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">isRoot</span> <span class="o">=</span> <span class="o">!</span><span class="nx">path</span><span class="p">.</span><span class="nx">length</span>
+  <span class="kr">const</span> <span class="nx">namespace</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">_modules</span><span class="p">.</span><span class="nx">getNamespace</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
+
+  <span class="c1">// register in namespace map</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">module</span><span class="p">.</span><span class="nx">namespaced</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">store</span><span class="p">.</span><span class="nx">_modulesNamespaceMap</span><span class="p">[</span><span class="nx">namespace</span><span class="p">]</span> <span class="o">=</span> <span class="nx">module</span>
+  <span class="p">}</span>
+
+  <span class="c1">// set state</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isRoot</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">hot</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//不是根目录</span>
+    <span class="kr">const</span> <span class="nx">parentState</span> <span class="o">=</span> <span class="nx">getNestedState</span><span class="p">(</span><span class="nx">rootState</span><span class="p">,</span> <span class="nx">path</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="kr">const</span> <span class="nx">moduleName</span> <span class="o">=</span> <span class="nx">path</span><span class="p">[</span><span class="nx">path</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="nx">store</span><span class="p">.</span><span class="nx">_withCommit</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// 使用Vue.set来设置为parentState[moduleName]</span>
+      <span class="nx">Vue</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">parentState</span><span class="p">,</span> <span class="nx">moduleName</span><span class="p">,</span> <span class="nx">module</span><span class="p">.</span><span class="nx">state</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+
+  <span class="c1">// 调用mutation和action时本模块的相关信息</span>
+  <span class="kr">const</span> <span class="nx">local</span> <span class="o">=</span> <span class="nx">module</span><span class="p">.</span><span class="nx">context</span> <span class="o">=</span> <span class="nx">makeLocalContext</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">namespace</span><span class="p">,</span> <span class="nx">path</span><span class="p">)</span>
+
+  <span class="c1">//注册添加了namespace信息的Mutation方法</span>
+  <span class="nx">module</span><span class="p">.</span><span class="nx">forEachMutation</span><span class="p">((</span><span class="nx">mutation</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">namespacedType</span> <span class="o">=</span> <span class="nx">namespace</span> <span class="o">+</span> <span class="nx">key</span>
+    <span class="nx">registerMutation</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">namespacedType</span><span class="p">,</span> <span class="nx">mutation</span><span class="p">,</span> <span class="nx">local</span><span class="p">)</span>
+  <span class="p">})</span>
+  <span class="c1">//注册添加了namespace信息的Action方法</span>
+  <span class="nx">module</span><span class="p">.</span><span class="nx">forEachAction</span><span class="p">((</span><span class="nx">action</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">type</span> <span class="o">=</span> <span class="nx">action</span><span class="p">.</span><span class="nx">root</span> <span class="o">?</span> <span class="nx">key</span> <span class="o">:</span> <span class="nx">namespace</span> <span class="o">+</span> <span class="nx">key</span>
+    <span class="kr">const</span> <span class="nx">handler</span> <span class="o">=</span> <span class="nx">action</span><span class="p">.</span><span class="nx">handler</span> <span class="o">||</span> <span class="nx">action</span>
+    <span class="nx">registerAction</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">handler</span><span class="p">,</span> <span class="nx">local</span><span class="p">)</span>
+  <span class="p">})</span>
+  <span class="c1">//注册添加了namespace信息的getters方法</span>
+  <span class="nx">module</span><span class="p">.</span><span class="nx">forEachGetter</span><span class="p">((</span><span class="nx">getter</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">namespacedType</span> <span class="o">=</span> <span class="nx">namespace</span> <span class="o">+</span> <span class="nx">key</span>
+    <span class="nx">registerGetter</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">namespacedType</span><span class="p">,</span> <span class="nx">getter</span><span class="p">,</span> <span class="nx">local</span><span class="p">)</span>
+  <span class="p">})</span>
+  <span class="c1">//遍历子模块</span>
+  <span class="nx">module</span><span class="p">.</span><span class="nx">forEachChild</span><span class="p">((</span><span class="nx">child</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">installModule</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">rootState</span><span class="p">,</span> <span class="nx">path</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">hot</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>installModule方法主要在store上注册root模块的mutation，action，getters等方法，同时指定这些方法执行的this和相关参数。</p>
+<p>最后是遍历根模块的子模块，递归调用installModule。</p>
+<h2 id="resetstorevm">resetStoreVM</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">resetStoreVM</span> <span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">state</span><span class="p">,</span> <span class="nx">hot</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// bind store public getters</span>
+  <span class="nx">store</span><span class="p">.</span><span class="nx">getters</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="c1">// reset local getters cache</span>
+  <span class="nx">store</span><span class="p">.</span><span class="nx">_makeLocalGettersCache</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+  <span class="kr">const</span> <span class="nx">wrappedGetters</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">_wrappedGetters</span>
+  <span class="kr">const</span> <span class="nx">computed</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="nx">forEachValue</span><span class="p">(</span><span class="nx">wrappedGetters</span><span class="p">,</span> <span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// use computed to leverage its lazy-caching mechanism</span>
+    <span class="c1">// direct inline function use will lead to closure preserving oldVm.</span>
+    <span class="c1">// using partial to return function with only arguments preserved in closure environment.</span>
+    <span class="nx">computed</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">partial</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">store</span><span class="p">)</span>
+    <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">store</span><span class="p">.</span><span class="nx">getters</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="p">{</span>
+      <span class="nx">get</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">_vm</span><span class="p">[</span><span class="nx">key</span><span class="p">],</span>
+      <span class="nx">enumerable</span><span class="o">:</span> <span class="kc">true</span> <span class="c1">// for local getters</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+  <span class="c1">//以上是把getters方法定义为store.getters[key]</span>
+
+  <span class="c1">// 创建一个Vue对象来存储state和computed</span>
+  <span class="kr">const</span> <span class="nx">silent</span> <span class="o">=</span> <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">silent</span>
+  <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">silent</span> <span class="o">=</span> <span class="kc">true</span>
+  <span class="nx">store</span><span class="p">.</span><span class="nx">_vm</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">$$state</span><span class="o">:</span> <span class="nx">state</span>
+    <span class="p">},</span>
+    <span class="nx">computed</span>
+  <span class="p">})</span>
+  <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">silent</span> <span class="o">=</span> <span class="nx">silent</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">store</span><span class="p">.</span><span class="nx">strict</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//在严格模式下，无论何时发生了状态变更且不是由 mutation 函数引起的，将会抛出错误。</span>
+    <span class="nx">enableStrictMode</span><span class="p">(</span><span class="nx">store</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>resetStoreVM主要把getters转为computed属性，同时初始化store._vm属性，就是一个data包含state且computed为getters的Vue组件实例。该Vue组件初始化时，会把state整个转为响应式对象。</p>
+<h2 id="mapstate">mapState</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// normalizeNamespace 判断namespace为空的情况，做了相应的兼容</span>
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">mapState</span> <span class="o">=</span> <span class="nx">normalizeNamespace</span><span class="p">((</span><span class="nx">namespace</span><span class="p">,</span> <span class="nx">states</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">res</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="c1">// 数组和对象格式转为数组形式</span>
+  <span class="nx">normalizeMap</span><span class="p">(</span><span class="nx">states</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(({</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">val</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">mappedState</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">state</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$store</span><span class="p">.</span><span class="nx">state</span>
+      <span class="kd">let</span> <span class="nx">getters</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$store</span><span class="p">.</span><span class="nx">getters</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">namespace</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="nx">getModuleByNamespace</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">$store</span><span class="p">,</span> <span class="s1">&#39;mapState&#39;</span><span class="p">,</span> <span class="nx">namespace</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">module</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span>
+        <span class="p">}</span>
+        <span class="nx">state</span> <span class="o">=</span> <span class="nx">module</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">state</span>
+        <span class="nx">getters</span> <span class="o">=</span> <span class="nx">module</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">getters</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="k">typeof</span> <span class="nx">val</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span>
+        <span class="o">?</span> <span class="nx">val</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">state</span><span class="p">,</span> <span class="nx">getters</span><span class="p">)</span>
+        <span class="o">:</span> <span class="nx">state</span><span class="p">[</span><span class="nx">val</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+  <span class="k">return</span> <span class="nx">res</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>首先调了normalizeNamespace兼容了namespace为空的情况。然后就是遍历states，然后一个对象。</p>
+<h2 id="mapmutations-mapgetters-mapactions">mapMutations &amp;&amp; mapGetters &amp;&amp; mapActions</h2>
+<p>其它map方法也类似。</p>
+<h2 id="-">口述原理</h2>
+</body>
+</html>
