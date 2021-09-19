@@ -89,10 +89,11 @@ function buildFile(filePath, noteList) {
     let postProcessResult = result.replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\/&gt;/g, '<br/>');
 
     postProcessResult = postProcessResult.replace('</head>', `<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"></head>`)
+    postProcessResult = postProcessResult.replace('</head>', `<link rel="shortcut icon" href="/ico.png"></head>`)
 
     let injectJSStr = getInjectScript();
     if (injectJSStr) {
-        // postProcessResult = postProcessResult.replace('<body>', `<body>${getInjectScript()}`)
+        postProcessResult = postProcessResult.replace('<body>', `<body>${getInjectScript()}`)
     }
 
     fs.writeFileSync(getBuildPath() + `/${fileName}.html`, postProcessResult, {
