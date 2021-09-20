@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Vuex原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1632114453241">
+  <link rel="stylesheet" href="/note/note.css?ts=1632133442421">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -112,21 +112,12 @@
       <span class="k">return</span> <span class="nx">commit</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
     <span class="p">}</span>
 
-    <span class="c1">// strict mode</span>
     <span class="k">this</span><span class="p">.</span><span class="nx">strict</span> <span class="o">=</span> <span class="nx">strict</span>
-
     <span class="kr">const</span> <span class="nx">state</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_modules</span><span class="p">.</span><span class="nx">root</span><span class="p">.</span><span class="nx">state</span>
 
-    <span class="c1">// init root module.</span>
-    <span class="c1">// this also recursively registers all sub-modules</span>
-    <span class="c1">// and collects all module getters inside this._wrappedGetters</span>
     <span class="nx">installModule</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">state</span><span class="p">,</span> <span class="p">[],</span> <span class="k">this</span><span class="p">.</span><span class="nx">_modules</span><span class="p">.</span><span class="nx">root</span><span class="p">)</span>
-
-    <span class="c1">// initialize the store vm, which is responsible for the reactivity</span>
-    <span class="c1">// (also registers _wrappedGetters as computed properties)</span>
     <span class="nx">resetStoreVM</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">state</span><span class="p">)</span>
 
-    <span class="c1">// apply plugins</span>
     <span class="nx">plugins</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">plugin</span> <span class="o">=&gt;</span> <span class="nx">plugin</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
   <span class="p">}</span>
 <span class="p">}</span>
@@ -184,20 +175,19 @@
 
 </code></pre>
 <p>installModule方法主要在store上注册root模块的mutation，action，getters等方法，同时指定这些方法执行的this和相关参数。</p>
-<p>最后是遍历根模块的子模块，递归调用installModule。</p>
+<p>最后是遍历root模块的子模块，递归调用installModule。</p>
 <h2 id="resetstorevm">resetStoreVM</h2>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">resetStoreVM</span> <span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">state</span><span class="p">,</span> <span class="nx">hot</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">// bind store public getters</span>
+
   <span class="nx">store</span><span class="p">.</span><span class="nx">getters</span> <span class="o">=</span> <span class="p">{}</span>
-  <span class="c1">// reset local getters cache</span>
+
   <span class="nx">store</span><span class="p">.</span><span class="nx">_makeLocalGettersCache</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
   <span class="kr">const</span> <span class="nx">wrappedGetters</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">_wrappedGetters</span>
   <span class="kr">const</span> <span class="nx">computed</span> <span class="o">=</span> <span class="p">{}</span>
+
   <span class="nx">forEachValue</span><span class="p">(</span><span class="nx">wrappedGetters</span><span class="p">,</span> <span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-    <span class="c1">// use computed to leverage its lazy-caching mechanism</span>
-    <span class="c1">// direct inline function use will lead to closure preserving oldVm.</span>
-    <span class="c1">// using partial to return function with only arguments preserved in closure environment.</span>
     <span class="nx">computed</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">partial</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">store</span><span class="p">)</span>
+    <span class="c1">//懒惰求值</span>
     <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">store</span><span class="p">.</span><span class="nx">getters</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="p">{</span>
       <span class="nx">get</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">_vm</span><span class="p">[</span><span class="nx">key</span><span class="p">],</span>
       <span class="nx">enumerable</span><span class="o">:</span> <span class="kc">true</span> <span class="c1">// for local getters</span>
@@ -206,6 +196,7 @@
   <span class="c1">//以上是把getters方法定义为store.getters[key]</span>
 
   <span class="c1">// 创建一个Vue对象来存储state和computed</span>
+  <span class="c1">// 安静的创建，不报相关的警告信息</span>
   <span class="kr">const</span> <span class="nx">silent</span> <span class="o">=</span> <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">silent</span>
   <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">silent</span> <span class="o">=</span> <span class="kc">true</span>
   <span class="nx">store</span><span class="p">.</span><span class="nx">_vm</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
@@ -225,7 +216,7 @@
 
 </code></pre>
 <p>resetStoreVM主要把getters转为computed属性，同时初始化store._vm属性，就是一个data包含state且computed为getters的Vue组件实例。该Vue组件初始化时，会把state整个转为响应式对象。</p>
-<h2 id="mapstate">mapState</h2>
+<h2 id="mapstate-map-">mapState等map类方法</h2>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// normalizeNamespace 判断namespace为空的情况，做了相应的兼容</span>
 <span class="kr">export</span> <span class="kr">const</span> <span class="nx">mapState</span> <span class="o">=</span> <span class="nx">normalizeNamespace</span><span class="p">((</span><span class="nx">namespace</span><span class="p">,</span> <span class="nx">states</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="kr">const</span> <span class="nx">res</span> <span class="o">=</span> <span class="p">{}</span>
@@ -253,8 +244,9 @@
 
 </code></pre>
 <p>首先调了normalizeNamespace兼容了namespace为空的情况。然后就是遍历states，然后一个对象。</p>
-<h2 id="mapmutations-mapgetters-mapactions">mapMutations &amp;&amp; mapGetters &amp;&amp; mapActions</h2>
-<p>其它map方法也类似。</p>
 <h2 id="-">口述原理</h2>
+<p>1、Vuex上主要有两个属性，一个是install方法，一个是Store对象。</p>
+<p>2、install方法的作用是将store实例挂载到所有组件上，也就是vm.$store可以访问到。</p>
+<p>3、Store这个类拥有commit，dispatch这些方法，Store类里将用户传入的state包装成data，用户传入的getters包装为computed，作为new Vue的参数，从而实现了state值的响应式。</p>
 </body>
 </html>

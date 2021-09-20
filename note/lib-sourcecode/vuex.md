@@ -68,7 +68,6 @@ export default function (Vue) {
   }
 }
 ```
-
 install方法主要是将$store添加到Vue组件实例上。
 
 ## Vuex之实例化Store
@@ -107,21 +106,12 @@ export class Store {
       return commit.call(store, type, payload, options)
     }
 
-    // strict mode
     this.strict = strict
-
     const state = this._modules.root.state
 
-    // init root module.
-    // this also recursively registers all sub-modules
-    // and collects all module getters inside this._wrappedGetters
     installModule(this, state, [], this._modules.root)
-
-    // initialize the store vm, which is responsible for the reactivity
-    // (also registers _wrappedGetters as computed properties)
     resetStoreVM(this, state)
 
-    // apply plugins
     plugins.forEach(plugin => plugin(this));
   }
 }
@@ -132,7 +122,6 @@ export class Store {
 然后就是执行installModule和resetStoreVM方法，最后执行传入的plugins。
 
 ## installModule
-
 
 ```js
 function installModule (store, rootState, path, module, hot) {
@@ -183,23 +172,22 @@ function installModule (store, rootState, path, module, hot) {
 
 installModule方法主要在store上注册root模块的mutation，action，getters等方法，同时指定这些方法执行的this和相关参数。
 
-最后是遍历根模块的子模块，递归调用installModule。
+最后是遍历root模块的子模块，递归调用installModule。
 
 ## resetStoreVM
 
 ```js
 function resetStoreVM (store, state, hot) {
-  // bind store public getters
+  
   store.getters = {}
-  // reset local getters cache
+  
   store._makeLocalGettersCache = Object.create(null)
   const wrappedGetters = store._wrappedGetters
   const computed = {}
+
   forEachValue(wrappedGetters, (fn, key) => {
-    // use computed to leverage its lazy-caching mechanism
-    // direct inline function use will lead to closure preserving oldVm.
-    // using partial to return function with only arguments preserved in closure environment.
     computed[key] = partial(fn, store)
+    //懒惰求值
     Object.defineProperty(store.getters, key, {
       get: () => store._vm[key],
       enumerable: true // for local getters
@@ -208,6 +196,7 @@ function resetStoreVM (store, state, hot) {
   //以上是把getters方法定义为store.getters[key]
 
   // 创建一个Vue对象来存储state和computed
+  // 安静的创建，不报相关的警告信息
   const silent = Vue.config.silent
   Vue.config.silent = true
   store._vm = new Vue({
@@ -224,10 +213,9 @@ function resetStoreVM (store, state, hot) {
   }
 }
 ```
-
 resetStoreVM主要把getters转为computed属性，同时初始化store._vm属性，就是一个data包含state且computed为getters的Vue组件实例。该Vue组件初始化时，会把state整个转为响应式对象。
 
-## mapState
+## mapState等map类方法
 
 ```js
 // normalizeNamespace 判断namespace为空的情况，做了相应的兼容
@@ -256,11 +244,13 @@ export const mapState = normalizeNamespace((namespace, states) => {
 ```
 首先调了normalizeNamespace兼容了namespace为空的情况。然后就是遍历states，然后一个对象。
 
-## mapMutations && mapGetters && mapActions
-
-其它map方法也类似。
-
 ## 口述原理
+
+1、Vuex上主要有两个属性，一个是install方法，一个是Store对象。
+
+2、install方法的作用是将store实例挂载到所有组件上，也就是vm.$store可以访问到。
+
+3、Store这个类拥有commit，dispatch这些方法，Store类里将用户传入的state包装成data，用户传入的getters包装为computed，作为new Vue的参数，从而实现了state值的响应式。
 
 
 
