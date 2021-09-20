@@ -13,7 +13,7 @@ Object.keys(CACHE_TYPES).forEach(function (nameKey) {
 });
 
 let cacheConfig = [{
-    test: /^https:.*github.io.*(.jpg|.jpeg|.png|.js)$/,
+    test: /^https:.*github.io.*(.jpg|.jpeg|.png|.css|.js)$/,
     type: CACHE_TYPES.ALWAYS_CACHE
 }];
 
