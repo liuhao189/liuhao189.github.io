@@ -54,7 +54,7 @@ function getFileNameInfo(filePath) {
 }
 
 function getInjectScript() {
-    let scriptPath = path.join(__dirname, './note-script.js');
+    let scriptPath = path.join(getBasePath(), './note-script.js');
     let jsContent = fs.readFileSync(scriptPath, { encoding: 'utf-8' });
     return `<script>${jsContent}</script>`
 }
@@ -138,7 +138,7 @@ function getBuildTargetNotes() {
  * @returns 
  */
 function getNoteListFromJsonFile() {
-    let jsonFilePath = path.resolve(getBasePath(), 'notes.json');
+    let jsonFilePath = path.resolve(getBuildPath(), 'notes.json');
     let noteContent = fs.readFileSync(jsonFilePath, { encoding: 'utf-8' });
     return JSON.parse(noteContent);
 }
@@ -180,8 +180,8 @@ function build() {
         }
 
         let listStrForWrite = JSON.stringify(noteListForWrite);
-        let basePath = getBasePath();
-        fs.writeFileSync(basePath + '/notes.json', listStrForWrite, {
+        let buildPath = getBuildPath();
+        fs.writeFileSync(buildPath + '/notes.json', listStrForWrite, {
             encoding: fileEncoding
         });
         log('Write notelist Successfully!')

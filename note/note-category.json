@@ -1,0 +1,50 @@
+[
+    {
+        "id": "webApiCss",
+        "name": "Web API && CSS",
+        "path": [
+            "web-api-css"
+        ],
+        "distFileName": "webApiCss"
+    },
+    {
+        "id": "libLearn",
+        "name": "工具类库学习",
+        "path": [
+            "lib-learn"
+        ],
+        "distFileName": "libLearn"
+    },
+    {
+        "id": "sourceCodeLearn",
+        "name": "工具类库源码",
+        "path": [
+            "lib-sourcecode"
+        ],
+        "distFileName": "sourceCodeLearn"
+    },
+    {
+        "id": "softwareProject",
+        "name": "软件工程相关",
+        "path": [
+            "software-project"
+        ],
+        "distFileName": "softwareProject"
+    },
+    {
+        "id": "practiceSummary",
+        "name": "实践类总结",
+        "path": [
+            "project-summary"
+        ],
+        "distFileName": "practiceSummary"
+    },
+    {
+        "id": "others",
+        "name": "其它",
+        "path": [
+            "others"
+        ],
+        "distFileName": "others"
+    }
+]

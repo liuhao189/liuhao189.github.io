@@ -74,22 +74,90 @@
 
     <body>
         <div id="app">
-            <h1 class="note-part-title">笔记列表</h1>
-            <ul id="noteList">
-            </ul>
+            <div id="notesPart">
+                <h1 class="note-part-title">笔记列表</h1>
+                <div id="noteCategoryList">
+                </div>
+            </div>
             <script>
-                fetch('/note/notes.json').then(res => {
-                    res.json().then(list => {
-                        let noteList = list || [];
-                        let notesHtmlStr = noteList.map((noteItem) => {
-                            return `<li><a href="${noteItem.link}">${noteItem.name}</a></li>`
-                        }).join('');
-                        let notesListEl = document.querySelector('#noteList');
-                        if (notesListEl) {
-                            notesListEl.innerHTML = notesHtmlStr;
+                function fetchRequest(url) {
+                    return fetch(url).then(
+                        res => res.json()
+                    );
+                }
+
+                function getCategoryList() {
+                    return fetchRequest('/note/note-category.json')
+                }
+
+                function getNoteListByCategory(categoryFileName) {
+                    return fetchRequest(`/note/dist/${categoryFileName}.json`);
+                }
+
+                function buildNoteListWithCategoryEl(categoryName, noteList) {
+                    if (!categoryName || !noteList) {
+                        return;
+                    }
+
+                    let divEl = document.createElement('div');
+                    divEl.classList.add(`note-category`);
+                    let listHtmlStr = `<ul class="note-list">`;
+                    noteList.forEach(noteItem => {
+                        listHtmlStr += `<li class="note-list-item"><a href="${noteItem.link}">${noteItem.name}</a></li>`
+                    })
+                    listHtmlStr += '</ul>';
+                    divEl.innerHTML = `<h2 class="category-name">${categoryName}</h2>${listHtmlStr}`;
+                    return divEl;
+                }
+
+                function runPromiseQueue(fns, cb = () => { }) {
+                    function step(inx) {
+                        if (inx >= fns.length) {
+                            try {
+                                cb && cb();
+                            }
+                            catch (ex) {
+                                console.error(ex);
+                            }
+                            return;
+                        }
+
+                        try {
+                            let currFn = fns[inx];
+                            currFn().then(() => {
+                                step(inx + 1);
+                            }).catch(err => {
+                                console.error(err);
+                                step(inx + 1);
+                            })
+                        } catch (ex) {
+                            step(inx + 1);
+                        }
+                    }
+
+                    step(0);
+                }
+
+                getCategoryList().then(categoryList => {
+                    if (!categoryList || !categoryList.length) {
+                        return;
+                    }
+
+                    let noteCategoryListEl = document.querySelector('#noteCategoryList');
+
+                    let fns = categoryList.map(categoryItem => {
+                        return function () {
+                            return getNoteListByCategory(categoryItem.distFileName).then(noteList => {
+                                let el = buildNoteListWithCategoryEl(categoryItem.name, noteList);
+                                noteCategoryListEl.appendChild(el)
+                            })
                         }
                     })
-                })
+
+                    runPromiseQueue(fns, () => {
+                        console.log(`successfully!`);
+                    })
+                });
             </script>
         </div>
     </body>
