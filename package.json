@@ -5,7 +5,7 @@
   "main": "sw.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "buildnote": "node build/buildnote.js",
+    "buildnote": "node build/buildnote.js && node build/build-note-category.js",
     "buildnote:debug": "node --inspect-brk build/buildnote.js"
   },
   "browser": {
