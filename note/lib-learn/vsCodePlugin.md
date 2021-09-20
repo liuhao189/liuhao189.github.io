@@ -1,4 +1,4 @@
-# VSCode 插件
+# VSCode插件
 
 ## 概述
 

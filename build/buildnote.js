@@ -21,10 +21,7 @@ function getBuildPath() {
 }
 
 const blackFileArr = [
-    'note/algorithm/',
-    'note/learn/fucksuanfa',
-    'note/softquality',
-    'note/vscode'
+    'note/private-folder'
 ];
 
 function getSourceFiles() {

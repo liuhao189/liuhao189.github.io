@@ -39,3 +39,43 @@ function generateReadCatalog() {
 // window.addEventListener('load', () => {
 //     generateReadCatalog();
 // });
+
+
+var categoryArr = [
+    {
+        id: "webApiCss",
+        "name": "Web API && CSS",
+        "path": [""],
+        distFileName: 'webApiCss'
+    },
+    {
+        "id": "libLearn",
+        "name": "工具类库学习",
+        "path": [""],
+        distFileName: 'libLearn',
+    },
+    {
+        id: 'sourceCodeLearn',
+        name: '工具类库源码',
+        path: [""],
+        distFileName: 'sourceCodeLearn',
+    },
+    {
+        id: 'softwareProject',
+        name: '软件工程相关',
+        path: [""],
+        distFileName: 'softwareProject',
+    },
+    {
+        id: 'practiceSummary',
+        name: '实践类总结',
+        path: [""],
+        distFileName: 'practiceSummary',
+    },
+    {
+        id: 'others',
+        name: "其它",
+        path: ["*"],
+        distFileName: 'others',
+    }
+]
