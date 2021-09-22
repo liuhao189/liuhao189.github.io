@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IM保证离线消息的可靠投递</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1632328889659">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="im-">IM保证离线消息的可靠投递</h1>
+<p>本文主要讨论client-A在线，但是client-B不在线的情况。</p>
+<h2 id="-">消息接收方不在线的消息发送流程</h2>
+<p>1、用户A发送一条消息给用户B。</p>
+<p>2、服务器查看用户B的状态，发现B的状态为offline。服务器将此消息以离线消息的形式持久化存储到DB中。</p>
+<p>3、服务器返回用户A，发送成功的ACK确认包。</p>
+<p>消息一旦持久化，就认为发送成功了。</p>
+<h2 id="-">典型离线消息表的设计以及拉取离线消息的过程</h2>
+<h3 id="-">表设计</h3>
+<pre><code class="lang-sql"><div class="highlight"><pre><span class="c1">-- ...</span>
+<span class="n">receiver_uid</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> 
+<span class="c1">-- 消息的唯一指纹码（即消息ID），用于去重等场景，单机情况下此id可能是个自增值、分布式场景下可能是类似于UUID这样的东西</span>
+<span class="n">msg_id</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">70</span><span class="p">),</span> 
+
+<span class="c1">-- 消息发出时的时间戳（如果是个跨国IM，则此时间戳可能是GMT-0标准时间）       </span>
+<span class="n">send_time</span> <span class="n">time</span><span class="p">,</span> 
+
+<span class="c1">-- 消息发送者ID</span>
+<span class="n">sender_uid</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> 
+
+<span class="c1">-- 消息类型（标识此条消息是：文本、图片还是语音留言等）</span>
+<span class="n">msg_type</span> <span class="nb">int</span><span class="p">,</span> 
+
+<span class="c1">-- 消息内容（如果是图片或语音留言等类型，由此字段存放的可能是对应文件的存储地址或CDN的访问URL）</span>
+<span class="n">msg_content</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">1024</span><span class="p">),</span> 
+<span class="c1">-- ...</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">离线拉取模式</h3>
+<p>1、用户B开始拉取用户A发送该ta的离线消息。</p>
+<p>2、服务器从DB中拉取离线消息。</p>
+<p>3、服务器返回给用户B离线消息。</p>
+<p>4、B发送ackN，服务器删除DB中的离线消息。</p>
+<h2 id="-">上述流程存在的问题以及优化方案</h2>
+<p>如果用户B有很多好友，登录时客户端需要对所有好友进行离线消息拉取，客户端与服务器交互次数会比较多。</p>
+<h3 id="-1">优化方案1</h3>
+<p>先拉取各个好友的离线消息数量，用户B去看离线消息时，再去发送拉取请求。</p>
+<h3 id="-2">优化方案2</h3>
+<p>一次性拉取所有好友发送给用户B的离线消息，到客户端本地再根据sender_uid进行计算。交互次数降低为1次。</p>
+<h3 id="-">方案总结</h3>
+<p>通常情况下，主流的移动端IM通常都是以优化方案2为主，因为移动网络的不可靠性加上电量、流量等资源的昂贵性，一次搞定比较好。</p>
+<h3 id="-">一次性拉取大量离线消息导致速度慢</h3>
+<p>可以分页拉取，根据业务需求，先拉取最新的一页消息，再按需一页页拉取，这就能很好地解决用户体验问题。</p>
+<h2 id="-">优化离线消息的拉取过程，保证离线消息不丢失</h2>
+<p>必须等到应用层的离线消息ACK，才能删除数据库中的离线消息。因为用户B拉取离线消息的响应包可能丢失。</p>
+<h2 id="-">进一步优化，解决重复拉取离线消息的问题</h2>
+<p>如果用户B拉取了一页离线消息，却在ACK之前crash了，下次登录时会拉取到重复的离线消息么？</p>
+<p>拉取了离线消息却没有ACK，服务器不会删除之前的离线消息，故下次登录时系统层面还会拉取到。但在业务层面，可以根据msg_id去重。SMC理论：系统层面无法做到消息不丢不重，业务层面可以做到，对用户无感知。</p>
+<h2 id="-">小结</h2>
+<p>保证离线消息的可达性比大家想象的要复杂一些，场景优化总结如下：</p>
+<p>1、对于用户B，一次性拉取所有用户发送给ta的离线消息，再在客户端本地进行发送方分析，大大减少与服务器交互次数。</p>
+<p>2、分页拉取，先拉取计数，再按需落在，是无线端的常见优化。</p>
+<p>3、应用层的ACK，应用层的去重，才能保证离线消息的不丢不重。</p>
+<p>4、下一页的拉取，同时作为上一页的ACK，能够减少与服务器的交互次数。</p>
+<h1 id="-">参考文档</h1>
+<p><a href="http://www.52im.net/thread-594-1-1.html">http://www.52im.net/thread-594-1-1.html</a></p>
+</body>
+</html>
