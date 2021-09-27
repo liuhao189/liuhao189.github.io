@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vue之VDOM</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1632759502902">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="vue-vdom">Vue之VDOM</h1>
+<h2 id="-vdom">为什么引入vdom</h2>
+<p>根据Vue作者相关的说法(<a href="https://zhuanlan.zhihu.com/p/23752826)，Vue2引入vdom的原因是添加了一层渲染过程中的抽象层，从而使得组件的抽象能力得到提升，并且可以适配DOM意外的渲染目标。另外一点，就是性能问题。">https://zhuanlan.zhihu.com/p/23752826)，Vue2引入vdom的原因是添加了一层渲染过程中的抽象层，从而使得组件的抽象能力得到提升，并且可以适配DOM意外的渲染目标。另外一点，就是性能问题。</a></p>
+<h2 id="vdom-">vdom的基本实现思路</h2>
+<p>1、用JS表示DOM结构。</p>
+<p>2、根据虚拟DOM树构建出真实的DOM树。</p>
+<p>3、通过JS对象表示的虚拟的DOM计算出DOM需要做的做小变动。</p>
+<h2 id="vue-vdom-">Vue vdom的实现</h2>
+<p>vue2的vdom是基于snabbdom。</p>
+<h3 id="pactch-">pactch方法</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="k">return</span> <span class="kd">function</span> <span class="nx">patch</span> <span class="p">(</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">,</span> <span class="nx">hydrating</span><span class="p">,</span> <span class="nx">removeOnly</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//新的节点是空，旧的节点不为空，则销毁旧节点</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isUndef</span><span class="p">(</span><span class="nx">vnode</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">))</span> <span class="p">{</span> <span class="nx">invokeDestroyHook</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">);</span> <span class="p">}</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="kd">var</span> <span class="nx">isInitialPatch</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">insertedVnodeQueue</span> <span class="o">=</span> <span class="p">[];</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isUndef</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">))</span> <span class="p">{</span>
+      <span class="c1">// empty mount (likely as component), create new root element</span>
+      <span class="nx">isInitialPatch</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+      <span class="nx">createElm</span><span class="p">(</span><span class="nx">vnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="c1">// 初始化渲染时oldVnode是根节点，真实的dom 所以是true</span>
+      <span class="kd">var</span> <span class="nx">isRealElement</span> <span class="o">=</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">.</span><span class="nx">nodeType</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isRealElement</span> <span class="o">&amp;&amp;</span> <span class="nx">sameVnode</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// patch existing root node</span>
+        <span class="nx">patchVnode</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">,</span> <span class="nx">removeOnly</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="c1">// 省略</span>
+          <span class="c1">// either not server-rendered, or hydration failed.</span>
+          <span class="c1">// create an empty node and replace it</span>
+          <span class="nx">oldVnode</span> <span class="o">=</span> <span class="nx">emptyNodeAt</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">// replacing existing element</span>
+        <span class="kd">var</span> <span class="nx">oldElm</span> <span class="o">=</span> <span class="nx">oldVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">parentElm</span> <span class="o">=</span> <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">(</span><span class="nx">oldElm</span><span class="p">);</span>
+
+        <span class="c1">// create new node</span>
+        <span class="nx">createElm</span><span class="p">(</span>
+          <span class="nx">vnode</span><span class="p">,</span>
+          <span class="nx">insertedVnodeQueue</span><span class="p">,</span>
+          <span class="c1">// extremely rare edge case: do not insert if old element is in a</span>
+          <span class="c1">// leaving transition. Only happens when combining transition +</span>
+          <span class="c1">// keep-alive + HOCs. (#4590)</span>
+          <span class="nx">oldElm</span><span class="p">.</span><span class="nx">_leaveCb</span> <span class="o">?</span> <span class="kc">null</span> <span class="o">:</span> <span class="nx">parentElm</span><span class="p">,</span>
+          <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">(</span><span class="nx">oldElm</span><span class="p">)</span>
+        <span class="p">);</span>
+
+        <span class="c1">// 省略</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>初始化时，oldVnode是根节点，是真实的dom，更新的时候，vnode并没有nodeType这个字段，所以isRealElement为false，如果判断是相同的结点，才进行patchVnode。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// 主要是判断key 和 tag 是否相同</span>
+<span class="kd">function</span> <span class="nx">sameVnode</span> <span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="nx">a</span><span class="p">.</span><span class="nx">key</span> <span class="o">===</span> <span class="nx">b</span><span class="p">.</span><span class="nx">key</span> <span class="o">&amp;&amp;</span> <span class="p">(</span>
+      <span class="p">(</span>
+        <span class="nx">a</span><span class="p">.</span><span class="nx">tag</span> <span class="o">===</span> <span class="nx">b</span><span class="p">.</span><span class="nx">tag</span> <span class="o">&amp;&amp;</span>
+        <span class="nx">a</span><span class="p">.</span><span class="nx">isComment</span> <span class="o">===</span> <span class="nx">b</span><span class="p">.</span><span class="nx">isComment</span> <span class="o">&amp;&amp;</span>
+        <span class="nx">isDef</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span> <span class="o">===</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+        <span class="nx">sameInputType</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span>
+      <span class="p">)</span> <span class="o">||</span> <span class="p">(</span>
+        <span class="nx">isTrue</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">isAsyncPlaceholder</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+        <span class="nx">a</span><span class="p">.</span><span class="nx">asyncFactory</span> <span class="o">===</span> <span class="nx">b</span><span class="p">.</span><span class="nx">asyncFactory</span> <span class="o">&amp;&amp;</span>
+        <span class="nx">isUndef</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">asyncFactory</span><span class="p">.</span><span class="nx">error</span><span class="p">)</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>如果是不同的元素，则认为是一个新的vnode，进入createElm方法，遵循了两个不同类型的元素将产生不同树的原则，只要发现两个元素的类型不同，直接删除旧的并创建一个新的，而不是去递归比较。</p>
+<h3 id="patchvnode">patchVnode</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">patchVnode</span> <span class="p">(</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">,</span> <span class="nx">removeOnly</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">oldVnode</span> <span class="o">===</span> <span class="nx">vnode</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="kd">var</span> <span class="nx">elm</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">elm</span> <span class="o">=</span> <span class="nx">oldVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">;</span>
+    <span class="c1">// 省略</span>
+    <span class="kd">var</span> <span class="nx">oldCh</span> <span class="o">=</span> <span class="nx">oldVnode</span><span class="p">.</span><span class="nx">children</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">ch</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">children</span><span class="p">;</span>
+    <span class="c1">// isPatchable主要判断vnode的tag是否是undefined，文本节点的tag就是undefined。</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">isPatchable</span><span class="p">(</span><span class="nx">vnode</span><span class="p">))</span> <span class="p">{</span>
+    <span class="c1">// 这里的 cbs.update 是更新属性的，从方法名也可以看出来。</span>
+      <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">cbs</span><span class="p">.</span><span class="nx">update</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span> <span class="nx">cbs</span><span class="p">.</span><span class="nx">update</span><span class="p">[</span><span class="nx">i</span><span class="p">](</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">);</span> <span class="p">}</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">hook</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="nx">i</span><span class="p">.</span><span class="nx">update</span><span class="p">))</span> <span class="p">{</span> <span class="nx">i</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">);</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isUndef</span><span class="p">(</span><span class="nx">vnode</span><span class="p">.</span><span class="nx">text</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">oldCh</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">ch</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// 新旧节点都存在，则调用updateChildren</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">oldCh</span> <span class="o">!==</span> <span class="nx">ch</span><span class="p">)</span> <span class="p">{</span> <span class="nx">updateChildren</span><span class="p">(</span><span class="nx">elm</span><span class="p">,</span> <span class="nx">oldCh</span><span class="p">,</span> <span class="nx">ch</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">,</span> <span class="nx">removeOnly</span><span class="p">);</span> <span class="p">}</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">ch</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// 新的text属性为空，就的存在text属性，设置为&#39;&#39;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">.</span><span class="nx">text</span><span class="p">))</span> <span class="p">{</span> <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">setTextContent</span><span class="p">(</span><span class="nx">elm</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">);</span> <span class="p">}</span>
+        <span class="c1">// 否则就的为空，新的不为空，直接添加</span>
+        <span class="nx">addVnodes</span><span class="p">(</span><span class="nx">elm</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">ch</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">ch</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">oldCh</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// 新的为空，旧的不为空，则删除就的</span>
+        <span class="nx">removeVnodes</span><span class="p">(</span><span class="nx">elm</span><span class="p">,</span> <span class="nx">oldCh</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">oldCh</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">.</span><span class="nx">text</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// 两个都为空，且旧的有text，则设置&#39;&#39;</span>
+        <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">setTextContent</span><span class="p">(</span><span class="nx">elm</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">oldVnode</span><span class="p">.</span><span class="nx">text</span> <span class="o">!==</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// text节点直接设置文本内容即可。</span>
+      <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">setTextContent</span><span class="p">(</span><span class="nx">elm</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">text</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">data</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">isDef</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">hook</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="nx">i</span><span class="p">.</span><span class="nx">postpatch</span><span class="p">))</span> <span class="p">{</span> <span class="nx">i</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">);</span> <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="updatechildren">updateChildren</h3>
+<p>最核心的算法是updateChildren，这也是diff算法的核心部分。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">updateChildren</span> <span class="p">(</span><span class="nx">parentElm</span><span class="p">,</span> <span class="nx">oldCh</span><span class="p">,</span> <span class="nx">newCh</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">,</span> <span class="nx">removeOnly</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">oldStartIdx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">newStartIdx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">oldEndIdx</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">oldStartVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="kd">var</span> <span class="nx">oldEndVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="nx">oldEndIdx</span><span class="p">];</span>
+    <span class="kd">var</span> <span class="nx">newEndIdx</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">newStartVnode</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="kd">var</span> <span class="nx">newEndVnode</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">[</span><span class="nx">newEndIdx</span><span class="p">];</span>
+    <span class="kd">var</span> <span class="nx">oldKeyToIdx</span><span class="p">,</span> <span class="nx">idxInOld</span><span class="p">,</span> <span class="nx">vnodeToMove</span><span class="p">,</span> <span class="nx">refElm</span><span class="p">;</span>
+
+    <span class="c1">// removeOnly is a special flag used only by &lt;transition-group&gt;</span>
+    <span class="c1">// to ensure removed elements stay in correct relative positions</span>
+    <span class="c1">// during leaving transitions</span>
+    <span class="kd">var</span> <span class="nx">canMove</span> <span class="o">=</span> <span class="o">!</span><span class="nx">removeOnly</span><span class="p">;</span>
+
+    <span class="p">{</span>
+      <span class="nx">checkDuplicateKeys</span><span class="p">(</span><span class="nx">newCh</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">// 同级对比，先定义4个数组指针，分别指向旧vnode数组的开始，结束 和 新vnode数组的开始和结束</span>
+    <span class="c1">// 如果旧vnode数组的开始指针指向的vnode和新vnode数组的开始指针指向的vnode相同，则两个开始指针指向++操作</span>
+    <span class="c1">// 然后是结束指针执行类似的操作。</span>
+    <span class="c1">// 然后是旧的开始和新的结束对比。</span>
+    <span class="c1">// 然后是旧的结束和新的开始对比。</span>
+    <span class="c1">// 最后是基于key的对比</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="nx">oldStartIdx</span> <span class="o">&lt;=</span> <span class="nx">oldEndIdx</span> <span class="o">&amp;&amp;</span> <span class="nx">newStartIdx</span> <span class="o">&lt;=</span> <span class="nx">newEndIdx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">isUndef</span><span class="p">(</span><span class="nx">oldStartVnode</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">oldStartVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="o">++</span><span class="nx">oldStartIdx</span><span class="p">];</span> <span class="c1">// Vnode has been moved left</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isUndef</span><span class="p">(</span><span class="nx">oldEndVnode</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">oldEndVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="o">--</span><span class="nx">oldEndIdx</span><span class="p">];</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">sameVnode</span><span class="p">(</span><span class="nx">oldStartVnode</span><span class="p">,</span> <span class="nx">newStartVnode</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">patchVnode</span><span class="p">(</span><span class="nx">oldStartVnode</span><span class="p">,</span> <span class="nx">newStartVnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+        <span class="nx">oldStartVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="o">++</span><span class="nx">oldStartIdx</span><span class="p">];</span>
+        <span class="nx">newStartVnode</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">[</span><span class="o">++</span><span class="nx">newStartIdx</span><span class="p">];</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">sameVnode</span><span class="p">(</span><span class="nx">oldEndVnode</span><span class="p">,</span> <span class="nx">newEndVnode</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">patchVnode</span><span class="p">(</span><span class="nx">oldEndVnode</span><span class="p">,</span> <span class="nx">newEndVnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+        <span class="nx">oldEndVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="o">--</span><span class="nx">oldEndIdx</span><span class="p">];</span>
+        <span class="nx">newEndVnode</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">[</span><span class="o">--</span><span class="nx">newEndIdx</span><span class="p">];</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">sameVnode</span><span class="p">(</span><span class="nx">oldStartVnode</span><span class="p">,</span> <span class="nx">newEndVnode</span><span class="p">))</span> <span class="p">{</span> <span class="c1">// Vnode moved right</span>
+        <span class="nx">patchVnode</span><span class="p">(</span><span class="nx">oldStartVnode</span><span class="p">,</span> <span class="nx">newEndVnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+        <span class="nx">canMove</span> <span class="o">&amp;&amp;</span> <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">parentElm</span><span class="p">,</span> <span class="nx">oldStartVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">,</span> <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">(</span><span class="nx">oldEndVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">));</span>
+        <span class="nx">oldStartVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="o">++</span><span class="nx">oldStartIdx</span><span class="p">];</span>
+        <span class="nx">newEndVnode</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">[</span><span class="o">--</span><span class="nx">newEndIdx</span><span class="p">];</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">sameVnode</span><span class="p">(</span><span class="nx">oldEndVnode</span><span class="p">,</span> <span class="nx">newStartVnode</span><span class="p">))</span> <span class="p">{</span> <span class="c1">// Vnode moved left</span>
+        <span class="nx">patchVnode</span><span class="p">(</span><span class="nx">oldEndVnode</span><span class="p">,</span> <span class="nx">newStartVnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+        <span class="nx">canMove</span> <span class="o">&amp;&amp;</span> <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">parentElm</span><span class="p">,</span> <span class="nx">oldEndVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">,</span> <span class="nx">oldStartVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">);</span>
+        <span class="nx">oldEndVnode</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="o">--</span><span class="nx">oldEndIdx</span><span class="p">];</span>
+        <span class="nx">newStartVnode</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">[</span><span class="o">++</span><span class="nx">newStartIdx</span><span class="p">];</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">isUndef</span><span class="p">(</span><span class="nx">oldKeyToIdx</span><span class="p">))</span> <span class="p">{</span> <span class="nx">oldKeyToIdx</span> <span class="o">=</span> <span class="nx">createKeyToOldIdx</span><span class="p">(</span><span class="nx">oldCh</span><span class="p">,</span> <span class="nx">oldStartIdx</span><span class="p">,</span> <span class="nx">oldEndIdx</span><span class="p">);</span> <span class="p">}</span>
+        <span class="nx">idxInOld</span> <span class="o">=</span> <span class="nx">isDef</span><span class="p">(</span><span class="nx">newStartVnode</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span>
+          <span class="o">?</span> <span class="nx">oldKeyToIdx</span><span class="p">[</span><span class="nx">newStartVnode</span><span class="p">.</span><span class="nx">key</span><span class="p">]</span>
+          <span class="o">:</span> <span class="nx">findIdxInOld</span><span class="p">(</span><span class="nx">newStartVnode</span><span class="p">,</span> <span class="nx">oldCh</span><span class="p">,</span> <span class="nx">oldStartIdx</span><span class="p">,</span> <span class="nx">oldEndIdx</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">isUndef</span><span class="p">(</span><span class="nx">idxInOld</span><span class="p">))</span> <span class="p">{</span> <span class="c1">// New element</span>
+          <span class="nx">createElm</span><span class="p">(</span><span class="nx">newStartVnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">,</span> <span class="nx">parentElm</span><span class="p">,</span> <span class="nx">oldStartVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">newCh</span><span class="p">,</span> <span class="nx">newStartIdx</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">vnodeToMove</span> <span class="o">=</span> <span class="nx">oldCh</span><span class="p">[</span><span class="nx">idxInOld</span><span class="p">];</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">sameVnode</span><span class="p">(</span><span class="nx">vnodeToMove</span><span class="p">,</span> <span class="nx">newStartVnode</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">patchVnode</span><span class="p">(</span><span class="nx">vnodeToMove</span><span class="p">,</span> <span class="nx">newStartVnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+            <span class="nx">oldCh</span><span class="p">[</span><span class="nx">idxInOld</span><span class="p">]</span> <span class="o">=</span> <span class="kc">undefined</span><span class="p">;</span>
+            <span class="nx">canMove</span> <span class="o">&amp;&amp;</span> <span class="nx">nodeOps</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">parentElm</span><span class="p">,</span> <span class="nx">vnodeToMove</span><span class="p">.</span><span class="nx">elm</span><span class="p">,</span> <span class="nx">oldStartVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">);</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// same key but different element. treat as new element</span>
+            <span class="nx">createElm</span><span class="p">(</span><span class="nx">newStartVnode</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">,</span> <span class="nx">parentElm</span><span class="p">,</span> <span class="nx">oldStartVnode</span><span class="p">.</span><span class="nx">elm</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">newCh</span><span class="p">,</span> <span class="nx">newStartIdx</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="nx">newStartVnode</span> <span class="o">=</span> <span class="nx">newCh</span><span class="p">[</span><span class="o">++</span><span class="nx">newStartIdx</span><span class="p">];</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">oldStartIdx</span> <span class="o">&gt;</span> <span class="nx">oldEndIdx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">refElm</span> <span class="o">=</span> <span class="nx">isUndef</span><span class="p">(</span><span class="nx">newCh</span><span class="p">[</span><span class="nx">newEndIdx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">?</span> <span class="kc">null</span> <span class="o">:</span> <span class="nx">newCh</span><span class="p">[</span><span class="nx">newEndIdx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">].</span><span class="nx">elm</span><span class="p">;</span>
+      <span class="nx">addVnodes</span><span class="p">(</span><span class="nx">parentElm</span><span class="p">,</span> <span class="nx">refElm</span><span class="p">,</span> <span class="nx">newCh</span><span class="p">,</span> <span class="nx">newStartIdx</span><span class="p">,</span> <span class="nx">newEndIdx</span><span class="p">,</span> <span class="nx">insertedVnodeQueue</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">newStartIdx</span> <span class="o">&gt;</span> <span class="nx">newEndIdx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">removeVnodes</span><span class="p">(</span><span class="nx">parentElm</span><span class="p">,</span> <span class="nx">oldCh</span><span class="p">,</span> <span class="nx">oldStartIdx</span><span class="p">,</span> <span class="nx">oldEndIdx</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="vdom-diff-">vdom diff算法总结</h2>
+<p>vdom的diff算法本质上是两个树形结构的diff对比，传统上的树的对比的时间复杂度很高，为O(n^3)。考虑到在实际页面中，跨层级去做更新的场景比较少，所以Vue的diff算法只是同级比较，时间复杂度缩小为O(n)。</p>
+<p>具体的算法，Vue2中参考了一个开源框架的diff算法。我大概说一下这个算法。首先判断两个节点是不是相同的vnode，主要是比较key和tag。如果不是，则删除旧的，创建新的，不再比较。如果是相同的vnode，则比较它们的children数组。</p>
+<p>比较children时，首先定义4个指针分别指向新旧children数组的开始和结束。然后开始和开始比较，结束和结束比较，新的开始和就的结束比较，旧的开始和新的结束比较，最后是key相关的比较。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/46620505">https://zhuanlan.zhihu.com/p/46620505</a></p>
+</body>
+</html>
