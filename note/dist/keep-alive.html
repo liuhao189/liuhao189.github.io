@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>keep-alive的原理</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1632754573416">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="keep-alive-">keep-alive的原理</h1>
+<h2 id="keep-alive-">keep-alive的使用</h2>
+<p>keep-alive是Vue.js的一个内置组件，它能够将不活动的组件实例保存在内存中，而不是直接将其销毁，它是一个抽象组件，不会被渲染到DOM中，也不会出现在父组件链中。</p>
+<p>提供了include与exclude两个属性，允许组件有条件地进行缓存。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;keep-alive&gt;</span>
+    <span class="nt">&lt;coma</span> <span class="na">v-if=</span><span class="s">&quot;test&quot;</span><span class="nt">&gt;&lt;/coma&gt;</span>
+    <span class="nt">&lt;comb</span> <span class="na">v-else</span><span class="nt">&gt;&lt;/comb&gt;</span>
+<span class="nt">&lt;/keep-alive&gt;</span>
+<span class="nt">&lt;button</span> <span class="err">@</span><span class="na">click=</span><span class="s">&quot;test=handleClick&quot;</span><span class="nt">&gt;</span>请点击<span class="nt">&lt;/button&gt;</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
+    <span class="nx">data</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="nx">test</span><span class="o">:</span> <span class="kc">true</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nx">methods</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">handleClick</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">test</span> <span class="o">=</span> <span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">test</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>点击button的时候，coma和comb两个组件会发生切换，但是这两个组件的状态会被缓存起来。</p>
+<h3 id="keep-alive-props">keep-alive props</h3>
+<p>keep-alive组件提供了include和exclude两个属性来允许组件有条件地进行缓存。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="o">&lt;</span><span class="nx">keep</span><span class="o">-</span><span class="nx">alive</span> <span class="nx">include</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="nx">component</span><span class="o">&gt;&lt;</span><span class="err">/component&gt;</span>
+<span class="o">&lt;</span><span class="err">/keep-alive&gt;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="keep-alive-">keep-alive生命钩子</h3>
+<p>keep-alive提供两个生命钩子，分别是activated与deactivated。</p>
+<h2 id="-keep-alive-">深入keep-alive组件实现</h2>
+<h3 id="create-destroyed-">create &amp; destroyed钩子</h3>
+<p>created钩子会创建一个cache对象，用来作为缓存容器，保存vnode节点。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="nx">created</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// 创建缓存</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">cache</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+    <span class="c1">// 创建keys</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">keys</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>destroyed钩子则在组件被销毁时清除cache缓存中的所有组件实例。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="cm">/* destroyed钩子中销毁所有cache中的组件实例 */</span>
+  <span class="nx">destroyed</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">key</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="nx">cache</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">pruneCacheEntry</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cache</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">keys</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="render-">render方法</h3>
+<pre><code class="lang-js"><div class="highlight"><pre> <span class="nx">render</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">slot</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$slots</span><span class="p">.</span><span class="k">default</span>
+    <span class="kr">const</span> <span class="nx">vnode</span><span class="o">:</span> <span class="nx">VNode</span> <span class="o">=</span> <span class="nx">getFirstComponentChild</span><span class="p">(</span><span class="nx">slot</span><span class="p">)</span>
+    <span class="kr">const</span> <span class="nx">componentOptions</span><span class="o">:</span> <span class="o">?</span><span class="nx">VNodeComponentOptions</span> <span class="o">=</span> <span class="nx">vnode</span> <span class="o">&amp;&amp;</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">componentOptions</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">componentOptions</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// check pattern</span>
+      <span class="kr">const</span> <span class="nx">name</span><span class="o">:</span> <span class="o">?</span><span class="nx">string</span> <span class="o">=</span> <span class="nx">getComponentName</span><span class="p">(</span><span class="nx">componentOptions</span><span class="p">)</span>
+      <span class="kr">const</span> <span class="p">{</span> <span class="nx">include</span><span class="p">,</span> <span class="nx">exclude</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span>
+      <span class="k">if</span> <span class="p">(</span>
+        <span class="c1">// not included</span>
+        <span class="p">(</span><span class="nx">include</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">!</span><span class="nx">name</span> <span class="o">||</span> <span class="o">!</span><span class="nx">matches</span><span class="p">(</span><span class="nx">include</span><span class="p">,</span> <span class="nx">name</span><span class="p">)))</span> <span class="o">||</span>
+        <span class="c1">// excluded</span>
+        <span class="p">(</span><span class="nx">exclude</span> <span class="o">&amp;&amp;</span> <span class="nx">name</span> <span class="o">&amp;&amp;</span> <span class="nx">matches</span><span class="p">(</span><span class="nx">exclude</span><span class="p">,</span> <span class="nx">name</span><span class="p">))</span>
+      <span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">vnode</span>
+      <span class="p">}</span>
+
+      <span class="kr">const</span> <span class="p">{</span> <span class="nx">cache</span><span class="p">,</span> <span class="nx">keys</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span>
+      <span class="kr">const</span> <span class="nx">key</span><span class="o">:</span> <span class="o">?</span><span class="nx">string</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">key</span> <span class="o">==</span> <span class="kc">null</span>
+        <span class="c1">// same constructor may get registered as different local components</span>
+        <span class="c1">// so cid alone is not enough (#3269)</span>
+        <span class="o">?</span> <span class="nx">componentOptions</span><span class="p">.</span><span class="nx">Ctor</span><span class="p">.</span><span class="nx">cid</span> <span class="o">+</span> <span class="p">(</span><span class="nx">componentOptions</span><span class="p">.</span><span class="nx">tag</span> <span class="o">?</span> <span class="err">`</span><span class="o">::</span><span class="nx">$</span><span class="p">{</span><span class="nx">componentOptions</span><span class="p">.</span><span class="nx">tag</span><span class="p">}</span><span class="err">`</span> <span class="o">:</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="o">:</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">key</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">cache</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span> <span class="p">{</span>
+        <span class="nx">vnode</span><span class="p">.</span><span class="nx">componentInstance</span> <span class="o">=</span> <span class="nx">cache</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">componentInstance</span>
+        <span class="c1">// make current key freshest</span>
+        <span class="nx">remove</span><span class="p">(</span><span class="nx">keys</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+        <span class="nx">keys</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// delay setting the cache until update</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">vnodeToCache</span> <span class="o">=</span> <span class="nx">vnode</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">keyToCache</span> <span class="o">=</span> <span class="nx">key</span>
+      <span class="p">}</span>
+
+      <span class="nx">vnode</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">keepAlive</span> <span class="o">=</span> <span class="kc">true</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">vnode</span> <span class="o">||</span> <span class="p">(</span><span class="nx">slot</span> <span class="o">&amp;&amp;</span> <span class="nx">slot</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>首先通过getFirstComponentChild获取第一个子组件，获取该组件的name(如果name为空，则会使用tag)。</p>
+<p>接下来将name通过include和exclude属性进行匹配，匹配不成功，则直接返回vnode。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="cm">/* 检测name是否匹配 */</span>
+<span class="kd">function</span> <span class="nx">matches</span> <span class="p">(</span><span class="nx">pattern</span><span class="o">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nb">RegExp</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="nx">string</span><span class="p">)</span><span class="o">:</span> <span class="kr">boolean</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">pattern</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="cm">/* 字符串情况，如a,b,c */</span>
+    <span class="k">return</span> <span class="nx">pattern</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">).</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isRegExp</span><span class="p">(</span><span class="nx">pattern</span><span class="p">))</span> <span class="p">{</span>
+    <span class="cm">/* 正则 */</span>
+    <span class="k">return</span> <span class="nx">pattern</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="cm">/* istanbul ignore next */</span>
+  <span class="k">return</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>接下来的事情，如果key存在，直接将缓存的vnode的实例componentInstance(组件实例)覆盖到目前的vnode上面，否则将vnode存储在cache中。</p>
+<h3 id="watch">watch</h3>
+<p>接下来使用$watch方法来监控include和exclude的变化，然后执行pruneCache的方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="nx">mounted</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">cacheVNode</span><span class="p">()</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">$watch</span><span class="p">(</span><span class="s1">&#39;include&#39;</span><span class="p">,</span> <span class="nx">val</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">pruneCache</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">name</span> <span class="o">=&gt;</span> <span class="nx">matches</span><span class="p">(</span><span class="nx">val</span><span class="p">,</span> <span class="nx">name</span><span class="p">))</span>
+    <span class="p">})</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">$watch</span><span class="p">(</span><span class="s1">&#39;exclude&#39;</span><span class="p">,</span> <span class="nx">val</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">pruneCache</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">name</span> <span class="o">=&gt;</span> <span class="o">!</span><span class="nx">matches</span><span class="p">(</span><span class="nx">val</span><span class="p">,</span> <span class="nx">name</span><span class="p">))</span>
+    <span class="p">})</span>
+  <span class="p">},</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">pruneCache</span> <span class="p">(</span><span class="nx">keepAliveInstance</span><span class="o">:</span> <span class="nx">any</span><span class="p">,</span> <span class="nx">filter</span><span class="o">:</span> <span class="nb">Function</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">cache</span><span class="p">,</span> <span class="nx">keys</span><span class="p">,</span> <span class="nx">_vnode</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">keepAliveInstance</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">cache</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">entry</span><span class="o">:</span> <span class="o">?</span><span class="nx">CacheEntry</span> <span class="o">=</span> <span class="nx">cache</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">entry</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">name</span><span class="o">:</span> <span class="o">?</span><span class="nx">string</span> <span class="o">=</span> <span class="nx">entry</span><span class="p">.</span><span class="nx">name</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">name</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">filter</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">pruneCacheEntry</span><span class="p">(</span><span class="nx">cache</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">keys</span><span class="p">,</span> <span class="nx">_vnode</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">pruneCacheEntry</span> <span class="p">(</span>
+  <span class="nx">cache</span><span class="o">:</span> <span class="nx">CacheEntryMap</span><span class="p">,</span>
+  <span class="nx">key</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span>
+  <span class="nx">keys</span><span class="o">:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">string</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">current</span><span class="o">?:</span> <span class="nx">VNode</span>
+<span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">entry</span><span class="o">:</span> <span class="o">?</span><span class="nx">CacheEntry</span> <span class="o">=</span> <span class="nx">cache</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">entry</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">!</span><span class="nx">current</span> <span class="o">||</span> <span class="nx">entry</span><span class="p">.</span><span class="nx">tag</span> <span class="o">!==</span> <span class="nx">current</span><span class="p">.</span><span class="nx">tag</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">entry</span><span class="p">.</span><span class="nx">componentInstance</span><span class="p">.</span><span class="nx">$destroy</span><span class="p">()</span>
+  <span class="p">}</span>
+  <span class="nx">cache</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">null</span>
+  <span class="nx">remove</span><span class="p">(</span><span class="nx">keys</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>pruneCache主要是遍历cache中的key，如果不符合新的include或在exclude之内，则执行组件实例的销毁$destory方法来讲组件销毁。</p>
+<h2 id="activate-deactivate-hooks">activate &amp;&amp;  deactivate hooks</h2>
+<p>代码主要在insert和destroy中。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="c1">// 插入时判断.data.keepAlive属性，然后去调用activateChildComponent</span>
+    <span class="nx">insert</span><span class="o">:</span> <span class="kd">function</span> <span class="nx">insert</span> <span class="p">(</span><span class="nx">vnode</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">context</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">context</span><span class="p">;</span>
+      <span class="kd">var</span> <span class="nx">componentInstance</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">componentInstance</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">componentInstance</span><span class="p">.</span><span class="nx">_isMounted</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">componentInstance</span><span class="p">.</span><span class="nx">_isMounted</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="nx">callHook</span><span class="p">(</span><span class="nx">componentInstance</span><span class="p">,</span> <span class="s1">&#39;mounted&#39;</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">vnode</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">keepAlive</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nx">_isMounted</span><span class="p">)</span> <span class="p">{</span>
+          <span class="c1">// vue-router#1212</span>
+          <span class="c1">// During updates, a kept-alive component&#39;s child components may</span>
+          <span class="c1">// change, so directly walking the tree here may call activated hooks</span>
+          <span class="c1">// on incorrect children. Instead we push them into a queue which will</span>
+          <span class="c1">// be processed after the whole patch process ended.</span>
+          <span class="nx">queueActivatedComponent</span><span class="p">(</span><span class="nx">componentInstance</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">activateChildComponent</span><span class="p">(</span><span class="nx">componentInstance</span><span class="p">,</span> <span class="kc">true</span> <span class="cm">/* direct */</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="c1">// 销毁时判断.data.keepAlive属性，然后调用deactivateChildComponent</span>
+  <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span> <span class="nx">destroy</span> <span class="p">(</span><span class="nx">vnode</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">componentInstance</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">componentInstance</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">componentInstance</span><span class="p">.</span><span class="nx">_isDestroyed</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">vnode</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">keepAlive</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">componentInstance</span><span class="p">.</span><span class="nx">$destroy</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">deactivateChildComponent</span><span class="p">(</span><span class="nx">componentInstance</span><span class="p">,</span> <span class="kc">true</span> <span class="cm">/* direct */</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kd">function</span> <span class="nx">activateChildComponent</span> <span class="p">(</span><span class="nx">vm</span><span class="o">:</span> <span class="nx">Component</span><span class="p">,</span> <span class="nx">direct</span><span class="o">?:</span> <span class="kr">boolean</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">direct</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">vm</span><span class="p">.</span><span class="nx">_directInactive</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isInInactiveTree</span><span class="p">(</span><span class="nx">vm</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">vm</span><span class="p">.</span><span class="nx">_directInactive</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">vm</span><span class="p">.</span><span class="nx">_inactive</span> <span class="o">||</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">_inactive</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">vm</span><span class="p">.</span><span class="nx">_inactive</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$children</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">activateChildComponent</span><span class="p">(</span><span class="nx">vm</span><span class="p">.</span><span class="nx">$children</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span>
+    <span class="p">}</span>
+    <span class="nx">callHook</span><span class="p">(</span><span class="nx">vm</span><span class="p">,</span> <span class="s1">&#39;activated&#39;</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">deactivateChildComponent</span> <span class="p">(</span><span class="nx">vm</span><span class="o">:</span> <span class="nx">Component</span><span class="p">,</span> <span class="nx">direct</span><span class="o">?:</span> <span class="kr">boolean</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">direct</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">vm</span><span class="p">.</span><span class="nx">_directInactive</span> <span class="o">=</span> <span class="kc">true</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isInInactiveTree</span><span class="p">(</span><span class="nx">vm</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">vm</span><span class="p">.</span><span class="nx">_inactive</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">vm</span><span class="p">.</span><span class="nx">_inactive</span> <span class="o">=</span> <span class="kc">true</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$children</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">deactivateChildComponent</span><span class="p">(</span><span class="nx">vm</span><span class="p">.</span><span class="nx">$children</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span>
+    <span class="p">}</span>
+    <span class="nx">callHook</span><span class="p">(</span><span class="nx">vm</span><span class="p">,</span> <span class="s1">&#39;deactivated&#39;</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">总结</h2>
+<p>Vue内部将DOM节点抽象成一个个的VNode节点，keep-alive组件的缓存基于VNode节点的componentInstance，将满足条件的组件在cache对象中缓存起来，在需要重新渲染的时候再将componentInstance从cache对象中取出来覆盖新的vnode节点。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/30979183">https://zhuanlan.zhihu.com/p/30979183</a></p>
+</body>
+</html>
