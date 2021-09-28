@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Vue之VDOM</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1632759502902">
+  <link rel="stylesheet" href="/note/note.css?ts=1632794442613">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -14,7 +14,7 @@
 </script>
 <h1 id="vue-vdom">Vue之VDOM</h1>
 <h2 id="-vdom">为什么引入vdom</h2>
-<p>根据Vue作者相关的说法(<a href="https://zhuanlan.zhihu.com/p/23752826)，Vue2引入vdom的原因是添加了一层渲染过程中的抽象层，从而使得组件的抽象能力得到提升，并且可以适配DOM意外的渲染目标。另外一点，就是性能问题。">https://zhuanlan.zhihu.com/p/23752826)，Vue2引入vdom的原因是添加了一层渲染过程中的抽象层，从而使得组件的抽象能力得到提升，并且可以适配DOM意外的渲染目标。另外一点，就是性能问题。</a></p>
+<p>根据Vue作者相关的说法，Vue2引入vdom的原因是添加了一层渲染过程中的抽象层，从而使得组件的抽象能力得到提升，并且可以适配DOM意外的渲染目标。另外一点，就是性能问题。</p>
 <h2 id="vdom-">vdom的基本实现思路</h2>
 <p>1、用JS表示DOM结构。</p>
 <p>2、根据虚拟DOM树构建出真实的DOM树。</p>
@@ -223,6 +223,7 @@
 <p>具体的算法，Vue2中参考了一个开源框架的diff算法。我大概说一下这个算法。首先判断两个节点是不是相同的vnode，主要是比较key和tag。如果不是，则删除旧的，创建新的，不再比较。如果是相同的vnode，则比较它们的children数组。</p>
 <p>比较children时，首先定义4个指针分别指向新旧children数组的开始和结束。然后开始和开始比较，结束和结束比较，新的开始和就的结束比较，旧的开始和新的结束比较，最后是key相关的比较。</p>
 <h2 id="-">参考文档</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/23752826">https://zhuanlan.zhihu.com/p/23752826</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/46620505">https://zhuanlan.zhihu.com/p/46620505</a></p>
 </body>
 </html>
