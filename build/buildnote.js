@@ -100,6 +100,7 @@ function buildFile(filePath, noteList) {
 }
 
 function getBuildTargetNotes() {
+    console.log(process);
     let argv = process.env.npm_config_argv;
     log(argv);
     if (!argv) {
