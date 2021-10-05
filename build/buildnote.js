@@ -100,17 +100,15 @@ function buildFile(filePath, noteList) {
 }
 
 function getBuildTargetNotes() {
-    console.log(process);
-    let argv = process.env.npm_config_argv;
+    let argv = process.argv || [];
     log(argv);
     if (!argv) {
         return null;
     }
     //
     try {
-        argvObj = JSON.parse(argv);
-        let originalArgvArr = argvObj.original || [];
-        let noteArgvArr = originalArgvArr.filter(argvItem => {
+        let argvArr = argv.slice(2) || [];
+        let noteArgvArr = argvArr.filter(argvItem => {
             return argvItem.startsWith('--note');
         });
 
