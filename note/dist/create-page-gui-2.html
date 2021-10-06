@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>可视化搭建Web页面其二</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1633020357091">
+  <link rel="stylesheet" href="/note/note.css?ts=1633511033457">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -15,6 +15,32 @@
 <h1 id="-web-">可视化搭建Web页面其二</h1>
 <p>上文提到要创建CLI工具来提高开发者开发效率。</p>
 <h2 id="-">如何开始</h2>
-<p>接下来我们从头开始介绍如何开始创建一个node-cli来面向模板和组件开发者，减少重复劳动，提高工作效率。</p>
+<p>从头开始介绍如何开始创建一个node-cli来面向模板和组件开发者，减少重复劳动，提高工作效率。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>mkdir my-cli
+<span class="nb">cd </span>my-cli
+npm init -y <span class="c"># 初始化package.json</span>
+</pre></div>
+
+</code></pre>
+<p>接下来我们需要增加一个命令入口，指向可执行文件。需要在package.json文件中指明bin来配置入口。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c">#!/usr/bin/env node</span>
+</pre></div>
+
+</code></pre>
+<p>#!这个符号通常出现在Unix系统中，用于指明这个脚本文件的解释程序。增加上面那一行代码主要是为了指定用node执行脚本文件。</p>
+<h2 id="-">常用模块</h2>
+<p>1、chalk，终端显示颜色。</p>
+<p>2、commander提供了命令行输入和参数解析。</p>
+<p>3、inquirer交互式命令行工具，用来手机用户填入表单。</p>
+<p>4、ora终端加载动画效果。</p>
+<p>5、shelljs，代码中编写shell命令实现功能。</p>
+<p>6、puppeteer启动无头浏览器生成网站缩略图。</p>
+<p>7、download-git-repo，用来下载远程模板。</p>
+<h2 id="create-">create模板、组件</h2>
+<p>我们希望通过下面的命令来实现一个创建模板的功能，用于初始化模板脚手架。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">my</span><span class="o">-</span><span class="nx">cli</span> <span class="nx">create</span> <span class="nx">my</span><span class="o">-</span><span class="nx">template</span><span class="o">-</span><span class="nx">test</span>
+</pre></div>
+
+</code></pre>
 </body>
 </html>
