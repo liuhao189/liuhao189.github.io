@@ -44,4 +44,3 @@ npm init -y # 初始化package.json
 my-cli create my-template-test
 ```
 
-
