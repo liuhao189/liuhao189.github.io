@@ -91,13 +91,47 @@ function threeSum(pNums) {
 }
 ```
 
-# 
+# 洗牌算法
 
+重要的是足够随机，不重复，需要删除原数组。
 
+```js
+function shuffle(arr) {
+    let result = [];
+    let arrCopied = arr.slice();
+    while (arrCopied.length) {
+        let random = Math.floor(Math.random() * arrCopied.length);
+        result.push(arrCopied[random]);
+        arrCopied.splice(random, 1);
+    }
 
+    return result;
+}
+```
 
+# 洗牌算法knuth-durstenfeld 
 
+每次从未处理的数组中随机取一个元素，然后把该元素放到数组的尾部，即数组的尾部放的就是已经处理过的元素，这是一种原地打乱的算法，每个元素随机概率也相等。时间复杂度从Fisher算法的O(n^2)提升到了O(n)。
 
+1、选取数组中最后一个元素arr[length-1]，将其与n个元素中的任意一个交换，此时最后一个元素已经确定。
 
+2、选取第二个元素(arr[length-2])，将其与n-1个元素中的任意一个交换。
+
+3、重复1和2步，直到剩下一个元素。
+
+```js
+function shuffle(arr) {
+    let arrCopied = arr.slice();
+    let arrLen = arrCopied.length;
+    while (arrLen > 1) {
+        let randomInx = Math.floor(Math.random() * arrLen);
+        let temp = arrCopied[arrLen - 1];
+        arrCopied[arrLen - 1] = arrCopied[randomInx];
+        arrCopied[randomInx] = temp;
+        arrLen--;
+    }
+    return arrCopied;
+}
+```
 
 

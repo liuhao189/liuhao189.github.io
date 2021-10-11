@@ -299,6 +299,11 @@ finally(onDone) {
 }
 ```
 
+## 总结原理
+
+Promise一般用于异步操作，和一个promise进行交互的主要方式是通过它的then，catch和finally方法。新建Promise实例时，需要传一个函数参数，Promise的构造函数会将内部的resolve和reject作为参数同步调用传递的函数。Promise内部有一个状态变量来标识自身的状态，状态初始值为pending，通过调用resolve方法可以将状态由pending变为fulfilled，通过调用reject方法可以将状态由pending变为rejected。Promise的then和catch主要是将相关的函数添加到Promise的回调方法的数组中，当状态变化时，Promise内部会执行相应的回调。Promise的链式调用主要是通过then方法返回一个新的Promise实例来实现的。
+
+
 ## 参考文档
 
 https://zhuanlan.zhihu.com/p/102017798
