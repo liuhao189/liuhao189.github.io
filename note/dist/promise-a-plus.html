@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Promise实现原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1633918534577">
+  <link rel="stylesheet" href="/note/note.css?ts=1633931729577">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -111,6 +111,11 @@
         <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">!==</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
             <span class="k">return</span><span class="p">;</span>
         <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">value</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">value</span><span class="p">.</span><span class="nx">then</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">))</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">then</span> <span class="o">=</span> <span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">;</span>
+            <span class="nx">then</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">_resolve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">=</span> <span class="err">`</span><span class="nx">fulfilled</span><span class="err">`</span><span class="p">;</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
@@ -141,6 +146,152 @@
 
 </code></pre>
 <p>需要对resolve中的值作一个特殊的判断，如果_resolve的值是一个Promise实例，那么就把当前Promise实例的状态改变接口重新注册到resolve的值对应的Promise的onFulfilled中，以此来实现，当前Promise实例的状态要依赖resolve的值的Promise实例的状态。</p>
+<h2 id="-">错误处理</h2>
+<p>之前为了讲解原理，只是实现了onFulfilled，对于Promise来说，除了成功，还有失败，在失败时，要标记Promise的状态为rejected，并执行注册的onRejected。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">Promise</span> <span class="p">{</span>
+    <span class="nx">_callbacks</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="nx">_value</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="nx">_state</span> <span class="o">=</span> <span class="err">`</span><span class="nx">pending</span><span class="err">`</span><span class="p">;</span>
+
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_resolve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">),</span> <span class="k">this</span><span class="p">.</span><span class="nx">_reject</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="nx">then</span><span class="p">(</span><span class="nx">onFullfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_handle</span><span class="p">({</span>
+                <span class="nx">onFullfilled</span><span class="o">:</span> <span class="nx">onFullfilled</span> <span class="o">||</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nx">onRejected</span><span class="o">:</span> <span class="nx">onRejected</span> <span class="o">||</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nx">resolve</span><span class="o">:</span> <span class="nx">resolve</span>
+                <span class="nx">reject</span><span class="o">:</span> <span class="nx">reject</span>
+            <span class="p">})</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="nx">_handle</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">===</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">cb</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">===</span> <span class="s1">&#39;fulfilled&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cb</span><span class="p">.</span><span class="nx">onFulfilled</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="kd">let</span> <span class="nx">ret</span><span class="p">;</span>
+            <span class="k">try</span> <span class="p">{</span>
+                <span class="nx">ret</span> <span class="o">=</span> <span class="nx">cb</span><span class="p">.</span><span class="nx">onFullfilled</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+                <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">ret</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">ex</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">cb</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">ex</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cb</span><span class="p">.</span><span class="nx">onRejected</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="kd">let</span> <span class="nx">ret</span><span class="p">;</span>
+            <span class="k">try</span> <span class="p">{</span>
+                <span class="nx">ret</span> <span class="o">=</span> <span class="nx">cb</span><span class="p">.</span><span class="nx">onRejected</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+                <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">ret</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">ex</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">cb</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">ex</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nx">_resolve</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">!==</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">value</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">value</span><span class="p">.</span><span class="nx">then</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">))</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">then</span> <span class="o">=</span> <span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">;</span>
+            <span class="nx">then</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">_resolve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">),</span> <span class="k">this</span><span class="p">.</span><span class="nx">_reject</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">=</span> <span class="err">`</span><span class="nx">fulfilled</span><span class="err">`</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_handle</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="nx">_reject</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">!==</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">err</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">=</span> <span class="s1">&#39;rejected&#39;</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_handle</span><span class="p">(</span><span class="nx">cb</span><span class="p">);</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">异常处理</h2>
+<p>在执行onFulfilled或onRejected时，出现了异常，应该使用try-catch捕获错误，然后将相应的Promise状态设置为rejected状态。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">_handle</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">===</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">cb</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">===</span> <span class="s1">&#39;fulfilled&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cb</span><span class="p">.</span><span class="nx">onFulfilled</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="kd">let</span> <span class="nx">ret</span><span class="p">;</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="nx">ret</span> <span class="o">=</span> <span class="nx">cb</span><span class="p">.</span><span class="nx">onFullfilled</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+            <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">ret</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">ex</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">cb</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">ex</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cb</span><span class="p">.</span><span class="nx">onRejected</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="kd">let</span> <span class="nx">ret</span><span class="p">;</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="nx">ret</span> <span class="o">=</span> <span class="nx">cb</span><span class="p">.</span><span class="nx">onRejected</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+            <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">ret</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">ex</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">cb</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">ex</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">catch</span> <span class="p">(</span><span class="nx">onError</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">onError</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="finally-">Finally方法</h2>
+<p>finally用于不管Promise最后的状态如何，都要执行某些操作。根据规范，finally的参数调用没有参数；finally的参数返回一个Promise时，会改变finally返回的Promise的值状态。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="k">finally</span><span class="p">(</span><span class="nx">onDone</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">onDone</span> <span class="o">!==</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="kd">let</span> <span class="nx">Promise</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">constructor</span><span class="p">;</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">val</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">onDone</span><span class="p">()).</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="nx">val</span><span class="p">);</span>
+    <span class="p">},</span> <span class="nx">reason</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">onDone</span><span class="p">()).</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="nx">reason</span>
+        <span class="p">})</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="https://zhuanlan.zhihu.com/p/102017798">https://zhuanlan.zhihu.com/p/102017798</a></p>
 </body>

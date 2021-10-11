@@ -107,6 +107,11 @@ class Promise {
         if (this._state !== 'pending') {
             return;
         }
+        if (value && (typeof value === 'object' && typeof value.then === 'function')) {
+            let then = value.then;
+            then.call(value, this._resolve.bind(this));
+            return;
+        }
         this._value = value;
         this._state = `fulfilled`;
         this._callbacks.forEach(cb => {
@@ -141,6 +146,158 @@ _resolve(value) {
 ```
 
 需要对resolve中的值作一个特殊的判断，如果_resolve的值是一个Promise实例，那么就把当前Promise实例的状态改变接口重新注册到resolve的值对应的Promise的onFulfilled中，以此来实现，当前Promise实例的状态要依赖resolve的值的Promise实例的状态。
+
+## 错误处理
+
+之前为了讲解原理，只是实现了onFulfilled，对于Promise来说，除了成功，还有失败，在失败时，要标记Promise的状态为rejected，并执行注册的onRejected。
+
+```js
+class Promise {
+    _callbacks = [];
+    _value = null;
+    _state = `pending`;
+
+    constructor(fn) {
+        fn(this._resolve.bind(this), this._reject.bind(this));
+    }
+
+    then(onFullfilled, onRejected) {
+        return new Promise((resolve, reject) => {
+            this._handle({
+                onFullfilled: onFullfilled || null,
+                onRejected: onRejected || null,
+                resolve: resolve
+                reject: reject
+            })
+        })
+    }
+
+    _handle(cb) {
+        if (this._state === 'pending') {
+            this._callbacks.push(cb);
+            return;
+        }
+
+        if (this._state === 'fulfilled') {
+            if (!cb.onFulfilled) {
+                cb.resolve(this._value);
+                return;
+            }
+            let ret;
+            try {
+                ret = cb.onFullfilled(this._value);
+                cb.resolve(ret);
+            } catch (ex) {
+                cb.reject(ex);
+            }
+        } else {
+            if (!cb.onRejected) {
+                cb.resolve(this._value);
+                return;
+            }
+            let ret;
+            try {
+                ret = cb.onRejected(this._value);
+                cb.resolve(ret);
+            } catch (ex) {
+                cb.reject(ex);
+            }
+        }
+    }
+
+    _resolve(value) {
+        if (this._state !== 'pending') {
+            return;
+        }
+        if (value && (typeof value === 'object' && typeof value.then === 'function')) {
+            let then = value.then;
+            then.call(value, this._resolve.bind(this), this._reject.bind(this));
+            return;
+        }
+        this._value = value;
+        this._state = `fulfilled`;
+        this._callbacks.forEach(cb => {
+            this._handle(cb)
+        });
+    }
+
+    _reject(err) {
+        if (this._state !== 'pending') {
+            return;
+        }
+
+        this._value = err;
+        this._state = 'rejected';
+        this._callbacks.forEach(cb => {
+            this._handle(cb);
+        })
+    }
+}
+```
+
+## 异常处理
+
+在执行onFulfilled或onRejected时，出现了异常，应该使用try-catch捕获错误，然后将相应的Promise状态设置为rejected状态。
+
+```js
+_handle(cb) {
+    if (this._state === 'pending') {
+        this._callbacks.push(cb);
+        return;
+    }
+
+    if (this._state === 'fulfilled') {
+        if (!cb.onFulfilled) {
+            cb.resolve(this._value);
+            return;
+        }
+        let ret;
+        try {
+            ret = cb.onFullfilled(this._value);
+            cb.resolve(ret);
+        } catch (ex) {
+            cb.reject(ex);
+        }
+    } else {
+        if (!cb.onRejected) {
+            cb.resolve(this._value);
+            return;
+        }
+        let ret;
+        try {
+            ret = cb.onRejected(this._value);
+            cb.resolve(ret);
+        } catch (ex) {
+            cb.reject(ex);
+        }
+    }
+}
+
+catch (onError) {
+    return this.then(null, onError)
+}
+```
+
+## Finally方法
+
+finally用于不管Promise最后的状态如何，都要执行某些操作。根据规范，finally的参数调用没有参数；finally的参数返回一个Promise时，会改变finally返回的Promise的值状态。
+
+```js
+finally(onDone) {
+    if (typeof onDone !== 'function') {
+        return this.then();
+    }
+
+    let Promise = this.constructor;
+    return this.then(val => {
+        return Promise.resolve(onDone()).then(() => val);
+    }, reason => {
+        return Promise.resolve(onDone()).then(() => {
+            throw reason
+        })
+    })
+}
+```
 
 ## 参考文档
 
