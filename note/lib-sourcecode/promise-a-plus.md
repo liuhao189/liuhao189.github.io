@@ -128,9 +128,19 @@ then方法传入的形参onFullfilled以及新创建的Promise实例时传入的
 
 ```js
 _resolve(value) {
-    if(value && (typeof value === 'object'))
+    if (value && (typeof value === 'object' && typeof value.then === 'function')) {
+        let then = value.then;
+        then.call(value, this._resolve.bind(this));
+        return;
+    }
+
+    this._value = 'fulfilled';
+    this._value = value;
+    this._callbacks.forEach(cb => this._handle(cb));
 }
 ```
+
+需要对resolve中的值作一个特殊的判断，如果_resolve的值是一个Promise实例，那么就把当前Promise实例的状态改变接口重新注册到resolve的值对应的Promise的onFulfilled中，以此来实现，当前Promise实例的状态要依赖resolve的值的Promise实例的状态。
 
 ## 参考文档
 

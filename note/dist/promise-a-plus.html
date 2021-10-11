@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Promise实现原理</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1633918534577">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="promise-">Promise实现原理</h1>
+<p>Promise规范有很多，有Promise/A，Promise/B，Promise/D以及Promise/A+。ES6中采用了Promise/A+规范。</p>
+<p>说到底，Promise还是使用回调函数，只不过是把回调封装在内部，使用上一致通过then方法的链式调用，使得多层的回调嵌套看起来变成了一层的，书写和理解上会更直观和简洁一些。</p>
+<h2 id="-">基础版本</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">Promise</span> <span class="p">{</span>
+    <span class="nx">_callbacks</span> <span class="o">=</span> <span class="p">[];</span>
+
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_resolve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="nx">then</span><span class="p">(</span><span class="nx">onFullfilled</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">onFullfilled</span><span class="p">);</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">_resolve</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">fn</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">fn</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">加入延迟机制 &amp; 增加状态</h2>
+<p>上面Promise的实现存在一个问题，如果在then方法注册之前resolve就执行了，onFullfilled就不会执行了。Promise/A+规范明确要求回调通过异步方式执行，用以保证一致可靠的执行顺序。</p>
+<p>Promise/A+规范明确规定了，pending可以转化为fulfilled或rejected并且只转化一次。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">Promise</span> <span class="p">{</span>
+    <span class="nx">_callbacks</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="nx">_value</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="nx">_state</span> <span class="o">=</span> <span class="err">`</span><span class="nx">pending</span><span class="err">`</span><span class="p">;</span>
+
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_resolve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="nx">then</span><span class="p">(</span><span class="nx">onFullfilled</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">===</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">onFullfilled</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">onFullfilled</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">_resolve</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">!==</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">=</span> <span class="err">`</span><span class="nx">fulfilled</span><span class="err">`</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">fn</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">fn</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="promise-">Promise链式调用</h2>
+<p>真正的链式Promise是指在当前Promise达到fulfilled状态后，即开始进行下一个Promise。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">Promise</span> <span class="p">{</span>
+    <span class="nx">_callbacks</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="nx">_value</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="nx">_state</span> <span class="o">=</span> <span class="err">`</span><span class="nx">pending</span><span class="err">`</span><span class="p">;</span>
+
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_resolve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="nx">then</span><span class="p">(</span><span class="nx">onFullfilled</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_handle</span><span class="p">({</span>
+                <span class="nx">onFullfilled</span><span class="o">:</span> <span class="nx">onFullfilled</span> <span class="o">||</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nx">resolve</span><span class="o">:</span> <span class="nx">resolve</span>
+            <span class="p">})</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="nx">_handle</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">===</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">cb</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cb</span><span class="p">.</span><span class="nx">onFulfilled</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">cb</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kd">let</span> <span class="nx">ret</span> <span class="o">=</span> <span class="nx">cb</span><span class="p">.</span><span class="nx">onFullfilled</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_value</span><span class="p">);</span>
+        <span class="nx">callback</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">ret</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">_resolve</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">!==</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_state</span> <span class="o">=</span> <span class="err">`</span><span class="nx">fulfilled</span><span class="err">`</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_handle</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>then方法中，创建并返回了新的Promise实例，这是链式调用的根本。</p>
+<p>then方法传入的形参onFullfilled以及新创建的Promise实例时传入的resolve放在一起，被push到callbask队列中，这是衔接当前Promise和后邻Promise的关键所在。</p>
+<p>根据规范，onFullfilled可以是空的，为空时不调用onFulfilled。</p>
+<p>链式调用的真正的意义：执行当前Promise的onFulfilled时，返回值通过调用第二个Promise的resolve方法，传递给第二个Promise value值。</p>
+<p>如果_resolve的值是一个Promise呢？</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">_resolve</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">value</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">value</span><span class="p">.</span><span class="nx">then</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">))</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">then</span> <span class="o">=</span> <span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">;</span>
+        <span class="nx">then</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">_resolve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="s1">&#39;fulfilled&#39;</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_callbacks</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">cb</span> <span class="o">=&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">_handle</span><span class="p">(</span><span class="nx">cb</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>需要对resolve中的值作一个特殊的判断，如果_resolve的值是一个Promise实例，那么就把当前Promise实例的状态改变接口重新注册到resolve的值对应的Promise的onFulfilled中，以此来实现，当前Promise实例的状态要依赖resolve的值的Promise实例的状态。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/102017798">https://zhuanlan.zhihu.com/p/102017798</a></p>
+</body>
+</html>
