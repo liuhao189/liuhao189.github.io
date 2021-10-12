@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible"
+            content="IE=edge">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+        <title>文件分片和断点上传</title>
+    </head>
+
+    <body>
+        <div>
+            <p>文件分片和断点续传主要使用File.slice方法来生成对文件进行分片，然后上传即可。</p>
+            <input type="file"
+                id="inputFile" />
+        </div>
+        <script type="module">
+            let inputFileEl = document.getElementById('inputFile')
+            //
+            let partSize = 100 * 1024;//100kb的切片
+            inputFileEl.addEventListener('change', (ev) => {
+                let files = inputFileEl.files;
+                if (!files || !files.length) return;
+
+                let file = inputFileEl.files[0];
+                if (file.size > partSize) {
+                    //需要分片上传
+                    uploadFileParts(file);
+                } else {
+                    uploadFile(file, file.name);
+                }
+            })
+
+            function uploadFile(file, name) {
+                let formData = new FormData();
+                formData.append('file', file);
+                formData.append('name', name);
+            }
+
+            function uploadFileParts(file) {
+                let start = 0;
+
+                let partCount = Number.parseInt(file.size / partSize);
+                let fileParts = [];
+                for (let i = 0; i <= partCount; ++i) {
+                    let endInx = (i + 1) * partSize;
+                    let currPart = file.slice(i * partSize, endInx > file.size ? file.size : endInx);
+                    fileParts.push(currPart);
+                }
+
+                fileParts.forEach((filePart, inx) => {
+                    uploadFile(filePart, `file-part-${inx}`);
+                })
+
+            }
+            // 
+        </script>
+    </body>
+
+</html>

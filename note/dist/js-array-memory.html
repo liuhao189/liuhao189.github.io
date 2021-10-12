@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JS中的数组在内存中的存储机制</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1634035650845">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="js-">JS中的数组在内存中的存储机制</h1>
+<p>JS中数组和其它编程语言的数组有一个显著区别，JS数组中可以存放不同的数据结构的对象，且数组长度可随时改变。</p>
+<p>数组本应该是一个连续的内存分配，但是在JS中是不连续分配的，而是类似哈希映射的方式存取的。</p>
+<p>现代浏览器为了优化其操作，对数组创建的时候内存分配进行了优化。</p>
+<p>1、对于同构数组，也就是数组中元素类型一直，会创建连续的内存分配。</p>
+<p>2、对于不同构数组，按照原来的方式创建。</p>
+<p>3、如果插入了一个异构数据，那么就会重新解构，通过哈希映射的方式创建。</p>
+<p>为了进一步优化功能的实现，JS中出现了ArrayBuffer，它可以创建连续的内存供编程人员使用。</p>
+<h2 id="-set-">数组Set值对比</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">LIMIT</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">LIMIT</span><span class="p">);</span>
+<span class="nx">arr</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+    <span class="nx">a</span><span class="o">:</span> <span class="mi">22</span>
+<span class="p">});</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s2">&quot;Array insertion time&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="s2">&quot;Array insertion time&quot;</span><span class="p">);</span>
+<span class="c1">//非同构数组，Array insertion time: 1.723s</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">LIMIT</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">LIMIT</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s2">&quot;Array insertion time&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="s2">&quot;Array insertion time&quot;</span><span class="p">);</span>
+<span class="c1">//同构数组，Array insertion time: 13.094ms</span>
+</pre></div>
+
+</code></pre>
+<p>以上代码执行环节为node v16.10.0，可以看到两者时间差了131倍。</p>
+<h2 id="-">数组读取值对比</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">LIMIT</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">LIMIT</span><span class="p">);</span>
+<span class="nx">arr</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+    <span class="nx">a</span><span class="o">:</span> <span class="mi">22</span>
+<span class="p">});</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">var</span> <span class="nx">p</span><span class="p">;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s2">&quot;Array read time&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//arr[i] = i;</span>
+    <span class="nx">p</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="s2">&quot;Array read time&quot;</span><span class="p">);</span>
+<span class="c1">// 非同构数组，Array read time: 12.038ms</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">LIMIT</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">LIMIT</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">var</span> <span class="nx">p</span><span class="p">;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s2">&quot;Array read time&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">p</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="s2">&quot;Array read time&quot;</span><span class="p">);</span>
+<span class="c1">//同构数组，Array read time: 10.829ms</span>
+</pre></div>
+
+</code></pre>
+<p>读取时间在同一个数量级，同构数组比非同构数组效率高16.6%左右。</p>
+<h2 id="array-">Array构造函数传递或不传递数组长度对比</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">LIMIT</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s2">&quot;Array insert time&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="s2">&quot;Array insert time&quot;</span><span class="p">);</span>
+<span class="c1">//不传递数组长度，Array insert time: 229.001ms</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">LIMIT</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">LIMIT</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s2">&quot;Array insert time&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="s2">&quot;Array insert time&quot;</span><span class="p">);</span>
+<span class="c1">//传递数组长度，Array insert time: 13.62ms</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">LIMIT</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">LIMIT</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s2">&quot;Array insert time&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">LIMIT</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">arr</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="s2">&quot;Array insert time&quot;</span><span class="p">);</span>
+<span class="c1">//传递数组长度并改变了数组长度，Array insert time: 99.062ms</span>
+</pre></div>
+
+</code></pre>
+<p>可以看到传递数组长度可以提高17倍的set性能。</p>
+<p>如果设置长度后，后续在数组中又添加了新的元素，性能会降低7倍多。这个主要是因为数组扩容导致的。</p>
+<h2 id="v8-">V8源码中的数组</h2>
+<p>从源码的注释中可以看出，JS数组有两种表现形式，fast和slow。</p>
+<p>fast是快速的后备存储结构FixedArray，并且数组长度&lt;=elements.length。</p>
+<p>slow是缓慢的后备存储结构是一个以数字为键的HashTable。</p>
+<h3 id="-">快数组</h3>
+<p>快数组是一种线性的存储方式，新创建的空数组，默认的存储方式是快数组。快数组根据元素的增加和删除来动态调整存储空间大小，内部是通过扩容和收缩机制实现。</p>
+<p>看源码得知new_capacity = old_capacity /2 + old_capacity + 16，也就是扩容后的新容量为旧容量的1.5倍+16，扩容后会将数组拷贝到新的内存空间中。</p>
+<p>缩编，如果容量&gt;=length的2倍+16，则进行收缩容量调整，否则用holes对象填充未被初始化的位置。</p>
+<pre><code class="lang-c"><div class="highlight"><pre><span class="kt">int</span> <span class="n">elements_to_trim</span> <span class="o">=</span> <span class="n">length</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">old_length</span> <span class="o">?</span> <span class="p">(</span><span class="n">capacity</span> <span class="o">-</span> <span class="n">length</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">:</span> <span class="n">capacity</span><span class="o">-</span><span class="n">length</span>
+</pre></div>
+
+</code></pre>
+<p>根据length+1是否等于old_length来判断将空出的空间全部收缩掉还是只收缩二分之一。</p>
+<p>holes空洞对象指的是数组中分配了空间，但是没有存放元素的位置。</p>
+<p>新建数组时，如果没有设置容量，V8会默认使用Fast Elements模式实现。</p>
+<p>如果对数组设置了容量，但并没有进行内部元素的初始化，就会以Fast Holey Elements模式实现。</p>
+<h3 id="-">慢数组</h3>
+<p>慢数组是一种字典的内存形式，不用开辟大块连续的存储空间，节省了内存，但是维护HashTable，其效率会比数组慢。</p>
+<h3 id="-">快慢数组的区别</h3>
+<p>快数组：存储空间是连续的，需要开辟一大块内存使用，其中还有很多空洞，比较浪费内存；但是操作效率比较高</p>
+<p>慢数组：内存是零散分配的，比较节省内存空间，缺点是遍历效率会差一些，特别是插入新元素。</p>
+<h3 id="-">快慢数组之间的转换</h3>
+<p>快转慢：</p>
+<p>1、新容量 &gt;= 3<em> 扩容后的容量 </em> 2，会转为慢数组。</p>
+<p>2、当加入的index - capacity &gt; 1024时，会转变为慢数组。eg：数组赋值时使用了远超当前数组的容量+1024时，为了空间的优化，会转换为慢数组。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="nx">a</span><span class="p">[</span><span class="mi">1030</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<p>慢转快：</p>
+<p>1、当慢数组的元素可存放在快数组中且长度小于2^31-1且仅可节省50%的空间，则会转变为快数组。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">];</span>
+<span class="nx">a</span><span class="p">[</span><span class="mi">1030</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">200</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">1030</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">总结</h2>
+<p>总的来说，JS 的数组看似与传统数组不一样，其实只是 V8 在底层实现上做了一层封装，使用两种数据结构实现数组，通过时间和空间纬度的取舍，优化数组的性能。了解数组的底层实现，可以帮助我们写出执行效率更高的代码。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.voidcanvas.com/javascript-array-evolution-performance/">https://www.voidcanvas.com/javascript-array-evolution-performance/</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/96959371">https://zhuanlan.zhihu.com/p/96959371</a></p>
+</body>
+</html>
