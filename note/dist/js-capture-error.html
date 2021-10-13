@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Web页面错误捕获原理</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1634142363912">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="web-">Web页面错误捕获原理</h1>
+<h2 id="js-">JS代码执行错误</h2>
+<p>主要指JS代码运行时的错误。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;addEventListener&#39;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+<span class="p">},</span> <span class="kc">true</span><span class="p">);</span>
+<span class="c1">//同步错误</span>
+<span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;sync error&#39;</span><span class="p">);</span>
+<span class="c1">//异步错误</span>
+<span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;async error&#39;</span><span class="p">);</span> <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">资源加载错误</h2>
+<p>DOM元素类的资源加载错误可以监控window的error事件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,(</span><span class="nx">ev</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="c1">//如果ev的target为img或video等标签，可以判断为资源加载错误</span>
+<span class="p">})</span>
+<span class="c1">// &lt;img src=&quot;./not-exist.png&quot; /&gt; </span>
+<span class="c1">// &lt;video src=&quot;./not-exist.mp4&quot; poster=&quot;./not-exist-poster.png&quot;&gt;&lt;/video&gt;</span>
+<span class="c1">// 图片标签类的加载错误可以捕获到</span>
+</pre></div>
+
+</code></pre>
+<p>需要注意，window.error事件，CSS里的背景图片和字体文件的请求错误捕获不到。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;style&gt;</span>
+    <span class="k">@font-face</span> <span class="p">{</span>
+        <span class="nt">font-family</span><span class="o">:</span> <span class="s1">&#39;test-fm&#39;</span><span class="o">;</span>
+        <span class="nt">src</span><span class="o">:</span> <span class="nt">url</span><span class="o">(</span><span class="s1">&#39;./not-exist.woff&#39;</span><span class="o">);</span>
+    <span class="p">}</span>
+    <span class="o">//</span>
+    <span class="nt">body</span> <span class="p">{</span>
+        <span class="k">font-family</span><span class="o">:</span> <span class="s1">&#39;test-fm&#39;</span><span class="p">;</span>
+        <span class="k">background-image</span><span class="o">:</span> <span class="sx">url(&#39;./not-exist-bg.png&#39;)</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="nt">&lt;/style&gt;</span>
+</pre></div>
+
+</code></pre>
+<p>可以利用performance.getEntriesByType(&#39;resource&#39;)来获取所有资源的加载时间等信息，但是还是无法监控到资源类的加载错误。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// Type PerformanceResourceTiming</span>
+<span class="nx">connectEnd</span><span class="o">:</span> <span class="mf">295.79999999701977</span>
+<span class="nx">connectStart</span><span class="o">:</span> <span class="mf">295.79999999701977</span>
+<span class="nx">decodedBodySize</span><span class="o">:</span> <span class="mi">0</span>
+<span class="nx">domainLookupEnd</span><span class="o">:</span> <span class="mf">295.79999999701977</span>
+<span class="nx">domainLookupStart</span><span class="o">:</span> <span class="mf">295.79999999701977</span>
+<span class="nx">duration</span><span class="o">:</span> <span class="mi">30</span>
+<span class="nx">encodedBodySize</span><span class="o">:</span> <span class="mi">18446744073709552000</span>
+<span class="nx">entryType</span><span class="o">:</span> <span class="s2">&quot;resource&quot;</span>
+<span class="nx">fetchStart</span><span class="o">:</span> <span class="mf">295.79999999701977</span>
+<span class="nx">initiatorType</span><span class="o">:</span> <span class="s2">&quot;css&quot;</span>
+<span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;http://xxx.com/not-exist.woff&quot;</span>
+<span class="nx">nextHopProtocol</span><span class="o">:</span> <span class="s2">&quot;http/1.1&quot;</span>
+<span class="nx">redirectEnd</span><span class="o">:</span> <span class="mi">0</span>
+<span class="nx">redirectStart</span><span class="o">:</span> <span class="mi">0</span>
+<span class="nx">requestStart</span><span class="o">:</span> <span class="mf">297.6000000014901</span>
+<span class="nx">responseEnd</span><span class="o">:</span> <span class="mf">325.79999999701977</span>
+<span class="nx">responseStart</span><span class="o">:</span> <span class="mi">301</span>
+<span class="nx">secureConnectionStart</span><span class="o">:</span> <span class="mi">0</span>
+<span class="nx">serverTiming</span><span class="o">:</span> <span class="p">[]</span>
+<span class="nx">startTime</span><span class="o">:</span> <span class="mf">295.79999999701977</span>
+<span class="nx">transferSize</span><span class="o">:</span> <span class="mi">299</span>
+<span class="nx">workerStart</span><span class="o">:</span> <span class="mi">0</span>
+</pre></div>
+
+</code></pre>
+<p>如果使用了ServiceWorker，在ServiceWorker的fetch事件中可以监控到CSS的资源请求错误。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//sw.js</span>
+<span class="nx">self</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;fetch&#39;</span><span class="p">,(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span><span class="o">=&gt;</span><span class="p">{</span>
+        <span class="c1">//res.statusCode 404 401 403等，可以上报监控错误</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="http-">HTTP请求错误</h2>
+<p>Web页面发起HTTP请求主要靠XMLHttpRequest和Fetch两个API，HTTP的请求错误监控主要通过包装XMLHttpRequest对象和Fetch方法来实现。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>
+</pre></div>
+
+</code></pre>
+<h2 id="unhandledrejection">unhandledrejection</h2>
+<h2 id="websocket-">Websocket连接错误</h2>
+<h2 id="-">参考文档</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/123286696">https://zhuanlan.zhihu.com/p/123286696</a></p>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FunDebug监控类库</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1634142397980">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="fundebug-">FunDebug监控类库</h1>
+<h2 id="js">JS</h2>
+<p>Fundebug的JS插件能够实时监控网页应用的错误，第一时间给您发送报警，帮助及时发现BUG，快速解决BUG。</p>
+<h3 id="-">插件特点</h3>
+<p>1、一行代码搞定</p>
+<p>2、自动捕获未处理的错误</p>
+<p>3、能够捕获3种不同的前端错误，JS执行错误，资源加载错误和HTTP请求错误。</p>
+<p>4、出错场景完全可视化重现，相当于录屏。</p>
+<p>5、支持通过SourceMap还原出错源代码。</p>
+<p>6、记录出错前的鼠标点击、HTTP请求、页面跳转、console打印等用户行为，帮助您复现BUG。</p>
+<p>7、支持收集try/catch捕获的错误。</p>
+<p>8、兼容所有浏览器包括IE6到IE11。</p>
+<p>9、兼容所有前端开发框架，eg：vue，react，angularJS，lonic 1，lonic2，cordova，gitbook等。</p>
+<h3 id="-">用户行为回溯</h3>
+<p>对于前端JS错误，Fundebug可以记录出错前的用户行为，比如点击、页面跳转、网络请求等，这些行为信息可以帮助您回溯错误出现的场景，从而更快速地定位错误。</p>
+<h4 id="-">为什么记录用户行为</h4>
+<p>一直以来，我们是从错误本身来帮助用户定位和分析错误的。</p>
+<p>1、抓取详细的错误信息，包括文件名，行列号，错误堆栈。</p>
+<p>2、兼容各种浏览器和框架。</p>
+<p>3、使用机器学习算法对错误进行智能聚合。</p>
+<p>4、通过SourceMap还原真实的出错位置和出错代码。</p>
+<p>但是，错误本身的信息是不能直接提供给开发者一个出错场景，也就是说，开发者有时并不清楚这个错误是在什么情况下出现的。</p>
+<p>1、用户点击了哪些按钮？</p>
+<p>2、用户访问了哪些页面？</p>
+<p>3、用户发起了哪些网络请求？</p>
+<p>这些简单的行为信息往往可以帮助开发者从业务逻辑的角度理解出错的场景，从而快速定位错误。</p>
+<h4 id="-">如何记录用户行为</h4>
+<p>Fundebug专注于应用错误监控，因此只会记录出错前的用户行为，我们无意于监控用户的所有行为。目前，Fundebug只记录下列用户行为：1、点击；2、页面跳转；3、网络请求。</p>
+<h3 id="-">可视化重现出错场景</h3>
+<p>很多前端Bug，比如WexinJSBridge is not defined。它们到底有没有影响用户，除非是用户主动反馈，否则我们不得而知。</p>
+<p>另一方面，研究表明debug的绝大部分时间是花在bug重现，而复现的关键就是高精度还原用户触发错误的环境，以及用户的操作。</p>
+<p>如今，我们对JS监控插件再次进行重大升级，通过全面可视化重现出错场景，来方便开发者分析用户触发错误的方式。</p>
+<p>Fundebug通过独特的技术将用户的使用过程录了下来，并完全可视化重现，算法经过优化，整个录制过程CPU的使用率非常低。和传统的视频相比，体积小了成百上千倍。Fundebug插件录制的用户使用过程，压缩后的体积只有几十KB。</p>
+<p>另外，Fundebug的JS插件已经对密码等敏感数据进行了自动化过滤，并且，如果您在某个DOM节点配置了_fun-hide的class，那么该元素在插件进行录制前就会被预先删除掉来保证用户隐私安全。</p>
+<h3 id="-">接入插件</h3>
+<p>接入Fundebug插件非常简单，将fundebug.min.js放在head标签中就可以。</p>
+<h4 id="-">直接引入</h4>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;script</span>
+<span class="nt">    </span><span class="na">src=</span><span class="s">&quot;https://js.fundebug.cn/fundebug.2.8.0.min.js&quot;</span>
+    <span class="na">apikey=</span><span class="s">&quot;API-KEY&quot;</span>
+    <span class="na">crossorigin=</span><span class="s">&quot;anonymous&quot;</span>
+<span class="nt">&gt;&lt;/script&gt;</span>
+<span class="c">&lt;!--最新版本，https://js.fundebug.cn/fundebug.latest.min.js--&gt;</span>
+</pre></div>
+
+</code></pre>
+<h4 id="npm-">npm安装方式</h4>
+<p>推荐使用，因为fundebug使用了第三方CDN服务进行分发，我们无法保证其稳定性，另外，我们没有使用海外CDN服务。</p>
+<h3 id="-">录屏</h3>
+<p>我们拆分了录屏代码，如果需要使用录屏功能的话，需要单独接入录屏插件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fundebug-revideo&#39;</span><span class="p">)</span>
+<span class="c1">//https://js.fundebug.cn/fundebug.revideo.0.7.1.min.js</span>
+</pre></div>
+
+</code></pre>
+<p>录屏功能目前不支持flash，iframe以及canvas。</p>
+<p>若您的网站非https，则录屏视频播放不正常。</p>
+<p>若网站运行在子路径下，则需要配置domain方可正常使用。</p>
+<h3 id="-">属性配置</h3>
+<p>1、apiKey，区分项目的关键。</p>
+<p>2、appVersion，应用版本。</p>
+<p>3、releasestage，应用开发阶段。eg：development，test，production。</p>
+<p>4、user，网站的用户，包含name和email两个属性。</p>
+<p>5、metaData，其它定义的信息，开发者可以使用metaData收集所需要的信息。</p>
+<p>6、callback，回调函数，其中参数为上报到fundebug服务器的错误数据，可以使用callback函数来查看错误数据，也可以将其发送到其它数据平台。</p>
+<p>7、setHttpBody，为了保护隐私，Fundebug插件默认不会记录HTTP请求的body参数。</p>
+<p>8、httpTimeout。</p>
+<p>9、filters，通过配置filters属性，用户可以过滤掉一些不需要捕获的错误。</p>
+<p>10、breadcrumbSize，用户行为数据的记录长度。包括用户点击，用户输入，网络请求，页面跳转，控制台日志等行为数据。</p>
+<p>11、silent，暂时不需要使用Fundebug，可以选择配置安静模式，Fundebug不会收集错误信息。</p>
+<p>12、silentDev，开发环境下不收集错误。</p>
+<p>13、silentResource，不监控资源加载类错误。</p>
+<p>14、silentHttp，不监控HTTP请求错误。</p>
+<p>15、silentWebsocket。</p>
+<p>16、silentVideo，新版本已经拆分了录屏功能，因此是否录屏取决于是否使用录屏插件。</p>
+<p>17、silentBehavior，不需要记录用户行为。</p>
+<p>18、silentConsole，不需要记录console对象的打印信息。</p>
+<p>19、silentPerformance，不需要报错的时候附带页面性能指标。</p>
+<p>20、silentPromise，不需要监控Promise错误。</p>
+<p>21、sampleRate，采样率。</p>
+<p>22、domain，网站的域名，子路径需要配置。</p>
+<p>23、maxRevideoSizeInByte，最大可记录的大小，默认为150KB。</p>
+<p>24、maxEventNumber，默认为10。</p>
+<h3 id="api">API</h3>
+<p>init，init配置各种属性。</p>
+<p>默认情况下，Fundebug插件能够自动捕获未处理的错误(uncaught error)。另外，开发者也可以通过使用Fundebug提供的API发送其它错误信息。</p>
+<p>test，nofify，notifyError，leaveBreadcrumb(发送自定义的用户行为数据)。</p>
+<h3 id="vue-">Vue框架使用</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm install fundebug-javascript fundebug-vue --save
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="o">*</span> <span class="nx">as</span> <span class="nx">fundebug</span> <span class="nx">from</span> <span class="s2">&quot;fundebug-javascript&quot;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">fundebugVue</span> <span class="nx">from</span> <span class="s2">&quot;fundebug-vue&quot;</span><span class="p">;</span>
+<span class="nx">fundebug</span><span class="p">.</span><span class="nx">init</span><span class="p">({</span>
+    <span class="nx">apikey</span><span class="o">:</span> <span class="s2">&quot;API-KEY&quot;</span>
+<span class="p">})</span>
+<span class="nx">fundebugVue</span><span class="p">(</span><span class="nx">fundebug</span><span class="p">,</span> <span class="nx">Vue</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>fundebug-vue源码：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// 导出的fundebugVue方法为</span>
+<span class="c1">// 1、主要是设置了Vue.config.errorHandler处理器</span>
+<span class="c1">// 2、得到componentName，propsData等信息上报到服务器</span>
+<span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fundebug</span><span class="p">,</span> <span class="nx">Vue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">errorHandler</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">vm</span><span class="p">,</span> <span class="nx">info</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">vm</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">componentName</span> <span class="o">=</span> <span class="nx">formatComponentName</span><span class="p">(</span><span class="nx">vm</span><span class="p">);</span>
+                <span class="kd">var</span> <span class="nx">propsData</span> <span class="o">=</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$options</span> <span class="o">&amp;&amp;</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$options</span><span class="p">.</span><span class="nx">propsData</span><span class="p">;</span>
+                <span class="nx">fundebug</span><span class="p">.</span><span class="nx">notifyError</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="nx">metaData</span><span class="o">:</span> <span class="p">{</span>
+                        <span class="nx">componentName</span><span class="o">:</span> <span class="nx">componentName</span><span class="p">,</span>
+                        <span class="nx">propsData</span><span class="o">:</span> <span class="nx">propsData</span><span class="p">,</span>
+                        <span class="nx">info</span><span class="o">:</span> <span class="nx">info</span>
+                    <span class="p">}</span>
+                <span class="p">});</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">fundebug</span><span class="p">.</span><span class="nx">notifyError</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// 无需出错处理</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">错误类型</h3>
+<p>Fundebug监控插件1.2.0+，可以监控5种类型的错误：</p>
+<p>1、JS执行错误</p>
+<p>2、资源加载错误</p>
+<p>3、HTTP请求错误</p>
+<p>4、unhandledrejection</p>
+<p>5、Websocket连接错误</p>
+</body>
+</html>
