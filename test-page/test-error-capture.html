@@ -14,10 +14,10 @@
             }, true);
         </script>
         <script>
-            throw new Error(`Test error`)
+            // throw new Error(`Test error`)
         </script>
         <script>
-            setTimeout(() => { throw new Error('async error'); }, 0);
+            // setTimeout(() => { throw new Error('async error'); }, 0);
         </script>
         <style>
             @font-face {
@@ -37,12 +37,89 @@
     </head>
 
     <body>
-        <img src="./not-exist.png" />
+        <!-- <img src="./not-exist.png" />
         <video src="./not-exist.mp4"
-            poster="./not-exist-poster.png"></video>
+            poster="./not-exist-poster.png"></video> -->
         <div style="width:100px;height:100px;background:url('./not-exist-bg.png')">
         </div>
         <iframe src="./not-exist.html"></iframe>
+        <!-- <script>
+            console.log(yyy);
+        </script> -->
+        <script>
+                (function () {
+                    let originFetch = fetch;
+                    if (!originFetch) {
+                        return;
+                    }
+                    //
+                    let newFetch = function () {
+                        let args = arguments;
+                        let startTs = new Date().getTime();
+                        return originFetch.apply(null, args).then(res => {
+                            let reviceTs = new Date().getTime();
+                            //在此判断res.status 和res.statusCode，同时从args中取到发送的参数
+                            let resCopied = res.clone();
+                            // 从resCopied中获到具体的响应信息
+                            console.log(`拦截到了`)
+                            return res;
+                        }).catch(err => {
+                            //监控到错误，可以notifyError了
+                            throw err;
+                        });
+                    };
+
+                    fetch = newFetch;
+                })()
+        </script>
+        <script>
+                (function () {
+                    let originXMLHttpRequest = XMLHttpRequest;
+                    if (!originXMLHttpRequest) return;
+
+                    let originXMLHttpRequestSend = XMLHttpRequest.prototype.send;
+
+                    function newSend() {
+                        let args = arguments;
+                        //
+                        console.log(this);
+                        this.addEventListener('error', (ev) => {
+                            console.log('xhr error', ev);
+                        });
+                        this.addEventListener('timtout', (ev) => {
+                            console.log('timeout error', ev);
+                        });
+
+                        return originXMLHttpRequestSend.apply(this, args);
+                    }
+
+                    XMLHttpRequest.prototype.send = newSend;
+                })()
+        </script>
+        <script>
+            window.addEventListener('unhandledrejection', (ev) => {
+                console.error(ev.promise, ev.reason);
+            })
+
+            Promise.reject(new Error(`test promise error`));
+        </script>
+
+        <script>
+            (function () {
+                let originConsoleError = window.console ? window.console.error : null;
+                if (!originConsoleError) return;
+
+                function newConsoleError() {
+                    let args = arguments;
+                    //获取到console.error的信息
+                    console.log(args);
+                    //
+                    originConsoleError.apply(this, args);
+                }
+
+                window.console.error = newConsoleError;
+            })()
+        </script>
     </body>
 
 </html>

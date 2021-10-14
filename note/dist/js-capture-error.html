@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Web页面错误捕获原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1634142363912">
+  <link rel="stylesheet" href="/note/note.css?ts=1634228704858">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -21,15 +21,17 @@
 <span class="c1">//同步错误</span>
 <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;sync error&#39;</span><span class="p">);</span>
 <span class="c1">//异步错误</span>
-<span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;async error&#39;</span><span class="p">);</span> <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+<span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;async error&#39;</span><span class="p">);</span>
+<span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
 </pre></div>
 
 </code></pre>
 <h2 id="-">资源加载错误</h2>
-<p>DOM元素类的资源加载错误可以监控window的error事件。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,(</span><span class="nx">ev</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+<p>DOM元素类的资源加载错误通过监控window的error事件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="c1">//如果ev的target为img或video等标签，可以判断为资源加载错误</span>
-<span class="p">})</span>
+<span class="p">});</span>
 <span class="c1">// &lt;img src=&quot;./not-exist.png&quot; /&gt; </span>
 <span class="c1">// &lt;video src=&quot;./not-exist.mp4&quot; poster=&quot;./not-exist-poster.png&quot;&gt;&lt;/video&gt;</span>
 <span class="c1">// 图片标签类的加载错误可以捕获到</span>
@@ -42,6 +44,7 @@
         <span class="nt">font-family</span><span class="o">:</span> <span class="s1">&#39;test-fm&#39;</span><span class="o">;</span>
         <span class="nt">src</span><span class="o">:</span> <span class="nt">url</span><span class="o">(</span><span class="s1">&#39;./not-exist.woff&#39;</span><span class="o">);</span>
     <span class="p">}</span>
+
     <span class="o">//</span>
     <span class="nt">body</span> <span class="p">{</span>
         <span class="k">font-family</span><span class="o">:</span> <span class="s1">&#39;test-fm&#39;</span><span class="p">;</span>
@@ -80,8 +83,8 @@
 </code></pre>
 <p>如果使用了ServiceWorker，在ServiceWorker的fetch事件中可以监控到CSS的资源请求错误。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//sw.js</span>
-<span class="nx">self</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;fetch&#39;</span><span class="p">,(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-    <span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span><span class="o">=&gt;</span><span class="p">{</span>
+<span class="nx">self</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;fetch&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
         <span class="c1">//res.statusCode 404 401 403等，可以上报监控错误</span>
     <span class="p">})</span>
 <span class="p">})</span>
@@ -90,12 +93,99 @@
 </code></pre>
 <h2 id="http-">HTTP请求错误</h2>
 <p>Web页面发起HTTP请求主要靠XMLHttpRequest和Fetch两个API，HTTP的请求错误监控主要通过包装XMLHttpRequest对象和Fetch方法来实现。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//主要是劫持原生方法</span>
+<span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">originFetch</span> <span class="o">=</span> <span class="nx">fetch</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">originFetch</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">//</span>
+    <span class="kd">let</span> <span class="nx">newFetch</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
+        <span class="kd">let</span> <span class="nx">startTs</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">();</span>
+        <span class="k">return</span> <span class="nx">originFetch</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">args</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">reviceTs</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">();</span>
+            <span class="c1">//在此判断res.status 和res.statusCode，同时从args中取到发送的参数</span>
+            <span class="kd">let</span> <span class="nx">resCopied</span> <span class="o">=</span> <span class="nx">res</span><span class="p">.</span><span class="nx">clone</span><span class="p">();</span>
+            <span class="c1">// 从resCopied中获到具体的响应信息</span>
+            <span class="k">return</span> <span class="nx">res</span><span class="p">;</span>
+        <span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="c1">//监控到错误，可以notifyError了</span>
+            <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+
+    <span class="nx">fetch</span> <span class="o">=</span> <span class="nx">newFetch</span><span class="p">;</span>
+<span class="p">})();</span>
+<span class="c1">//xmlhttprequest</span>
+<span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">originXMLHttpRequest</span> <span class="o">=</span> <span class="nx">XMLHttpRequest</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">originXMLHttpRequest</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+    <span class="kd">let</span> <span class="nx">originXMLHttpRequestSend</span> <span class="o">=</span> <span class="nx">XMLHttpRequest</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">send</span><span class="p">;</span>
+
+    <span class="kd">function</span> <span class="nx">newSend</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
+        <span class="c1">//</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;xhr error&#39;</span><span class="p">,</span> <span class="nx">ev</span><span class="p">);</span>
+        <span class="p">});</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;timtout&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;timeout error&#39;</span><span class="p">,</span> <span class="nx">ev</span><span class="p">);</span>
+        <span class="p">});</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;load&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;xhr load&#39;</span><span class="p">,</span> <span class="nx">ev</span><span class="p">);</span>
+        <span class="p">})</span>
+
+        <span class="k">return</span> <span class="nx">originXMLHttpRequestSend</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">XMLHttpRequest</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">send</span> <span class="o">=</span> <span class="nx">newSend</span><span class="p">;</span>
+<span class="p">})()</span>
+<span class="c1">//</span>
+<span class="kd">var</span> <span class="nx">oReq</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">XMLHttpRequest</span><span class="p">();</span>
+<span class="nx">oReq</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;http://www.example.org/example.txt&quot;</span><span class="p">);</span>
+<span class="nx">oReq</span><span class="p">.</span><span class="nx">send</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<p>fetch是直接替换fetch方法，XMLHttpRequest是重写XMLHttpRequest.prototype.send方法。</p>
+<h2 id="unhandledrejection">unhandledrejection</h2>
+<p>主要通过监听window的unhandledrejection事件即可。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;unhandledrejection&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">ev</span><span class="p">.</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">ev</span><span class="p">.</span><span class="nx">reason</span><span class="p">);</span>
+<span class="p">})</span>
+
+<span class="nx">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="err">`</span><span class="nx">test</span> <span class="nx">promise</span> <span class="nx">error</span><span class="err">`</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<h2 id="console-error">console.error</h2>
+<p>监控console.error报告的错误信息</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">originConsoleError</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">console</span> <span class="o">?</span> <span class="nb">window</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">originConsoleError</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+        <span class="kd">function</span> <span class="nx">newConsoleError</span><span class="p">()</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
+            <span class="c1">//获取到console.error的信息</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+            <span class="c1">//</span>
+            <span class="nx">originConsoleError</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nb">window</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="o">=</span> <span class="nx">newConsoleError</span><span class="p">;</span>
+    <span class="p">})()</span>
+</pre></div>
+
+</code></pre>
+<h2 id="websocket-">Websocket连接错误</h2>
+<p>重写了Websocket连接相关的方法。</p>
 <pre><code class="lang-js"><div class="highlight"><pre>
 </pre></div>
 
 </code></pre>
-<h2 id="unhandledrejection">unhandledrejection</h2>
-<h2 id="websocket-">Websocket连接错误</h2>
 <h2 id="-">参考文档</h2>
 <p><a href="https://zhuanlan.zhihu.com/p/123286696">https://zhuanlan.zhihu.com/p/123286696</a></p>
 </body>
