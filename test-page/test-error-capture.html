@@ -120,6 +120,40 @@
                 window.console.error = newConsoleError;
             })()
         </script>
+        <script>
+                (function () {
+                    if (!WebSocket) return;
+
+                    Object.defineProperty(WebSocket.prototype, 'onclose', {
+                        set(newVal) {
+                            this._onClose = newVal;
+                        },
+                        get() {
+                            return function () {
+                                console.log(`websocket closed!`);
+                                if (!this._onClose) return;
+                                return this._onClose.apply(this, arguments);
+                            }
+                        }
+                    });
+
+                    Object.defineProperty(WebSocket.prototype, 'onerror', {
+                        set(newVal) {
+                            this._onError = newVal;
+                        },
+                        get() {
+                            return function () {
+                                console.log(`websocket errored`);
+                                if (!this._onError) return;
+                                return this._onError.apply(this, arguments);
+                            }
+                        }
+                    });
+                })()
+
+            let ws = new WebSocket(`ws://82.157.123.54:9010/ajaxchattest`);
+            console.log(ws);
+        </script>
     </body>
 
 </html>
