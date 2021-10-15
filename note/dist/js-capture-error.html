@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Web页面错误捕获原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1634228704858">
+  <link rel="stylesheet" href="/note/note.css?ts=1634315437678">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -163,29 +163,107 @@
 </code></pre>
 <h2 id="console-error">console.error</h2>
 <p>监控console.error报告的错误信息</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-        <span class="kd">let</span> <span class="nx">originConsoleError</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">console</span> <span class="o">?</span> <span class="nb">window</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">originConsoleError</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">originConsoleError</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">console</span> <span class="o">?</span> <span class="nb">window</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">originConsoleError</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
 
-        <span class="kd">function</span> <span class="nx">newConsoleError</span><span class="p">()</span> <span class="p">{</span>
-            <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
-            <span class="c1">//获取到console.error的信息</span>
-            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
-            <span class="c1">//</span>
-            <span class="nx">originConsoleError</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
-        <span class="p">}</span>
+    <span class="kd">function</span> <span class="nx">newConsoleError</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
+        <span class="c1">//获取到console.error的信息</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+        <span class="c1">//</span>
+        <span class="nx">originConsoleError</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+    <span class="p">}</span>
 
-        <span class="nb">window</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="o">=</span> <span class="nx">newConsoleError</span><span class="p">;</span>
-    <span class="p">})()</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="o">=</span> <span class="nx">newConsoleError</span><span class="p">;</span>
+<span class="p">})()</span>
 </pre></div>
 
 </code></pre>
 <h2 id="websocket-">Websocket连接错误</h2>
-<p>重写了Websocket连接相关的方法。</p>
-<pre><code class="lang-js"><div class="highlight"><pre>
+<p>使用Object.defineProperty重写了Websocket的onclose和onerror相关的方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">WebSocket</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+    <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">WebSocket</span><span class="p">.</span><span class="nx">prototype</span><span class="p">,</span> <span class="s1">&#39;onclose&#39;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">set</span><span class="p">(</span><span class="nx">newVal</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_onClose</span> <span class="o">=</span> <span class="nx">newVal</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">get</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">websocket</span> <span class="nx">closed</span><span class="o">!</span><span class="err">`</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_onClose</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+                <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_onClose</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+
+    <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">WebSocket</span><span class="p">.</span><span class="nx">prototype</span><span class="p">,</span> <span class="s1">&#39;onerror&#39;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">set</span><span class="p">(</span><span class="nx">newVal</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_onError</span> <span class="o">=</span> <span class="nx">newVal</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">get</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">websocket</span> <span class="nx">errored</span><span class="err">`</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_onError</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+                <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_onError</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+<span class="p">})()</span>
 </pre></div>
 
 </code></pre>
+<h2 id="vue-">Vue框架错误监控</h2>
+<p>一般的框架会内置一些设置项来配置发生错误时调用的函数。Vue框架为Vue.config.errorHandler。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="nx">Vue</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">errorHandler</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">vm</span><span class="p">,</span> <span class="nx">info</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">vm</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">componentName</span> <span class="o">=</span> <span class="nx">formatComponentName</span><span class="p">(</span><span class="nx">vm</span><span class="p">);</span>
+                <span class="kd">var</span> <span class="nx">propsData</span> <span class="o">=</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$options</span> <span class="o">&amp;&amp;</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$options</span><span class="p">.</span><span class="nx">propsData</span><span class="p">;</span>
+                <span class="nx">fundebug</span><span class="p">.</span><span class="nx">notifyError</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="nx">metaData</span><span class="o">:</span> <span class="p">{</span>
+                        <span class="nx">componentName</span><span class="o">:</span> <span class="nx">componentName</span><span class="p">,</span>
+                        <span class="nx">propsData</span><span class="o">:</span> <span class="nx">propsData</span><span class="p">,</span>
+                        <span class="nx">info</span><span class="o">:</span> <span class="nx">info</span>
+                    <span class="p">}</span>
+                <span class="p">});</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">fundebug</span><span class="p">.</span><span class="nx">notifyError</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// 无需出错处理</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">错误类型</h2>
+<h3 id="error">Error</h3>
+<p>代码运行时的错误，除了Error这个对象，一些内置的错误类在异常时返回，如SyntaxError，EvalError，RangeError，ReferenceError，TypeError等。</p>
+<h3 id="script-error">Script Error</h3>
+<p>跨域脚本，为了防止信息泄漏，不会展示语法错误的具体信息，只会展示script error。</p>
+<p>可以通过跨域来解决这个问题：</p>
+<p>1、客户端script标签添加crossorigin=&#39;anonymous&#39;</p>
+<p>2、服务器响应header添加Access-Control-Allow-Origin:*</p>
+<p>或者使用try/catch捕获运行方法的错误信息。</p>
+<h3 id="syntaxerror">SyntaxError</h3>
+<p>语法错误是无法被捕获的，因为语法错误脚本不会放入任务队列，不会执行这段脚本，所以不会有事件捕获和冒泡。</p>
+<p>需要在开发阶段就防范此类错误。</p>
+<h3 id="domexception">DOMException</h3>
+<p>Web API访问和调用时错误。</p>
+<h2 id="-">错误事件类型</h2>
+<h3 id="error">Error</h3>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">source</span><span class="p">)</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">lineno</span><span class="p">)</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">colno</span><span class="p">)</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">error</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h3 id="unhandledrejection">unhandledrejection</h3>
+<p>返回的信息只有promise和reason ，没有其他具体信息。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://zhuanlan.zhihu.com/p/123286696">https://zhuanlan.zhihu.com/p/123286696</a></p>
 </body>
