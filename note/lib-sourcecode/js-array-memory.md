@@ -187,7 +187,6 @@ for (let i = 200; i < 1030; i++) {
 
 总的来说，JS 的数组看似与传统数组不一样，其实只是 V8 在底层实现上做了一层封装，使用两种数据结构实现数组，通过时间和空间纬度的取舍，优化数组的性能。了解数组的底层实现，可以帮助我们写出执行效率更高的代码。
 
-
 ## 参考文档
 
 https://www.voidcanvas.com/javascript-array-evolution-performance/

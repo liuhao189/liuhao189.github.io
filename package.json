@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "buildnote": "node build/buildnote.js && node build/build-note-category.js",
-    "buildnote:debug": "node --inspect-brk build/buildnote.js"
+    "buildnote:debug": "node --inspect-brk build/buildnote.js",
+    "buildNewNote": "node build/build-new-note.js"
   },
   "browser": {
     "path": "vue"
