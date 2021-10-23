@@ -1,0 +1,261 @@
+# Web端多人协同编辑器
+
+Web端的富文本编辑器，无论怎么架构，最终依赖的，都是浏览器的contenteditable属性，加了这个属性的元素，里面的内容就可以随意编辑。把用户编辑过的html读取出来，保存下来，然后在需要的地方展示，就是最基础的富文本编辑器的原理。
+
+然而，html元素异常复杂，如果完全放开随意编辑，很容易出现不可预知的情况。早些年的编辑器，基本都是采用过滤的办法，设定一个元素、属性的白名单，如果编辑区域中出现了不在白名单的东西，就直接删除。通过这种方法保证编辑区域中只有我们确认过可以正常编辑和处理的元素，以保证用户体验，以及展示效果。
+
+随着前端要处理的逻辑越来越复杂，出现了一些新的设计模式，eg：双向绑定，单向数据流等。富文本编辑器也采用了这样的模型，用户正在编辑的文档，不再以页面上contenteditable元素中的HTML为准，而是抽象出来了一个代表文档的Model，页面实际展示出来的文档，仅仅作为View层，从Model渲染得到。用户对HTML的修改，先转换为对Model的修改，然后再由Model渲染到页面。最终的文档都以Model为准。
+
+Model用什么样的数据结构来表示文档，各家的设计也是千差万别，有的采用过滤的HTML JSON表示，有的更加抽象，表示成段落、文字、图片、样式等结构。
+
+## Operational Transformation(OT)
+
+在多人协同的场景下，最难处理的事情，一定是冲突。两个人同时打开了一篇文档，各自进行了一些编辑，要实现协同编辑，必须能够识别出这两个人具体的修改，然后将两个人的修改进行正确的合并，把两个人的修改都保存起来。
+
+要进行文档合并的方法，第一个行到的一定是文档级别的diff，但是每次修改都需要进行全文diff，开销是很大的。git在进行单个文档的diff合并时，碰到无法处理的情况，都会包conflict，让后提交的人自行解决冲突。如果我们在协同编辑的时候，不停地给用户提示，有冲突需要手动解决，那这个编辑器的体验真实糟透了。
+
+OT把文档表示成一组顺序的操作，操作只有三种，insert，delete和ratain。用户的任何一次修改，或者整篇文档，都可以用一组OT操作进行表示。
+
+删除了文档的第三个子：ratain(2), delete(1)。
+
+这种表示方式有什么优点？就是每一组OT，都可以根据另一组OT进行转换，转换成一组可以在那一组OT执行后再执行的操作。
+
+![ot.jpeg](/note/assets/imgs/rt-coll-editor-ot.jpeg)
+
+可以把这个过程想象成一个实时的git，有三个阶段：
+
+1、首先所有打开了使能OT的浏览器之间要能够随时通信，这个可以通过websocket实现。
+
+2、operation：用户的输入会生成一个operation，然后提交给服务器，由服务器再广播给所有的浏览器。
+
+3、transformation：任何停留在相同页面的浏览器会接收到服务器的消息，做类似于git rebase的事情。
+
+举个例子：删除第三个字，有人在我提交这个修改之前，提交了另一个修，在文字的开头插入了两个字。
+
+```js
+op_a: insert(`哈哈`)
+op_b: retain(2), delete(1)
+op_b.transform(op_a): retain(4), delete(1)
+```
+
+通过OT，我们可以实现快速对多人的编辑进行合并，解决了文档冲突的问题。
+
+开源项目[ShareDB](https://github.com/share/sharedb)实现了对于OT操作的存储和合并的功能，并且可以通过WebSocket接口提交修改。
+
+## Quill编辑器
+
+Quill编辑器是medium开源的富文本编辑器，使用OT操作作为Model来表示文档。Quill编辑器中的OT模型的名字叫做Delta。Delta既可以表示整篇文档，也可表示对文档的一次修改。
+
+Quill使用了一个中间层进行OT操作和HTML之间的转换，叫Parchment。
+
+Parchment的核心是Blot，每个Blot代表着文档中的一个元素，比如段落、图片、文字等。Parchment将文档表示成一组树状结构的Blot，树的结构有是那层，顶层是一个ScrollBlot，代表整个文档，中间一层是BlockBlot，代表文档中的段落，在HTML中展示为块级元素，叶子层是InlintBlot，代表文档中的文字、图片等实际内容，在HTML中展示为行内元素。
+
+每个行级Blot都有长度，比如文字类型的TextBlot，其长度就是里面的文字的长度。第二层的块级元素的长度，就是它包含的叶子Blot的长度之和。
+
+对于一个OT操作，Parchment可以找出这个操作的位置和长度中包含的Blot，然后把对应的操作交给这个Blot进行处理，Blot根据操作对自己的内容进行修改，完成Model的更新。
+
+Blot树可以直接转换为HTML，在页面上加载出来，在父级元素添加contenteditable属性让用户编辑。顶层的ScrollBlot监听浏览器中元素的修改事件，获取mutation records，将mutation recordds交给对应位置的Blot，由对应的Blot完成模型更新，并转换为Delta，发送给服务器。
+
+## 中文支持
+
+有些中文输入法在输入的过程中，会先把拼音字母放到编辑器里面去，在选择了文字以后，删除拼音字母，再把文字插入进去。由于Quill中的ScrollBlot会实时监控HTML的变化，生成对应的Delta，输入过程中的拼音字母也被识别成了Delta，进入了修改历史。
+
+另外一个更大的问题是，在协同编辑的时候，假如我们在输入拼音的过程中，有其它人编辑了文章，这些编辑的OT操作应用到我们的编辑器中，修改了HTML结构，或导致ScrollBlot获取到的mutation record不一致。出现的现象是，我们打字的过程中，会出现好多拼音混杂在最后的文字中，有时候文字会重复出现。
+
+解决方案是，用户正在输入拼音的时候，暂停一切编辑器内容的修改，从其它用户推过来的OT操作暂存在队列里，其它编辑器插件对内容的修改也暂存在队列里，等用户输入完了，拼音都已经删除了，再把暂存的操作，应用到编辑器里面。
+
+## 作者信息保存和展示
+
+多人编辑一篇文章时，用户需要看到每段话，每句话到底是谁编辑的。我们需要在作者编辑信息时，把作者的ID也写到文档中，我们可以通过Quill的format功能，把作者id的信息作为属性保存在span元素上。当用户输入一段话，Composition组件生成最终要提交的OT操作后，我们截获这段操作，在OT操作上增加作者的ID，然后发送到服务端保存。
+
+我们在编辑器的旁边做了一个侧边栏，来展示每段话的作者姓名。假如一段话中包含多个作者的句子，哪个作者的句子总长度最大，段落的作者就展示这个作者。
+
+## 图片的上传
+
+用户有三种方式可以插入图片：通过上传图片按钮；通过本地浏览器中拖拽；通过复制粘贴，均需要做好相应的支持。
+
+图片上传是需要时间的，在图片上传过程中，最好能在编辑器中提前预览这张图片，并显示一个加载中的提示。我们在Quill中增加了一个专门用来预览图片的Blot，通过HTML5的FileReader从本地读取图片内容进行展示，并在图片上传完成后，完成图片的替换并生成对应的OT记录上传。
+
+至此，一个能满足基本用户需求的协同编辑器，就构建完毕了。
+
+## Quill编辑器
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuillEditor</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/quill/2.0.0-dev.4/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/quill/2.0.0-dev.4/quill.js"></script>
+</head>
+
+<body>
+    <div id="toolbar">
+        <button class="ql-bold">Bold</button>
+        <button class="ql-italic">Italic</button>
+    </div>
+    <div id="editor">
+        <p>Hello World!</p>
+    </div>
+    <script>
+        let editor = new Quill('#editor', {
+            modules: {
+                toolbar: '#toolbar'
+            },
+            theme: 'snow'
+        })
+    </script>
+</body>
+
+</html>
+```
+
+### 配置
+
+1、container，编辑器的容器，可以传递CSS选择器或DOM对象。
+
+```js
+let editor = new Quill('#editor');
+//or
+let editor2 = new Quill(document.getElementById('#editor'));
+```
+
+2、options，为了配置Quill，传递的一个option对象。
+
+```js
+let options = {
+    debug: 'info',
+    modules: {
+        toolbar: '#toolbar'
+    },
+    placeholder: 'input something...',
+    readOnly: true,
+    theme: 'snow'
+}
+let editor = new Quill('#editor',options);
+```
+
+#### options可配置项
+
+1、bounds(默认：document.body)，目前只检测左右边界。
+
+2、debug(默认：warn)，debug是一个静态配置，会影响到其它的Quill实例。
+
+3、formats(默认：All formats)，formats的白名单。
+
+4、modules，模块列表。
+
+5、placeholder，编辑器没有内容时展示的信息。
+
+6、readOnly，是否以只读的模式初始化编辑器。
+
+7、scrollingContainer，DOM对象或CSS选择器。
+
+8、theme，主题名称，自带的主题有bubble和snow。注意，主题的css文件需要额外加载。
+
+### Formats
+
+Quill支持一系列的formats，既包括UI空间，又可以API调用。
+
+#### Inline Formats
+
+background，bold，color，font，code，italic，link，size，strike，script，underline。
+
+#### Block Formats
+
+blockquote，header，indent，list，align，direction，code-block。
+
+#### Embeds
+
+formula(require KaTex)，image，video。
+
+
+### API
+
+#### Content
+
+##### deleteText
+
+从编辑器中删除文本，返回一个Delta代表这个变更。
+
+```js
+let delta = editor.deleteText(1,2)
+// delta is {ops:[{retain:1},{delete:2}]}
+```
+
+##### getContents
+
+返回编辑器的内容，带有格式化信息，返回delta对象。
+
+```js
+let delta = editor.getContents()
+// deleta is { ops: [ {insert: `Hello \n`}, { attributes: {bold: true}, insert: `world!\n`} ] }
+```
+
+##### getLength
+
+返回编辑器内容的长度。注意：即使编辑器是空的，也有\n换行符。
+
+```js
+editor.getLength();
+```
+
+##### getText
+
+返回编辑器的文本内容，非字符内容会省略。
+
+```js
+//getText(index: Number=0,length:Number):String
+let text = editor.getText(0, 10);
+```
+
+##### insertEmbed
+
+在编辑器中插入嵌入的内容，返回一个delta。
+
+```js
+// insertEmbed(index:Number,type:String, value:any, source:String='api'):Delta
+let delta = editor.insertEmbed(10,'image','https://ftp.bmp.ovh/imgs/2021/10/331197ebc7c14fbb_thumb.jpg')
+//deleta is {ops: [{retain:10},{insert:{image: 'https://ftp.bmp.ovh/imgs/2021/10/331197ebc7c14fbb_thumb.jpg'}}]}
+```
+
+##### insertText
+
+在编辑器中插入文本，可以以多种格式插入，返回一个delta。
+
+```js
+// insertText(index:Number,text:String,source:String='api'):Delta
+// insertText(index:Number,text:String,format:String, value:any, source:String ='api'):Delta
+// insertText(index:Number,text:String,format:{[String]:any},source:String='api'):Delta
+let delta = editor.insertText(26,`Hello`,{color:'red',italic:true})
+// delta is {ops:[{retain:26},{attributes: {color: 'red', italic: true},insert:`Hello`}]}
+```
+
+##### setContents
+
+设置编辑器当前的内容，内容应该以换行符\n结尾。返回一个delta对象。
+
+```js
+//setContents(delta:Delta, source:String = 'api'):Delta
+let delta = editor.setContents([{insert:'Hello '}, {insert:'world!', attributes: {bold:true}}, {insert: '\n'}])
+//delta is  {ops: [{insert: 'Hello '}, {attributes: {bold: true}, insert:'world!'}, {insert: '\n'}, {delete: 1} ]}
+```
+##### setText
+
+设置编辑器的文本内容，返回一个delta。
+
+```js
+//setText(text : String,source : String = 'api'): Delta
+let delta = editor.setText(`Hello\n`)
+// delta is {ops:[ {insert: 'Hello\n'}, {delete: 13}]}
+```
+
+
+
+## 参考文档
+
+https://zhuanlan.zhihu.com/p/131572523

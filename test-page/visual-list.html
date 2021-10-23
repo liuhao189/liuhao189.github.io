@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible"
+            content="IE=edge">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+        <title>Visual List</title>
+        <style>
+            * {
+                padding: 0;
+                margin: 0;
+            }
+
+            html,
+            body {
+                height: 100%;
+                overflow: hidden;
+            }
+
+            #app {
+                height: 100%;
+                overflow-y: auto;
+            }
+
+            #app .list li {
+                height: 50px;
+                line-height: 50px;
+                text-align: center;
+            }
+
+            ul {
+                list-style-type: none;
+            }
+
+            .list ul {
+                position: relative;
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+        <div id="app">
+            <div class="list">
+                <ul></ul>
+            </div>
+        </div>
+        <script>
+            let appEl = document.getElementById('app');
+            let itemHeight = 50;
+            appEl.addEventListener('scroll', (ev) => {
+                ulEl.style.transform = `translateY(${appEl.scrollTop}px)`;
+                ulEl.setAttribute(`data-start-index`, Math.floor(appEl.scrollTop / itemHeight));
+                render(ulEl);
+            });
+
+            let listEl = document.querySelector('#app .list');
+            let arr = [];
+            for (let i = 0; i < 300; ++i) {
+                arr.push(i);
+            }
+
+            let ulEl = listEl.querySelector('ul');
+            listEl.style.height = `${50 * 300}px`;
+
+            function render(listEl, itemHeight = 50) {
+                let screenHeight = document.documentElement.clientHeight;
+                let visibleItemCount = Math.ceil(screenHeight / itemHeight) + 10;
+
+                let startInx = Number.parseInt(listEl.getAttribute(`data-start-index`)) || 0;
+                let htmlStr = ``;
+
+                for (let i = startInx; i < Math.min(startInx + visibleItemCount, arr.length); ++i) {
+                    htmlStr += `<li>${arr[i]}</li>`
+                }
+
+                requestAnimationFrame(() => {
+                    listEl.innerHTML = htmlStr;
+                });
+            }
+
+            render(ulEl);
+        </script>
+    </body>
+
+</html>

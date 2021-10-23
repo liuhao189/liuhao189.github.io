@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible"
+            content="IE=edge">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+        <title>QuillEditor</title>
+        <link href="https://cdn.bootcdn.net/ajax/libs/quill/2.0.0-dev.4/quill.snow.css"
+            rel="stylesheet">
+        <script src="https://cdn.bootcdn.net/ajax/libs/quill/2.0.0-dev.4/quill.js"></script>
+    </head>
+
+    <body>
+        <div id="toolbar">
+            <button class="ql-bold">Bold</button>
+            <button class="ql-italic">Italic</button>
+            <button class="ql-background">background</button>
+            <button class="ql-code">Code</button>
+            <button class="ql-image">Image</button>
+            <button class="ql-video">Video</button>
+        </div>
+        <div id="editor">
+            <p>Hello World!</p>
+        </div>
+        <script>
+            let editor = new Quill('#editor', {
+                modules: { toolbar: '#toolbar' },
+                theme: 'snow',
+                readOnly: false,
+            })
+        </script>
+    </body>
+
+</html>
