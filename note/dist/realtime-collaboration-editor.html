@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Web端多人协同编辑器</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1635172909951">
+  <link rel="stylesheet" href="/note/note.css?ts=1635177535896">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -19,13 +19,13 @@
 <p>Model用什么样的数据结构来表示文档，各家的设计也是千差万别，有的采用过滤的HTML JSON表示，有的更加抽象，表示成段落、文字、图片、样式等结构。</p>
 <h2 id="operational-transformation-ot-">Operational Transformation(OT)</h2>
 <p>在多人协同的场景下，最难处理的事情，一定是冲突。两个人同时打开了一篇文档，各自进行了一些编辑，要实现协同编辑，必须能够识别出这两个人具体的修改，然后将两个人的修改进行正确的合并，把两个人的修改都保存起来。</p>
-<p>要进行文档合并的方法，第一个行到的一定是文档级别的diff，但是每次修改都需要进行全文diff，开销是很大的。git在进行单个文档的diff合并时，碰到无法处理的情况，都会包conflict，让后提交的人自行解决冲突。如果我们在协同编辑的时候，不停地给用户提示，有冲突需要手动解决，那这个编辑器的体验真实糟透了。</p>
+<p>要进行文档合并的方法，第一个想到的一定是文档级别的diff，但是每次修改都需要进行全文diff，开销是很大的。git在进行单个文档的diff合并时，碰到无法处理的情况，都会报告conflict错误，让后提交的人自行解决冲突。如果我们在协同编辑的时候，不停地给用户提示，有冲突需要手动解决，那这个编辑器的体验就太差了。</p>
 <p>OT把文档表示成一组顺序的操作，操作只有三种，insert，delete和ratain。用户的任何一次修改，或者整篇文档，都可以用一组OT操作进行表示。</p>
-<p>删除了文档的第三个子：ratain(2), delete(1)。</p>
+<p>删除了文档的第三个字：ratain(2), delete(1)。</p>
 <p>这种表示方式有什么优点？就是每一组OT，都可以根据另一组OT进行转换，转换成一组可以在那一组OT执行后再执行的操作。</p>
 <p><img src="/note/assets/imgs/rt-coll-editor-ot.jpeg" alt="ot.jpeg"></p>
 <p>可以把这个过程想象成一个实时的git，有三个阶段：</p>
-<p>1、首先所有打开了使能OT的浏览器之间要能够随时通信，这个可以通过websocket实现。</p>
+<p>1、首先所有打开了相同页面的浏览器要能够实时通信，这个可以通过websocket实现。</p>
 <p>2、operation：用户的输入会生成一个operation，然后提交给服务器，由服务器再广播给所有的浏览器。</p>
 <p>3、transformation：任何停留在相同页面的浏览器会接收到服务器的消息，做类似于git rebase的事情。</p>
 <p>举个例子：删除第三个字，有人在我提交这个修改之前，提交了另一个修，在文字的开头插入了两个字。</p>
@@ -40,10 +40,10 @@
 <h2 id="quill-">Quill编辑器</h2>
 <p>Quill编辑器是medium开源的富文本编辑器，使用OT操作作为Model来表示文档。Quill编辑器中的OT模型的名字叫做Delta。Delta既可以表示整篇文档，也可表示对文档的一次修改。</p>
 <p>Quill使用了一个中间层进行OT操作和HTML之间的转换，叫Parchment。</p>
-<p>Parchment的核心是Blot，每个Blot代表着文档中的一个元素，比如段落、图片、文字等。Parchment将文档表示成一组树状结构的Blot，树的结构有是那层，顶层是一个ScrollBlot，代表整个文档，中间一层是BlockBlot，代表文档中的段落，在HTML中展示为块级元素，叶子层是InlintBlot，代表文档中的文字、图片等实际内容，在HTML中展示为行内元素。</p>
+<p>Parchment的核心是Blot，每个Blot代表着文档中的一个元素，比如段落、图片、文字等。Parchment将文档表示成一组树状结构的Blot，树的结构有是三层，顶层是一个ScrollBlot，代表整个文档，中间一层是BlockBlot，代表文档中的段落，在HTML中展示为块级元素，叶子层是InlintBlot，代表文档中的文字、图片等实际内容，在HTML中展示为行内元素。</p>
 <p>每个行级Blot都有长度，比如文字类型的TextBlot，其长度就是里面的文字的长度。第二层的块级元素的长度，就是它包含的叶子Blot的长度之和。</p>
 <p>对于一个OT操作，Parchment可以找出这个操作的位置和长度中包含的Blot，然后把对应的操作交给这个Blot进行处理，Blot根据操作对自己的内容进行修改，完成Model的更新。</p>
-<p>Blot树可以直接转换为HTML，在页面上加载出来，在父级元素添加contenteditable属性让用户编辑。顶层的ScrollBlot监听浏览器中元素的修改事件，获取mutation records，将mutation recordds交给对应位置的Blot，由对应的Blot完成模型更新，并转换为Delta，发送给服务器。</p>
+<p>Blot树可以直接转换为HTML，在页面上加载出来，在父级元素添加contenteditable属性让用户编辑。顶层的ScrollBlot监听浏览器中元素的修改事件，获取mutation records，将mutation records交给对应位置的Blot，由对应的Blot完成模型更新，并转换为Delta，发送给服务器。</p>
 <h2 id="-">中文支持</h2>
 <p>有些中文输入法在输入的过程中，会先把拼音字母放到编辑器里面去，在选择了文字以后，删除拼音字母，再把文字插入进去。由于Quill中的ScrollBlot会实时监控HTML的变化，生成对应的Delta，输入过程中的拼音字母也被识别成了Delta，进入了修改历史。</p>
 <p>另外一个更大的问题是，在协同编辑的时候，假如我们在输入拼音的过程中，有其它人编辑了文章，这些编辑的OT操作应用到我们的编辑器中，修改了HTML结构，或导致ScrollBlot获取到的mutation record不一致。出现的现象是，我们打字的过程中，会出现好多拼音混杂在最后的文字中，有时候文字会重复出现。</p>
@@ -122,7 +122,7 @@
 <p>7、scrollingContainer，DOM对象或CSS选择器。</p>
 <p>8、theme，主题名称，自带的主题有bubble和snow。注意，主题的css文件需要额外加载。</p>
 <h3 id="formats">Formats</h3>
-<p>Quill支持一系列的formats，既包括UI空间，又可以API调用。</p>
+<p>Quill支持一系列的formats，既包括UI控件，又可以API调用。</p>
 <h4 id="inline-formats">Inline Formats</h4>
 <p>background，bold，color，font，code，italic，link，size，strike，script，underline。</p>
 <h4 id="block-formats">Block Formats</h4>

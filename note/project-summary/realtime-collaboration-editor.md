@@ -12,11 +12,11 @@ Model用什么样的数据结构来表示文档，各家的设计也是千差万
 
 在多人协同的场景下，最难处理的事情，一定是冲突。两个人同时打开了一篇文档，各自进行了一些编辑，要实现协同编辑，必须能够识别出这两个人具体的修改，然后将两个人的修改进行正确的合并，把两个人的修改都保存起来。
 
-要进行文档合并的方法，第一个行到的一定是文档级别的diff，但是每次修改都需要进行全文diff，开销是很大的。git在进行单个文档的diff合并时，碰到无法处理的情况，都会包conflict，让后提交的人自行解决冲突。如果我们在协同编辑的时候，不停地给用户提示，有冲突需要手动解决，那这个编辑器的体验真实糟透了。
+要进行文档合并的方法，第一个想到的一定是文档级别的diff，但是每次修改都需要进行全文diff，开销是很大的。git在进行单个文档的diff合并时，碰到无法处理的情况，都会报告conflict错误，让后提交的人自行解决冲突。如果我们在协同编辑的时候，不停地给用户提示，有冲突需要手动解决，那这个编辑器的体验就太差了。
 
 OT把文档表示成一组顺序的操作，操作只有三种，insert，delete和ratain。用户的任何一次修改，或者整篇文档，都可以用一组OT操作进行表示。
 
-删除了文档的第三个子：ratain(2), delete(1)。
+删除了文档的第三个字：ratain(2), delete(1)。
 
 这种表示方式有什么优点？就是每一组OT，都可以根据另一组OT进行转换，转换成一组可以在那一组OT执行后再执行的操作。
 
@@ -24,7 +24,7 @@ OT把文档表示成一组顺序的操作，操作只有三种，insert，delete
 
 可以把这个过程想象成一个实时的git，有三个阶段：
 
-1、首先所有打开了使能OT的浏览器之间要能够随时通信，这个可以通过websocket实现。
+1、首先所有打开了相同页面的浏览器要能够实时通信，这个可以通过websocket实现。
 
 2、operation：用户的输入会生成一个operation，然后提交给服务器，由服务器再广播给所有的浏览器。
 
@@ -48,13 +48,13 @@ Quill编辑器是medium开源的富文本编辑器，使用OT操作作为Model�
 
 Quill使用了一个中间层进行OT操作和HTML之间的转换，叫Parchment。
 
-Parchment的核心是Blot，每个Blot代表着文档中的一个元素，比如段落、图片、文字等。Parchment将文档表示成一组树状结构的Blot，树的结构有是那层，顶层是一个ScrollBlot，代表整个文档，中间一层是BlockBlot，代表文档中的段落，在HTML中展示为块级元素，叶子层是InlintBlot，代表文档中的文字、图片等实际内容，在HTML中展示为行内元素。
+Parchment的核心是Blot，每个Blot代表着文档中的一个元素，比如段落、图片、文字等。Parchment将文档表示成一组树状结构的Blot，树的结构有是三层，顶层是一个ScrollBlot，代表整个文档，中间一层是BlockBlot，代表文档中的段落，在HTML中展示为块级元素，叶子层是InlintBlot，代表文档中的文字、图片等实际内容，在HTML中展示为行内元素。
 
 每个行级Blot都有长度，比如文字类型的TextBlot，其长度就是里面的文字的长度。第二层的块级元素的长度，就是它包含的叶子Blot的长度之和。
 
 对于一个OT操作，Parchment可以找出这个操作的位置和长度中包含的Blot，然后把对应的操作交给这个Blot进行处理，Blot根据操作对自己的内容进行修改，完成Model的更新。
 
-Blot树可以直接转换为HTML，在页面上加载出来，在父级元素添加contenteditable属性让用户编辑。顶层的ScrollBlot监听浏览器中元素的修改事件，获取mutation records，将mutation recordds交给对应位置的Blot，由对应的Blot完成模型更新，并转换为Delta，发送给服务器。
+Blot树可以直接转换为HTML，在页面上加载出来，在父级元素添加contenteditable属性让用户编辑。顶层的ScrollBlot监听浏览器中元素的修改事件，获取mutation records，将mutation records交给对应位置的Blot，由对应的Blot完成模型更新，并转换为Delta，发送给服务器。
 
 ## 中文支持
 
@@ -159,7 +159,7 @@ let editor = new Quill('#editor',options);
 
 ### Formats
 
-Quill支持一系列的formats，既包括UI空间，又可以API调用。
+Quill支持一系列的formats，既包括UI控件，又可以API调用。
 
 #### Inline Formats
 
