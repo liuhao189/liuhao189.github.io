@@ -101,7 +101,7 @@ function main() {
             buildNoteUtils.buildNoteFile(notePath, buildNoteList);
         });
 
-        buildNoteUtils.updateNotesJsonFile(buildNoteUtils, true);
+        buildNoteUtils.updateNotesJsonFile(buildNoteList, true);
 
         buildCategoryUtils.buildNoteCategory();
     }

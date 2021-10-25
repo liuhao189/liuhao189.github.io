@@ -74,7 +74,7 @@ function buildNoteFile(filePath, noteList) {
  */
 function getNoteListFromJsonFile() {
     let jsonFilePath = path.resolve(getBuildPath(), 'notes.json');
-    fsReadUtils.readToJsonSync(jsonFilePath);
+    return fsReadUtils.readToJsonSync(jsonFilePath);
 }
 
 /**
@@ -88,12 +88,12 @@ function updateNotesJsonFile(buildNoticeList, isPartBuild) {
         //
         if (isPartBuild) {
             let oldNoteList = getNoteListFromJsonFile();
-            noteList.forEach((noticeItem) => {
+            buildNoticeList.forEach((noticeItem) => {
                 let noteInOldList = oldNoteList.find(item => {
                     return item.sourceFilePath === noticeItem.sourceFilePath;
                 })
                 if (!noteInOldList) {
-                    noteInOldList.push(noticeItem);
+                    oldNoteList.push(noticeItem);
                 }
             });
 
