@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Web端多人协同编辑器</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1635177535896">
+  <link rel="stylesheet" href="/note/note.css?ts=1635265102201">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -189,6 +189,73 @@
 <pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//setText(text : String,source : String = &#39;api&#39;): Delta</span>
 <span class="kd">let</span> <span class="nx">delta</span> <span class="o">=</span> <span class="nx">editor</span><span class="p">.</span><span class="nx">setText</span><span class="p">(</span><span class="err">`</span><span class="nx">Hello</span><span class="err">\</span><span class="nx">n</span><span class="err">`</span><span class="p">)</span>
 <span class="c1">// delta is {ops:[ {insert: &#39;Hello\n&#39;}, {delete: 13}]}</span>
+</pre></div>
+
+</code></pre>
+<h5 id="updatecontents">updateContents</h5>
+<p>用delta去更新编辑器内容，返回一个反映变化的Delta。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//updateContents(delta:Delta, source:String =&#39;api&#39;): Delta</span>
+
+<span class="nx">editor</span><span class="p">.</span><span class="nx">updateContents</span><span class="p">({</span>
+    <span class="nx">ops</span><span class="o">:</span> <span class="p">[</span>
+        <span class="p">{</span> <span class="nx">retain</span><span class="o">:</span> <span class="mi">6</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="k">delete</span><span class="o">:</span> <span class="mi">5</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;Quill&#39;</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="nx">retain</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span> <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span> <span class="nx">bold</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span> <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">});</span>
+<span class="c1">// ops:</span>
+<span class="c1">// 0: {retain: 6}</span>
+<span class="c1">// 1: {insert: &#39;Qui&#39;}</span>
+<span class="c1">// 2: {delete: 3}</span>
+<span class="c1">// 3: {retain: 1}</span>
+<span class="c1">// 4: {insert: &#39;l&#39;}</span>
+<span class="c1">// 5: {delete: 1}</span>
+<span class="c1">// 6: {retain: 1, attributes: { bold: true }}}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="formatting">Formatting</h4>
+<h5 id="format">format</h5>
+<p>格式化用户当前选择的内容，返回一个代表变更的Delta。如果用户选择的内容为空，格式化被激活，用户下一个输入的字符会被格式化。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// format(name:String, value: any, source:String = &#39;api&#39;): Delta</span>
+<span class="nx">editor</span><span class="p">.</span><span class="nx">format</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span><span class="s1">&#39;red&#39;</span><span class="p">);</span>
+<span class="c1">//ops: </span>
+<span class="c1">// 0: {retain: 6}</span>
+<span class="c1">// 1: {retain: 5, attributes: { color: red}}</span>
+</pre></div>
+
+</code></pre>
+<h5 id="formatline">formatLine</h5>
+<p>格式化所有的选定行，返回一个代表变更的Delta。如果传递inline formats，没有任何效果。移除格式化信息，Value传递false参数即可。用户选择信息不会保留。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//formatLine(index:Number, length: Number, source:String = &#39;api&#39;):Delta</span>
+<span class="c1">//formatLine(index:Number, length: Number, format:String , value:any, source:String = &#39;api&#39;):Delta</span>
+<span class="c1">//formatLine(index:Number, length: Number, formats: {[String]: any}, source: String = &#39;api&#39;):Delta</span>
+<span class="nx">editor</span><span class="p">.</span><span class="nx">formatLine</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;align&#39;</span><span class="p">,</span><span class="s1">&#39;right&#39;</span><span class="p">);</span>
+<span class="c1">//0: {retain: 12}</span>
+<span class="c1">// 1: {retain: 1, attributes: {align: `right`} }</span>
+</pre></div>
+
+</code></pre>
+<h5 id="formattext">formatText</h5>
+<p>格式化编辑器里的文本，返回代表变更的Delta。移除样式，value传递为false即可，用户的选择不会被保留。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//formatText(index:Number, length:Number, source:String = &#39;api&#39;):Delta</span>
+<span class="c1">//formatText(index:Number, length:Number, format:String, value:any, source:String = &#39;api&#39;): Delta</span>
+<span class="c1">//formatText(index:Number, length:Number, formats:{String]: any}, source:String = &#39;api&#39;): Delta</span>
+<span class="nx">editor</span><span class="p">.</span><span class="nx">formatText</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span><span class="kc">true</span><span class="p">);</span>
+<span class="c1">//ops: [{ attributes: {bold: true}, retain: 5}]</span>
+<span class="nx">editor</span><span class="p">.</span><span class="nx">formatText</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,{</span>            
+  <span class="s1">&#39;bold&#39;</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="s1">&#39;color&#39;</span><span class="o">:</span> <span class="s1">&#39;rgb(0, 0, 255)&#39;</span>
+<span class="p">});</span>
+<span class="c1">//ops:[ {attributes: {bold: null, color: &#39;red&#39;}, retain: 5}]</span>
+</pre></div>
+
+</code></pre>
+<h5 id="getformat">getFormat</h5>
+<p>得到所选择文本的格式化信息，所有区域内的所有文本必须有该值。如果有多个值，则返回一个数组。如果没有传递范围，则用户当前选择的文本范围会被使用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//getFormat(range:Range = current): {[String]: any}</span>
+<span class="c1">//getFormat(index:Number, length:Number=0): {[String]: any}</span>
 </pre></div>
 
 </code></pre>

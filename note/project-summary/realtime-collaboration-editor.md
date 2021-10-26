@@ -254,6 +254,85 @@ let delta = editor.setText(`Hello\n`)
 // delta is {ops:[ {insert: 'Hello\n'}, {delete: 13}]}
 ```
 
+##### updateContents
+
+用delta去更新编辑器内容，返回一个反映变化的Delta。
+
+```js
+//updateContents(delta:Delta, source:String ='api'): Delta
+
+editor.updateContents({
+    ops: [
+        { retain: 6 },
+        { delete: 5 },
+        { insert: 'Quill' },
+        { retain: 3, attributes: { bold: true } }
+    ]
+});
+// ops:
+// 0: {retain: 6}
+// 1: {insert: 'Qui'}
+// 2: {delete: 3}
+// 3: {retain: 1}
+// 4: {insert: 'l'}
+// 5: {delete: 1}
+// 6: {retain: 1, attributes: { bold: true }}}
+```
+
+#### Formatting
+
+##### format
+
+格式化用户当前选择的内容，返回一个代表变更的Delta。如果用户选择的内容为空，格式化被激活，用户下一个输入的字符会被格式化。
+
+```js
+// format(name:String, value: any, source:String = 'api'): Delta
+editor.format('color','red');
+//ops: 
+// 0: {retain: 6}
+// 1: {retain: 5, attributes: { color: red}}
+```
+
+##### formatLine
+
+格式化所有的选定行，返回一个代表变更的Delta。如果传递inline formats，没有任何效果。移除格式化信息，Value传递false参数即可。用户选择信息不会保留。
+
+```js
+//formatLine(index:Number, length: Number, source:String = 'api'):Delta
+//formatLine(index:Number, length: Number, format:String , value:any, source:String = 'api'):Delta
+//formatLine(index:Number, length: Number, formats: {[String]: any}, source: String = 'api'):Delta
+editor.formatLine(0,1,'align','right');
+//0: {retain: 12}
+// 1: {retain: 1, attributes: {align: `right`} }
+```
+
+##### formatText
+
+格式化编辑器里的文本，返回代表变更的Delta。移除样式，value传递为false即可，用户的选择不会被保留。
+
+```js
+//formatText(index:Number, length:Number, source:String = 'api'):Delta
+//formatText(index:Number, length:Number, format:String, value:any, source:String = 'api'): Delta
+//formatText(index:Number, length:Number, formats:{String]: any}, source:String = 'api'): Delta
+editor.formatText(0,5,'bold',true);
+//ops: [{ attributes: {bold: true}, retain: 5}]
+editor.formatText(0,5,{            
+  'bold': false,
+  'color': 'rgb(0, 0, 255)'
+});
+//ops:[ {attributes: {bold: null, color: 'red'}, retain: 5}]
+```
+
+##### getFormat
+
+得到所选择文本的格式化信息，所有区域内的所有文本必须有该值。如果有多个值，则返回一个数组。如果没有传递范围，则用户当前选择的文本范围会被使用。
+
+```js
+//getFormat(range:Range = current): {[String]: any}
+//getFormat(index:Number, length:Number=0): {[String]: any}
+
+```
+
 
 
 ## 参考文档
