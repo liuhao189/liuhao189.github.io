@@ -25,3 +25,6 @@ https://www.zhihu.com/question/397643817/answer/1252569388
 
 https://www.zhihu.com/question/375448022/answer/1132102583
 
+## 稀土开发者大会2021
+
+https://www.bagevent.com/event/7481268?bag_track=juejincebianlan
