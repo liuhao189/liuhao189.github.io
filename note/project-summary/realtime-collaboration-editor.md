@@ -136,7 +136,7 @@ let options = {
     readOnly: true,
     theme: 'snow'
 }
-let editor = new Quill('#editor',options);
+let editor = new Quill('#editor', options);
 ```
 
 #### options可配置项
@@ -173,7 +173,6 @@ blockquote，header，indent，list，align，direction，code-block。
 
 formula(require KaTex)，image，video。
 
-
 ### API
 
 #### Content
@@ -183,7 +182,7 @@ formula(require KaTex)，image，video。
 从编辑器中删除文本，返回一个Delta代表这个变更。
 
 ```js
-let delta = editor.deleteText(1,2)
+let delta = editor.deleteText(1, 2)
 // delta is {ops:[{retain:1},{delete:2}]}
 ```
 
@@ -219,7 +218,7 @@ let text = editor.getText(0, 10);
 
 ```js
 // insertEmbed(index:Number,type:String, value:any, source:String='api'):Delta
-let delta = editor.insertEmbed(10,'image','https://ftp.bmp.ovh/imgs/2021/10/331197ebc7c14fbb_thumb.jpg')
+let delta = editor.insertEmbed(10, 'image', 'https://ftp.bmp.ovh/imgs/2021/10/331197ebc7c14fbb_thumb.jpg')
 //deleta is {ops: [{retain:10},{insert:{image: 'https://ftp.bmp.ovh/imgs/2021/10/331197ebc7c14fbb_thumb.jpg'}}]}
 ```
 
@@ -231,7 +230,10 @@ let delta = editor.insertEmbed(10,'image','https://ftp.bmp.ovh/imgs/2021/10/3311
 // insertText(index:Number,text:String,source:String='api'):Delta
 // insertText(index:Number,text:String,format:String, value:any, source:String ='api'):Delta
 // insertText(index:Number,text:String,format:{[String]:any},source:String='api'):Delta
-let delta = editor.insertText(26,`Hello`,{color:'red',italic:true})
+let delta = editor.insertText(26, `Hello`, {
+    color: 'red',
+    italic: true
+})
 // delta is {ops:[{retain:26},{attributes: {color: 'red', italic: true},insert:`Hello`}]}
 ```
 
@@ -241,9 +243,19 @@ let delta = editor.insertText(26,`Hello`,{color:'red',italic:true})
 
 ```js
 //setContents(delta:Delta, source:String = 'api'):Delta
-let delta = editor.setContents([{insert:'Hello '}, {insert:'world!', attributes: {bold:true}}, {insert: '\n'}])
+let delta = editor.setContents([{
+    insert: 'Hello '
+}, {
+    insert: 'world!',
+    attributes: {
+        bold: true
+    }
+}, {
+    insert: '\n'
+}])
 //delta is  {ops: [{insert: 'Hello '}, {attributes: {bold: true}, insert:'world!'}, {insert: '\n'}, {delete: 1} ]}
 ```
+
 ##### setText
 
 设置编辑器的文本内容，返回一个delta。
@@ -262,11 +274,21 @@ let delta = editor.setText(`Hello\n`)
 //updateContents(delta:Delta, source:String ='api'): Delta
 
 editor.updateContents({
-    ops: [
-        { retain: 6 },
-        { delete: 5 },
-        { insert: 'Quill' },
-        { retain: 3, attributes: { bold: true } }
+    ops: [{
+            retain: 6
+        },
+        {
+            delete: 5
+        },
+        {
+            insert: 'Quill'
+        },
+        {
+            retain: 3,
+            attributes: {
+                bold: true
+            }
+        }
     ]
 });
 // ops:
@@ -287,7 +309,7 @@ editor.updateContents({
 
 ```js
 // format(name:String, value: any, source:String = 'api'): Delta
-editor.format('color','red');
+editor.format('color', 'red');
 //ops: 
 // 0: {retain: 6}
 // 1: {retain: 5, attributes: { color: red}}
@@ -295,30 +317,30 @@ editor.format('color','red');
 
 ##### formatLine
 
-格式化所有的选定行，返回一个代表变更的Delta。如果传递inline formats，没有任何效果。移除格式化信息，Value传递false参数即可。用户选择信息不会保留。
+格式化所有的选定行，返回一个代表变更的Delta。如果传递inline formats，没有任何效果。移除格式化信息，Value传递false参数即可。用户选择信息可能不会保留。
 
 ```js
 //formatLine(index:Number, length: Number, source:String = 'api'):Delta
 //formatLine(index:Number, length: Number, format:String , value:any, source:String = 'api'):Delta
 //formatLine(index:Number, length: Number, formats: {[String]: any}, source: String = 'api'):Delta
-editor.formatLine(0,1,'align','right');
+editor.formatLine(0, 1, 'align', 'right');
 //0: {retain: 12}
 // 1: {retain: 1, attributes: {align: `right`} }
 ```
 
 ##### formatText
 
-格式化编辑器里的文本，返回代表变更的Delta。移除样式，value传递为false即可，用户的选择不会被保留。
+格式化编辑器里的文本，返回代表变更的Delta。移除样式，value传递为false即可，用户的选择可能不会保留。
 
 ```js
 //formatText(index:Number, length:Number, source:String = 'api'):Delta
 //formatText(index:Number, length:Number, format:String, value:any, source:String = 'api'): Delta
 //formatText(index:Number, length:Number, formats:{String]: any}, source:String = 'api'): Delta
-editor.formatText(0,5,'bold',true);
+editor.formatText(0, 5, 'bold', true);
 //ops: [{ attributes: {bold: true}, retain: 5}]
-editor.formatText(0,5,{            
-  'bold': false,
-  'color': 'rgb(0, 0, 255)'
+editor.formatText(0, 5, {
+    'bold': false,
+    'color': 'rgb(0, 0, 255)'
 });
 //ops:[ {attributes: {bold: null, color: 'red'}, retain: 5}]
 ```
@@ -330,10 +352,148 @@ editor.formatText(0,5,{
 ```js
 //getFormat(range:Range = current): {[String]: any}
 //getFormat(index:Number, length:Number=0): {[String]: any}
-
+editor.getFormat(0, 4)
+// { bold: true, italic: true }
 ```
 
+##### removeFormat
 
+移除所有的的格式和嵌入的内容，返回一个代表变更的Delta对象。如果选区内的所有文字都有该format，则line format会被移除。
+
+```js
+// removeFormat(index: Number, length: Number, source:String = 'api'):Delta
+editor.removeFormat(3, 7)
+// {ops: [{retain: 6, attributes: { bold: null}},...{ retain:1, attributes: {italic:null} }]}
+```
+
+#### Selection
+
+##### getBounds
+
+获取相对于编辑器的绝对位置和大小信息。在用于计算展示悬浮框的位置时很有效。
+
+```js
+//getBounds(index:Number, length: Number =0): {left: Number, top: Number, height: Number, width: Number}
+editor.getBound(0, 11);
+//{ bottom: 28,
+// height: 15,
+// left: 16,
+// right: 82.96875,
+// top: 13,
+// width: 66.96875 }
+```
+
+##### getSelection
+
+获取用户的选中区域。
+
+```js
+//getSelection(focus = false): {index:Number, length:Number}
+editor.getSelection()
+// {index:1,length:20}
+```
+
+##### setSelection
+
+选中给定的区域，这个会focus编辑器。
+
+```js
+//setSelection(index:Number, length:Number =0 , source:String = 'api')
+//setSelection(range: {index: Number, length:Number},source:String = 'api')
+editor.setSelection(0, 5)
+```
+
+#### Editor
+
+##### blur
+
+使编辑器失去焦点。
+
+```js
+// editor.blur()
+```
+
+##### disable
+
+等同于enable(false)
+
+##### enable
+
+设置用户是否可以通过键盘或鼠标编辑。不影响通过API调用的编辑。
+
+```js
+enable(enabled: boolean = true)
+```
+
+##### focus
+
+focus编辑器，恢复最后的选区。
+
+```js
+editor.focus()
+```
+
+##### hasFocus
+
+编辑器是否focus，焦点在toolbar，tooltips不算focus在编辑器。
+
+##### update
+
+同步检查是否有用户更新，如果有变动，则生成相关的事件。
+
+```js
+editor.update(source: String = 'user')
+```
+
+#### Events
+
+##### text-change
+
+当内容变更时触发，变化的具体内容，变化前的编辑器，变化源会被提供。
+
+如果变化的source为slient，则text-change事件不会被触发。这种方式不被推荐，因为它会打破undo堆栈和其它依赖于变化记录的功能。
+
+```js
+// handler(delta:Delta, oldContents:Delta, source:string)，事件处理器参数
+editor.on('text-change', (delta, oldDelta, source) => {
+    console.log(delta, oldDelta, source);
+})
+```
+
+##### selection-change
+
+当选中的区域变化时候该事件会被触发，事件中包含选中的区域。返回null代表选区丢失，一般是编辑器失去焦点导致的。
+
+如果source为slient，该事件也不会触发。
+
+```js
+//handler(range:{index:Number,length:Number},oldRange: {index:Number,length:Number}, source:String)
+// 事件处理方法参数类型
+editor.on('selection-change', (range, oldRange, source) => {
+    console.log(range, oldRange, source);
+})
+```
+
+##### editor-change
+
+text-change或selection-change事件都会被触发。source为slient，也会触发。
+
+```js
+//handler(name:String, ...args)
+editor.on('editor-change', (eventName, ...args) => {
+    console.log(eventName, args)
+})
+```
+
+##### on && off && once
+
+添加事件处理器。
+
+```js
+// on(name:String, handler:Function): Quill
+// once(name:String,handler:Function): Quill
+// off(name:String, handler:Function): Quill
+``` dd
 
 ## 参考文档
 
