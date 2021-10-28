@@ -522,3 +522,72 @@ let container = editor.addContainer('ql-custom');
 //getModule(name:String):any
 let toolbar = quill.getModule('toolbar')
 ```
+
+## Delta
+
+Delta是一种简单和富于表现力的，用来描述Quill编辑器的内容和变更的一种格式。
+
+Delta是JSON的严格子集，是人类易读取的，机器容易解析的格式。Delta可表示任何Quill文档，包括所有文本和format信息。
+
+Delta在英文中表示增量，在Quill中用于表示从一个文档变换到另外一个文档需要经过的指令集合。
+
+Delta实现为一个独立的类库，使其可以独立于Quill使用。它可以用于OT，也可以被应用于类似Google Docs之列的应用。
+
+提示：不推荐直接手写Delta，可以使用import来得到Delta，然后使用Delta.insert，Delta.delte，Delta.retain等方法。
+
+## Document
+
+```js
+{
+  ops: [
+    { insert: 'Gandalf', attributes: { bold: true } },
+    { insert: ' the ' },
+    { insert: 'Grey', attributes: { color: '#cccccc' } }
+  ]
+}
+```
+
+当Delta用于描述内容时，它可以被认为是需要应用于空白文档的增量。因为Delta是一种数据格式，attributes没有特定的意义，名字和值完全取决于使用者和生成者。
+
+eg：color不一定非是16进制的值，这个只是Quill做出的一种选择。
+
+## Embeds
+
+对于一些非文办内容，比如说图片或公式，insert的值可以是一个对象。
+
+这个对象需要有一个来决定它类型的key，这个是BlotName（如果你使用Parchment来构建自定义内容）。
+
+```js
+{
+  ops: [{
+    insert: {
+      image: 'https://quilljs.com/assets/images/icon.png'
+    },
+    attributes: {
+      link: 'https://quilljs.com'
+    }
+  }]
+}
+```
+
+## Line Formatting
+
+与\n字符相关的attributes表示行的format。
+
+```js
+{
+  ops: [
+    { insert: 'The Two Towers' },
+    { insert: '\n', attributes: { header: 1 } },
+    { insert: 'Aragorn sped on up the hill.\n' }
+  ]
+}
+```
+
+所有的Quill文档需要以\n结尾，因为这样你永远会有一个位置来应用行格式。
+
+很多行格式是不可同时设置的。eg：同一行既是header，又是list。
+
+
+
+
