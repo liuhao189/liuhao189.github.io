@@ -80,7 +80,7 @@ Blot树可以直接转换为HTML，在页面上加载出来，在父级元素添
 
 ## Quill编辑器
 
-
+[Quill编辑器](/note/dist/quill-editor.html)
 
 
 ## 参考文档
