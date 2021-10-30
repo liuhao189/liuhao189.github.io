@@ -14,20 +14,64 @@
     </head>
 
     <body>
-        <div id="toolbar">
+        <!-- <div id="toolbar">
             <button class="ql-bold">Bold</button>
             <button class="ql-italic">Italic</button>
             <button class="ql-background">background</button>
             <button class="ql-code">Code</button>
             <button class="ql-image">Image</button>
             <button class="ql-video">Video</button>
-        </div>
+            <select class="ql-size">
+                <option value="small"></option>
+                <option selected></option>
+                <option value="large"></option>
+                <option value="huge"></option>
+            </select>
+            <button class="custom-btn">Custom</button>
+        </div> -->
         <div id="editor">
             <p>Hello World!</p>
         </div>
         <script>
+
+            // let toolbarOptions = [
+            //     ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+            //     ['blockquote', 'code-block'],
+
+            //     [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+            //     [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            //     [{ 'script': 'sub' }, { 'script': 'super' }],      // superscript/subscript
+            //     [{ 'indent': '-1' }, { 'indent': '+1' }],          // outdent/indent
+            //     [{ 'direction': 'rtl' }],                         // text direction
+
+            //     [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+            //     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+            //     [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+            //     [{ 'font': [] }],
+            //     [{ 'align': [] }],
+
+            //     ['clean']                                         // remove formatting button
+            // ];
+
             let editor = new Quill('#editor', {
-                modules: { toolbar: '#toolbar' },
+                modules: {
+                    toolbar: {
+                        handlers: {
+                            bold: function (isBold) {
+                                this.quill.format('bold', isBold);
+                            },
+                            link: function (value) {
+                                if (value) {
+                                    let href = prompt('Enter the URL');
+                                    this.quill.format('link', href)
+                                } else {
+                                    this.quill.format('link', false);
+                                }
+                            }
+                        }
+                    },
+                },
                 theme: 'snow',
                 readOnly: false,
             })

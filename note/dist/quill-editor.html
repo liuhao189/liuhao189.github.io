@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Quill编辑器</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1635438331878">
+  <link rel="stylesheet" href="/note/note.css?ts=1635611307394">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -380,7 +380,7 @@
 <p>返回在特定区间的Line Blot数组。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// getLines(index: Number =0, length:Number=remaining): Blot[]</span>
 <span class="c1">// getLines(range: Range): Blot[]</span>
-<span class="nx">editor</span><span class="p">.</span><span class="nx">getLines</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+<span class="nx">editor</span><span class="p">.</span><span class="nx">getLines</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
 </pre></div>
 
 </code></pre>
@@ -439,11 +439,22 @@
 <p>提示：不推荐直接手写Delta，可以使用import来得到Delta，然后使用Delta.insert，Delta.delte，Delta.retain等方法。</p>
 <h2 id="document">Document</h2>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nx">ops</span><span class="o">:</span> <span class="p">[</span>
-    <span class="p">{</span> <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;Gandalf&#39;</span><span class="p">,</span> <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span> <span class="nx">bold</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39; the &#39;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;Grey&#39;</span><span class="p">,</span> <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span> <span class="nx">color</span><span class="o">:</span> <span class="s1">&#39;#cccccc&#39;</span> <span class="p">}</span> <span class="p">}</span>
-  <span class="p">]</span>
+    <span class="nx">ops</span><span class="o">:</span> <span class="p">[{</span>
+            <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;Gandalf&#39;</span><span class="p">,</span>
+            <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">bold</span><span class="o">:</span> <span class="kc">true</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39; the &#39;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;Grey&#39;</span><span class="p">,</span>
+            <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">color</span><span class="o">:</span> <span class="s1">&#39;#cccccc&#39;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -451,17 +462,17 @@
 <p>当Delta用于描述内容时，它可以被认为是需要应用于空白文档的增量。因为Delta是一种数据格式，attributes没有特定的意义，名字和值完全取决于使用者和生成者。</p>
 <p>eg：color不一定非是16进制的值，这个只是Quill做出的一种选择。</p>
 <h2 id="embeds">Embeds</h2>
-<p>对于一些非文办内容，比如说图片或公式，insert的值可以是一个对象。</p>
+<p>对于一些非文本内容，比如说图片或公式，insert的值可以是一个对象。</p>
 <p>这个对象需要有一个来决定它类型的key，这个是BlotName（如果你使用Parchment来构建自定义内容）。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nx">ops</span><span class="o">:</span> <span class="p">[{</span>
-    <span class="nx">insert</span><span class="o">:</span> <span class="p">{</span>
-      <span class="nx">image</span><span class="o">:</span> <span class="s1">&#39;https://quilljs.com/assets/images/icon.png&#39;</span>
-    <span class="p">},</span>
-    <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span>
-      <span class="nx">link</span><span class="o">:</span> <span class="s1">&#39;https://quilljs.com&#39;</span>
-    <span class="p">}</span>
-  <span class="p">}]</span>
+    <span class="nx">ops</span><span class="o">:</span> <span class="p">[{</span>
+        <span class="nx">insert</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">image</span><span class="o">:</span> <span class="s1">&#39;https://quilljs.com/assets/images/icon.png&#39;</span>
+        <span class="p">},</span>
+        <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">link</span><span class="o">:</span> <span class="s1">&#39;https://quilljs.com&#39;</span>
+        <span class="p">}</span>
+    <span class="p">}]</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -469,16 +480,233 @@
 <h2 id="line-formatting">Line Formatting</h2>
 <p>与\n字符相关的attributes表示行的format。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nx">ops</span><span class="o">:</span> <span class="p">[</span>
-    <span class="p">{</span> <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;The Two Towers&#39;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;\n&#39;</span><span class="p">,</span> <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span> <span class="nx">header</span><span class="o">:</span> <span class="mi">1</span> <span class="p">}</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;Aragorn sped on up the hill.\n&#39;</span> <span class="p">}</span>
-  <span class="p">]</span>
+    <span class="nx">ops</span><span class="o">:</span> <span class="p">[{</span>
+            <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;The Two Towers&#39;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;\n&#39;</span><span class="p">,</span>
+            <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">header</span><span class="o">:</span> <span class="mi">1</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nx">insert</span><span class="o">:</span> <span class="s1">&#39;Aragorn sped on up the hill.\n&#39;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 
 </code></pre>
 <p>所有的Quill文档需要以\n结尾，因为这样你永远会有一个位置来应用行格式。</p>
 <p>很多行格式是不可同时设置的。eg：同一行既是header，又是list。</p>
+<h2 id="changes">Changes</h2>
+<p>当你注册了Quill的text-change事件监听器，事件处理器的参数会是一个描述变更内容的Delta对象。</p>
+<p>可能是insert，也可能是delete或retain。</p>
+<h3 id="delete">delete</h3>
+<p>delete操作主要是删除指定数量的字符，因为delete不包含删除的字符内容，所以不可进行恢复操作。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nx">ops</span><span class="o">:</span> <span class="p">[{</span>
+        <span class="k">delete</span><span class="o">:</span> <span class="mi">10</span>
+    <span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="retain">retain</h3>
+<p>retain操作代表保留指定数量的字符。如果有attributes参数，代表保留指定数量的字符，同时应用attributes参数中的格式化内容。为null值意味着移除样式。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nx">ops</span><span class="o">:</span> <span class="p">[{</span>
+        <span class="nx">retain</span><span class="o">:</span> <span class="mi">7</span><span class="p">,</span>
+        <span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">bold</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+            <span class="nx">italic</span><span class="o">:</span> <span class="kc">true</span>
+        <span class="p">}</span>
+    <span class="p">},</span> <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>注意：因为delta指令总是从文档头开始的，因为retain指令有字符操作数，所以delete和retain不用声明开始的index。</p>
+<h2 id="modules">Modules</h2>
+<p>Modules允许Quill的表现和功能可以被自定义。Quill有一些官方模块可以被选择性应用。</p>
+<p>启用一个模块，可以在配置文件中直接包含模块就行。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">editor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Quill</span><span class="p">(</span><span class="s1">&#39;#editor&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">modules</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">history</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">delay</span><span class="o">:</span> <span class="mi">2500</span><span class="p">,</span>
+            <span class="nx">useOnly</span><span class="o">:</span> <span class="kc">true</span>
+        <span class="p">},</span>
+        <span class="nx">syntax</span><span class="o">:</span> <span class="kc">true</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>Clipboard，Keyboard，History模块内置在Quill编辑器中，直接配置即可使用，不必显式引用模块。</p>
+<h2 id="extending">Extending</h2>
+<p>模块可以被扩展和重新注册，也可以替换掉原来的模块。即使是内置的模块也可以被重新注册和替换。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">Clipboard</span> <span class="o">=</span> <span class="nx">Quill</span><span class="p">.</span><span class="kr">import</span><span class="p">(</span><span class="s1">&#39;modules/clipboard&#39;</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">Delta</span> <span class="o">=</span> <span class="nx">Quill</span><span class="p">.</span><span class="kr">import</span><span class="p">(</span><span class="s1">&#39;delta&#39;</span><span class="p">);</span>
+
+<span class="kr">class</span> <span class="nx">PlainClipboard</span> <span class="kr">extends</span> <span class="nx">Clipboard</span> <span class="p">{</span>
+    <span class="nx">convert</span><span class="p">(</span><span class="nx">html</span> <span class="o">=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">html</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">container</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="nx">html</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="kd">let</span> <span class="nx">text</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">container</span><span class="p">.</span><span class="nx">innerText</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">container</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Delta</span><span class="p">().</span><span class="nx">insert</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">Quill</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s1">&#39;modules/clipboard&#39;</span><span class="p">,</span> <span class="nx">PlainClipboard</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+
+<span class="c1">// Will be created with instance of PlainClipboard</span>
+<span class="kd">let</span> <span class="nx">quill</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Quill</span><span class="p">(</span><span class="s1">&#39;#editor&#39;</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="toolbar-module">Toolbar Module</h2>
+<p>Toolbar模块允许用户便捷地格式化编辑器的内容。</p>
+<p>它可以允许用户注册自己的处理器和container。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">editor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Quill</span><span class="p">(</span><span class="s1">&#39;#editor&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">modules</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">toolbar</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">container</span><span class="o">:</span> <span class="s1">&#39;#toolbar&#39;</span><span class="p">,</span>
+            <span class="nx">handlers</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">bold</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">isBold</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">isBold</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nx">theme</span><span class="o">:</span> <span class="s1">&#39;snow&#39;</span><span class="p">,</span>
+    <span class="nx">readOnly</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="toolbar-array-option">toolbar Array option</h2>
+<p>toolbar也可以传递简单数组，这种情况下Quill会自己创建container。</p>
+<p>也可以是嵌套数组，单个数组项的内容会被一个有ql-formats的span包裹。</p>
+<p>有属性的配置项可以直接声明为一个对象，key值为format的名字。</p>
+<p>下拉框可以配置为一个对象，但是有一个包含可选值的数组。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">toolbarOptions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;italic&#39;</span><span class="p">,</span> <span class="s1">&#39;underline&#39;</span><span class="p">,</span> <span class="s1">&#39;strike&#39;</span><span class="p">]</span>
+<span class="kd">let</span> <span class="nx">toolbarOptions2</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;italic&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s1">&#39;underline&#39;</span><span class="p">,</span> <span class="s1">&#39;strike&#39;</span><span class="p">]</span>
+<span class="p">];</span>
+<span class="kd">let</span> <span class="nx">toolbarOptions3</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">header</span><span class="o">:</span> <span class="mi">3</span>
+<span class="p">};</span>
+
+<span class="kd">let</span> <span class="nx">toolbarOptions4</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">size</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;small&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s1">&#39;large&#39;</span><span class="p">,</span> <span class="s1">&#39;huge&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">editor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Quill</span><span class="p">(</span><span class="s1">&#39;#editor&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">modules</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">toolbar</span><span class="o">:</span> <span class="nx">toolbarOptions</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+<span class="c1">//</span>
+</pre></div>
+
+</code></pre>
+<p>注意：主题也可以定义下拉框的默认值。eg：Snow默认提供了35中颜色和背景色。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">toolbarOptions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;italic&#39;</span><span class="p">,</span> <span class="s1">&#39;underline&#39;</span><span class="p">,</span> <span class="s1">&#39;strike&#39;</span><span class="p">],</span> <span class="c1">// toggled buttons</span>
+    <span class="p">[</span><span class="s1">&#39;blockquote&#39;</span><span class="p">,</span> <span class="s1">&#39;code-block&#39;</span><span class="p">],</span>
+
+    <span class="p">[{</span>
+        <span class="s1">&#39;header&#39;</span><span class="o">:</span> <span class="mi">1</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="s1">&#39;header&#39;</span><span class="o">:</span> <span class="mi">2</span>
+    <span class="p">}],</span> <span class="c1">// custom button values</span>
+    <span class="p">[{</span>
+        <span class="s1">&#39;list&#39;</span><span class="o">:</span> <span class="s1">&#39;ordered&#39;</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="s1">&#39;list&#39;</span><span class="o">:</span> <span class="s1">&#39;bullet&#39;</span>
+    <span class="p">}],</span>
+    <span class="p">[{</span>
+        <span class="s1">&#39;script&#39;</span><span class="o">:</span> <span class="s1">&#39;sub&#39;</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="s1">&#39;script&#39;</span><span class="o">:</span> <span class="s1">&#39;super&#39;</span>
+    <span class="p">}],</span> <span class="c1">// superscript/subscript</span>
+    <span class="p">[{</span>
+        <span class="s1">&#39;indent&#39;</span><span class="o">:</span> <span class="s1">&#39;-1&#39;</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="s1">&#39;indent&#39;</span><span class="o">:</span> <span class="s1">&#39;+1&#39;</span>
+    <span class="p">}],</span> <span class="c1">// outdent/indent</span>
+    <span class="p">[{</span>
+        <span class="s1">&#39;direction&#39;</span><span class="o">:</span> <span class="s1">&#39;rtl&#39;</span>
+    <span class="p">}],</span> <span class="c1">// text direction</span>
+
+    <span class="p">[{</span>
+        <span class="s1">&#39;size&#39;</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;small&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s1">&#39;large&#39;</span><span class="p">,</span> <span class="s1">&#39;huge&#39;</span><span class="p">]</span>
+    <span class="p">}],</span> <span class="c1">// custom dropdown</span>
+    <span class="p">[{</span>
+        <span class="s1">&#39;header&#39;</span><span class="o">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="kc">false</span><span class="p">]</span>
+    <span class="p">}],</span>
+
+    <span class="p">[{</span>
+        <span class="s1">&#39;color&#39;</span><span class="o">:</span> <span class="p">[]</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="s1">&#39;background&#39;</span><span class="o">:</span> <span class="p">[]</span>
+    <span class="p">}],</span> <span class="c1">// dropdown with defaults from theme</span>
+    <span class="p">[{</span>
+        <span class="s1">&#39;font&#39;</span><span class="o">:</span> <span class="p">[]</span>
+    <span class="p">}],</span>
+    <span class="p">[{</span>
+        <span class="s1">&#39;align&#39;</span><span class="o">:</span> <span class="p">[]</span>
+    <span class="p">}],</span>
+
+    <span class="p">[</span><span class="s1">&#39;clean&#39;</span><span class="p">]</span> <span class="c1">// remove formatting button</span>
+<span class="p">];</span>
+</pre></div>
+
+</code></pre>
+<p>如果你需要更自定义toolbar，可以自己手动创建toolbar的HTML，然后把DOM元素或选择器传递给Quill。</p>
+<p>ql-toolbar的样式会添加到toolbar的DOM容器元素上。Quill会自动添加相应的事件处理器到class属性含有ql-${format}的button和select的元素上。</p>
+<p>button元素可以设置默认的选中值。eg：value=&#39;large&#39;。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;toolbar&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;ql-bold&quot;</span><span class="nt">&gt;</span>Bold<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;ql-italic&quot;</span><span class="nt">&gt;</span>Italic<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;ql-background&quot;</span><span class="nt">&gt;</span>background<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;ql-code&quot;</span><span class="nt">&gt;</span>Code<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;ql-image&quot;</span><span class="nt">&gt;</span>Image<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;ql-video&quot;</span><span class="nt">&gt;</span>Video<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;select</span> <span class="na">class=</span><span class="s">&quot;ql-size&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">&quot;small&quot;</span><span class="nt">&gt;&lt;/option&gt;</span>
+        <span class="nt">&lt;option</span> <span class="na">selected</span><span class="nt">&gt;&lt;/option&gt;</span>
+        <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">&quot;large&quot;</span><span class="nt">&gt;&lt;/option&gt;</span>
+        <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">&quot;huge&quot;</span><span class="nt">&gt;&lt;/option&gt;</span>
+    <span class="nt">&lt;/select&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;custom&quot;</span><span class="nt">&gt;</span>custom<span class="nt">&lt;/button&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="handlers">handlers</h3>
+<p>toolbar控件默认的作用是添加和移除formatting，但是开发者也可以自定义处理逻辑。</p>
+<p>handler的函数会bound到toolbar的实例，参数是input的value值。传递handler参数会覆盖默认逻辑。</p>
+<pre><code class="lang-js"><div class="highlight"><pre> <span class="p">{</span>
+     <span class="nx">handlers</span><span class="o">:</span> <span class="p">{</span>
+         <span class="nx">bold</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">isBold</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">this</span><span class="p">.</span><span class="nx">quill</span><span class="p">.</span><span class="nx">format</span><span class="p">(</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="nx">isBold</span><span class="p">);</span>
+         <span class="p">},</span>
+         <span class="nx">link</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">if</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                 <span class="kd">let</span> <span class="nx">href</span> <span class="o">=</span> <span class="nx">prompt</span><span class="p">(</span><span class="s1">&#39;Enter the URL&#39;</span><span class="p">);</span>
+                 <span class="k">this</span><span class="p">.</span><span class="nx">quill</span><span class="p">.</span><span class="nx">format</span><span class="p">(</span><span class="s1">&#39;link&#39;</span><span class="p">,</span> <span class="nx">href</span><span class="p">)</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                 <span class="k">this</span><span class="p">.</span><span class="nx">quill</span><span class="p">.</span><span class="nx">format</span><span class="p">(</span><span class="s1">&#39;link&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+             <span class="p">}</span>
+         <span class="p">}</span>
+     <span class="p">}</span>
+ <span class="p">}</span>
+</pre></div>
+
+</code></pre>
 </body>
 </html>

@@ -461,7 +461,7 @@ let [lineBlot, offset] = editor.getLine(7);
 ```js
 // getLines(index: Number =0, length:Number=remaining): Blot[]
 // getLines(range: Range): Blot[]
-editor.getLines(0,100)
+editor.getLines(0, 100)
 ```
 
 ### Extension
@@ -539,11 +539,22 @@ Delta实现为一个独立的类库，使其可以独立于Quill使用。它可�
 
 ```js
 {
-  ops: [
-    { insert: 'Gandalf', attributes: { bold: true } },
-    { insert: ' the ' },
-    { insert: 'Grey', attributes: { color: '#cccccc' } }
-  ]
+    ops: [{
+            insert: 'Gandalf',
+            attributes: {
+                bold: true
+            }
+        },
+        {
+            insert: ' the '
+        },
+        {
+            insert: 'Grey',
+            attributes: {
+                color: '#cccccc'
+            }
+        }
+    ]
 }
 ```
 
@@ -553,20 +564,20 @@ eg：color不一定非是16进制的值，这个只是Quill做出的一种选择
 
 ## Embeds
 
-对于一些非文办内容，比如说图片或公式，insert的值可以是一个对象。
+对于一些非文本内容，比如说图片或公式，insert的值可以是一个对象。
 
 这个对象需要有一个来决定它类型的key，这个是BlotName（如果你使用Parchment来构建自定义内容）。
 
 ```js
 {
-  ops: [{
-    insert: {
-      image: 'https://quilljs.com/assets/images/icon.png'
-    },
-    attributes: {
-      link: 'https://quilljs.com'
-    }
-  }]
+    ops: [{
+        insert: {
+            image: 'https://quilljs.com/assets/images/icon.png'
+        },
+        attributes: {
+            link: 'https://quilljs.com'
+        }
+    }]
 }
 ```
 
@@ -576,11 +587,19 @@ eg：color不一定非是16进制的值，这个只是Quill做出的一种选择
 
 ```js
 {
-  ops: [
-    { insert: 'The Two Towers' },
-    { insert: '\n', attributes: { header: 1 } },
-    { insert: 'Aragorn sped on up the hill.\n' }
-  ]
+    ops: [{
+            insert: 'The Two Towers'
+        },
+        {
+            insert: '\n',
+            attributes: {
+                header: 1
+            }
+        },
+        {
+            insert: 'Aragorn sped on up the hill.\n'
+        }
+    ]
 }
 ```
 
@@ -588,6 +607,240 @@ eg：color不一定非是16进制的值，这个只是Quill做出的一种选择
 
 很多行格式是不可同时设置的。eg：同一行既是header，又是list。
 
+## Changes
 
+当你注册了Quill的text-change事件监听器，事件处理器的参数会是一个描述变更内容的Delta对象。
 
+可能是insert，也可能是delete或retain。
 
+### delete
+
+delete操作主要是删除指定数量的字符，因为delete不包含删除的字符内容，所以不可进行恢复操作。
+
+```js
+{
+    ops: [{
+        delete: 10
+    }]
+}
+```
+
+### retain
+
+retain操作代表保留指定数量的字符。如果有attributes参数，代表保留指定数量的字符，同时应用attributes参数中的格式化内容。为null值意味着移除样式。
+
+```js
+{
+    ops: [{
+        retain: 7,
+        attributes: {
+            bold: null,
+            italic: true
+        }
+    }, ]
+}
+```
+
+注意：因为delta指令总是从文档头开始的，因为retain指令有字符操作数，所以delete和retain不用声明开始的index。
+
+## Modules
+
+Modules允许Quill的表现和功能可以被自定义。Quill有一些官方模块可以被选择性应用。
+
+启用一个模块，可以在配置文件中直接包含模块就行。
+
+```js
+let editor = new Quill('#editor', {
+    modules: {
+        history: {
+            delay: 2500,
+            useOnly: true
+        },
+        syntax: true
+    }
+})
+```
+
+Clipboard，Keyboard，History模块内置在Quill编辑器中，直接配置即可使用，不必显式引用模块。
+
+## Extending
+
+模块可以被扩展和重新注册，也可以替换掉原来的模块。即使是内置的模块也可以被重新注册和替换。
+
+```js
+let Clipboard = Quill.import('modules/clipboard');
+let Delta = Quill.import('delta');
+
+class PlainClipboard extends Clipboard {
+    convert(html = null) {
+        if (typeof html === 'string') {
+            this.container.innerHTML = html;
+        }
+        let text = this.container.innerText;
+        this.container.innerHTML = '';
+        return new Delta().insert(text);
+    }
+}
+
+Quill.register('modules/clipboard', PlainClipboard, true);
+
+// Will be created with instance of PlainClipboard
+let quill = new Quill('#editor');
+```
+
+## Toolbar Module
+
+Toolbar模块允许用户便捷地格式化编辑器的内容。
+
+它可以允许用户注册自己的处理器和container。
+
+```js
+let editor = new Quill('#editor', {
+    modules: {
+        toolbar: {
+            container: '#toolbar',
+            handlers: {
+                bold: function(isBold) {
+                    console.log(isBold)
+                }
+            }
+        }
+    },
+    theme: 'snow',
+    readOnly: false,
+})
+```
+
+## toolbar Array option
+
+toolbar也可以传递简单数组，这种情况下Quill会自己创建container。
+
+也可以是嵌套数组，单个数组项的内容会被一个有ql-formats的span包裹。
+
+有属性的配置项可以直接声明为一个对象，key值为format的名字。
+
+下拉框可以配置为一个对象，但是有一个包含可选值的数组。
+
+```js
+let toolbarOptions = ['bold', 'italic', 'underline', 'strike']
+let toolbarOptions2 = [
+    ['bold', 'italic'],
+    ['underline', 'strike']
+];
+let toolbarOptions3 = {
+    header: 3
+};
+
+let toolbarOptions4 = {
+    size: ['small', false, 'large', 'huge']
+}
+
+let editor = new Quill('#editor', {
+    modules: {
+        toolbar: toolbarOptions
+    }
+})
+//
+```
+
+注意：主题也可以定义下拉框的默认值。eg：Snow默认提供了35中颜色和背景色。
+
+```js
+var toolbarOptions = [
+    ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+    ['blockquote', 'code-block'],
+
+    [{
+        'header': 1
+    }, {
+        'header': 2
+    }], // custom button values
+    [{
+        'list': 'ordered'
+    }, {
+        'list': 'bullet'
+    }],
+    [{
+        'script': 'sub'
+    }, {
+        'script': 'super'
+    }], // superscript/subscript
+    [{
+        'indent': '-1'
+    }, {
+        'indent': '+1'
+    }], // outdent/indent
+    [{
+        'direction': 'rtl'
+    }], // text direction
+
+    [{
+        'size': ['small', false, 'large', 'huge']
+    }], // custom dropdown
+    [{
+        'header': [1, 2, 3, 4, 5, 6, false]
+    }],
+
+    [{
+        'color': []
+    }, {
+        'background': []
+    }], // dropdown with defaults from theme
+    [{
+        'font': []
+    }],
+    [{
+        'align': []
+    }],
+
+    ['clean'] // remove formatting button
+];
+```
+
+如果你需要更自定义toolbar，可以自己手动创建toolbar的HTML，然后把DOM元素或选择器传递给Quill。
+
+ql-toolbar的样式会添加到toolbar的DOM容器元素上。Quill会自动添加相应的事件处理器到class属性含有ql-${format}的button和select的元素上。
+
+button元素可以设置默认的选中值。eg：value='large'。
+
+```html
+<div id="toolbar">
+    <button class="ql-bold">Bold</button>
+    <button class="ql-italic">Italic</button>
+    <button class="ql-background">background</button>
+    <button class="ql-code">Code</button>
+    <button class="ql-image">Image</button>
+    <button class="ql-video">Video</button>
+    <select class="ql-size">
+        <option value="small"></option>
+        <option selected></option>
+        <option value="large"></option>
+        <option value="huge"></option>
+    </select>
+    <button class="custom">custom</button>
+</div>
+```
+
+### handlers
+
+toolbar控件默认的作用是添加和移除formatting，但是开发者也可以自定义处理逻辑。
+
+handler的函数会bound到toolbar的实例，参数是input的value值。传递handler参数会覆盖默认逻辑。
+
+```js
+ {
+     handlers: {
+         bold: function(isBold) {
+             this.quill.format('bold', isBold);
+         },
+         link: function(value) {
+             if (value) {
+                 let href = prompt('Enter the URL');
+                 this.quill.format('link', href)
+             } else {
+                 this.quill.format('link', false);
+             }
+         }
+     }
+ }
+```
