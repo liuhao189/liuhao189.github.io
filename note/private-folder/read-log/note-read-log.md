@@ -28,3 +28,7 @@ https://www.zhihu.com/question/375448022/answer/1132102583
 ## 稀土开发者大会2021
 
 https://www.bagevent.com/event/7481268?bag_track=juejincebianlan
+
+## 架构设计——架构知识体系
+
+https://zhuanlan.zhihu.com/p/42830778
