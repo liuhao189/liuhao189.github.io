@@ -40,6 +40,14 @@
         "distFileName": "practiceSummary"
     },
     {
+        "id": "commonAbility",
+        "name": "通用能力",
+        "path": [
+            "common-ability"
+        ],
+        "distFileName": "commonAbility"
+    },
+    {
         "id": "others",
         "name": "其它",
         "path": [
