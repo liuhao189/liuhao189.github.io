@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redux学习</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1636387615370">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="redux-">Redux学习</h1>
+<h2 id="-redux">是否需要使用Redux</h2>
+<p>Redux是一个有用的架构，但不是非用不可，事实上，大多数情况，只用react就够了。</p>
+<pre><code><div class="highlight"><pre><span class="err">曾经有人说：如果你不知道是否需要</span><span class="nx">Redux</span><span class="err">，那就是不需要它。</span>
+
+<span class="nx">Redux</span><span class="err">的创造者补充说：只有遇到</span><span class="nx">React</span><span class="err">实在解决不了的问题，你才需要</span><span class="nx">Redux</span><span class="err">。</span>
+</pre></div>
+
+</code></pre><p>如果你的UI层非常简单，没有很多互动，Redux就是不必要的，用了反而增加复杂度。</p>
+<p>1、用户的使用方式非常简单。</p>
+<p>2、用户之间没有协作。</p>
+<p>3、不需要与服务器大量交互，也没有使用WebSocket。</p>
+<p>4、视图层View只从单一来源获取数据。</p>
+<p>上面这些，都不需要使用Redux。</p>
+<p>1、用户的使用方式复杂</p>
+<p>2、不同身份的用户有不同的使用方式。</p>
+<p>3、多个用户之间可以协作。</p>
+<p>4、与服务器大量交互，或者使用了WebSocket。</p>
+<p>5、View要从多个来源获取数据。</p>
+<p>这些才是Redux的适用场景：多交互，多数据源。</p>
+<p>从组件角度看：</p>
+<p>1、某个组件的状态，需要共享。</p>
+<p>2、某个状态需要在任何地方都可以拿到。</p>
+<p>3、一个组件需要改变全局状态。</p>
+<p>4、一个组件需要改变另一个组件的状态。</p>
+<p>你需要一种机制，可以在同一个地方查询状态，改变状态，传播状态的变化的。</p>
+<p>总结：如果你的应用没那么复杂，就没有必要使用它。另一方面，Redux只是Web架构的一种解决方案，也可以选择其它方案。</p>
+<h2 id="-">设计思想</h2>
+<p>Redux的设计思想很简单：</p>
+<p>1、Web应用是一个状态机，视图与状态是一一对应的。</p>
+<p>2、所有的状态，保存在一个对象里面。</p>
+<h2 id="-api">基本概念和API</h2>
+<h3 id="store">Store</h3>
+<p>Store就是保存数据的地方，你可以把它看成一个容器。整个应用只能有一个Store。</p>
+<p>Redux提高createStore这个函数，用来生成Store。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="state">State</h3>
+<p>Store对象包含所有数据，如果想得到某个时点的数据，就要对Store生成快照。这种时点的数据集合，就叫做State。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">state</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">getState</span><span class="p">();</span> 
+</pre></div>
+
+</code></pre>
+<p>Redux规定，一个State对应一个View，只要State相同，View就相同。</p>
+<h3 id="action">Action</h3>
+<p>State的变化，会导致View的变化。用户只能接触到View，State的变化必须是View导致的。Action就是View发出的通知，表示State应该要发生变化了。</p>
+<p>Action是一个对象，其中的type属性是必须的，表示Action的名称。其它属性可以自由设置。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">action</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;ADD_TODO&#39;</span><span class="p">,</span>
+    <span class="nx">payload</span><span class="o">:</span> <span class="s1">&#39;Learn Redux&#39;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>Action表示当前发生的事情，改变State的唯一方法，就是使用Action。它会运送数据到Store。</p>
+<h3 id="action-creator">Action Creator</h3>
+<p>View要发送多少种消息，就会有多少种Action。可以定义一个函数来生成Action，这个函数就叫Action Creator。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">ADD_TODO</span> <span class="o">=</span> <span class="s1">&#39;添加 TODO&#39;</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">addTodo</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="nx">ADD_TODO</span><span class="p">,</span>
+    <span class="nx">text</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">action</span> <span class="o">=</span> <span class="nx">addTodo</span><span class="p">(</span><span class="s1">&#39;Learn Redux&#39;</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="store-dispatch">Store.dispatch</h3>
+<p>Store.dispatch是View发出Action的唯一方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+
+<span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">({</span>
+  <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;ADD_TODO&#39;</span><span class="p">,</span>
+  <span class="nx">payload</span><span class="o">:</span> <span class="s1">&#39;Learn Redux&#39;</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>接受一个Action对象作为参数，将它发送出去。</p>
+<h3 id="reducer">Reducer</h3>
+<p>Store收到Action以后，必须给出一个新的State，这样View才会发生变化。这种State的计算过程就叫做Reducer。</p>
+<p>Reducer是一个函数，它接受Action和当前State作为参数，返回一个新的State。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">reducer</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">return</span> <span class="nx">new_state</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>实际应用中，Reducer函数不用像上面这样手动调用，store.dispatch方法会触发Reducer的自动执行。为此，Store需要知道Reducer函数，做法就是生成Store的时候，将Reducer传入createStore方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">reducer</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>为什么叫Reducer呢？因为它可以作为数组reduce方法的参数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">actions</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;ADD&#39;</span><span class="p">,</span> <span class="nx">payload</span><span class="o">:</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;ADD&#39;</span><span class="p">,</span> <span class="nx">payload</span><span class="o">:</span> <span class="mi">1</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;ADD&#39;</span><span class="p">,</span> <span class="nx">payload</span><span class="o">:</span> <span class="mi">2</span> <span class="p">}</span>
+<span class="p">];</span>
+
+<span class="kr">const</span> <span class="nx">total</span> <span class="o">=</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="nx">reducer</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span> <span class="c1">// 3</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">纯函数</h3>
+<p>Reducer函数最重要的特征，它是一个纯函数，也就是说，只要是同样的输入，必定得到同样的输出。</p>
+<p>纯函数是函数式编程的概念，必须遵守以下一些约束：</p>
+<p>1、不得改写参数。</p>
+<p>2、不能调用系统IO的API。</p>
+<p>3、不能调用Date.now或Math.random等不纯的方法，因为每次会得到不一样的结果。</p>
+<p>由于Reducer是纯函数，所以Reducer不能改变State，必须返回一个全新的对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// State 是一个对象</span>
+<span class="kd">function</span> <span class="nx">reducer</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">({},</span> <span class="nx">state</span><span class="p">,</span> <span class="p">{</span> <span class="nx">thingToChange</span> <span class="p">});</span>
+  <span class="c1">// 或者</span>
+  <span class="k">return</span> <span class="p">{</span> <span class="p">...</span><span class="nx">state</span><span class="p">,</span> <span class="p">...</span><span class="nx">newState</span> <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// State 是一个数组</span>
+<span class="kd">function</span> <span class="nx">reducer</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">[...</span><span class="nx">state</span><span class="p">,</span> <span class="nx">newItem</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="store-subscribe">store.subscribe</h3>
+<p>Store允许使用store.subscribe方法设置监听函数，一旦State发生变化，就自动执行这个函数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">reducer</span><span class="p">);</span>
+
+<span class="nx">store</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">listener</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>只要把View的更新函数放入listener，就会实现View的自动渲染。</p>
+<p>store.subscribe方法返回一个函数，调用这个函数可以接触监听。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">unsubscribe</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(()</span> <span class="o">=&gt;</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">store</span><span class="p">.</span><span class="nx">getState</span><span class="p">())</span>
+<span class="p">);</span>
+
+<span class="nx">unsubscribe</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<h2 id="store-">Store的实现</h2>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.ruanyifeng.com/blog/2016/09/redux_tutorial_part_one_basic_usages.html">https://www.ruanyifeng.com/blog/2016/09/redux_tutorial_part_one_basic_usages.html</a></p>
+</body>
+</html>
