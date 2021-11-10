@@ -1,6 +1,6 @@
 # Redux学习
 
-## 是否需要使用Redux
+## 基本用法
 
 Redux是一个有用的架构，但不是非用不可，事实上，大多数情况，只用react就够了。
 
@@ -9,28 +9,6 @@ Redux是一个有用的架构，但不是非用不可，事实上，大多数情
     Redux的创造者补充说：只有遇到React实在解决不了的问题，你才需要Redux。
 
 如果你的UI层非常简单，没有很多互动，Redux就是不必要的，用了反而增加复杂度。
-
-1、用户的使用方式非常简单。
-
-2、用户之间没有协作。
-
-3、不需要与服务器大量交互，也没有使用WebSocket。
-
-4、视图层View只从单一来源获取数据。
-
-上面这些，都不需要使用Redux。
-
-1、用户的使用方式复杂
-
-2、不同身份的用户有不同的使用方式。
-
-3、多个用户之间可以协作。
-
-4、与服务器大量交互，或者使用了WebSocket。
-
-5、View要从多个来源获取数据。
-
-这些才是Redux的适用场景：多交互，多数据源。
 
 从组件角度看：
 
@@ -213,6 +191,144 @@ unsubscribe();
 
 ## Store的实现
 
+上一节介绍了Redux涉及的概念，可以发现Store提供了三个方法。
+
+```js
+store.getState();
+store.dispatch();
+store.subscribe();
+```
+
+```js
+import { createStore } from 'redux';
+let { subscribe, dispatch, getState  } = createStore(reducer,initState);
+```
+
+createStore还提供了第二个参数，表示整个应用的状态初始值。如果提供了这个参数，它会覆盖Reducer函数的默认初始值。
+
+```js
+const createStore = (reducer) => {
+
+  let state;
+  let listeners = [];
+
+  const getState = ()=> state;
+
+  const dispatch = (action) => {
+    state = reducer(state, action);
+    listeners.forEach(listener => listener());
+  }
+
+  const subscribe = (listener) => {
+    listeners.push(listener);
+    return () => {
+      listeners = listeners.filter(l=> l!== listener);
+    }
+  }
+
+  dispatch({});
+  
+  return { getState, dispatch, subscribe };
+}
+```
+
+## Reducer的拆分
+
+Reducer函数负责生成整个state。由于整个应用只有一个State对象，包含所有数据，对于大型应用来说，这个State必然十分庞大，导致了Reducer函数也十分庞大。
+
+```js
+const chatReducer = (state = defaultState, action = {}) => {
+  const { type, payload } = action;
+  switch (type) {
+    case ADD_CHAT:
+      return Object.assign({}, state, {
+        chatLog: state.chatLog.concat(payload)
+      });
+    case CHANGE_STATUS:
+      return Object.assign({}, state, {
+        statusMessage: payload
+      });
+    case CHANGE_USERNAME:
+      return Object.assign({}, state, {
+        userName: payload
+      });
+    default: return state;
+  }
+};
+```
+
+三种Action分别改变State的三个属性，这三个属性之间没有联系，这提示我们可以把Reducer函数拆分，不同的函数负责处理不同属性，最终合并成一个大的Reducer即可。
+
+```js
+const chatReducer = (state = defaultState, action = {}) => {
+  return {
+    chatLog: chatLog(state.chatLog, action),
+    statusMessage: statusMessage(state.statusMessage, action),
+    userName: userName(state.userName, action)
+  }
+};
+```
+
+这样拆分，Reducer就易读易写多了。而且和组件结构相吻合。Redux提供了一个combineReducers方法，用于合并各个Reducer函数。
+
+```js
+import { combineReducers } from 'redux';
+
+const chatReducer = combineReducers({
+  chatLog,
+  statusMessage,
+  userName
+})
+
+export default todoApp;
+```
+
+上面那种写法有个前提，那就是State的属性名必须与子Reducer同名。如果不同名，需要使用下面的写法。
+
+```js
+const reducer = combineReducers({
+  a: doSomethingWithA,
+  b: processB,
+  c: c
+})
+
+// 等同于
+function reducer(state = {}, action) {
+  return {
+    a: doSomethingWithA(state.a, action),
+    b: processB(state.b, action),
+    c: c(state.c, action)
+  }
+}
+```
+
+总之，combineReducers做的就是产生一个整体的Reducer函数。
+
+combineReducers的简单实现。
+
+```js
+const combineReducers = reducers => {
+  return (state = {}, action) => {
+    return Object.keys(reducers).reduce(
+      (nextState, key) => {
+        nextState[key] = reducers[key](state[key], action);
+        return nextState;
+      },
+      {} 
+    );
+  };
+};
+```
+
+## 工作流程
+
+![Redux workflow](/note/assets/imgs/redux-flow.jpg)
+
+首先，用户发出Action，然后Store自动调用Reducer，并且传入两个参数State和Action。Reducer会返回新的State。
+
+State一旦有变化，Store就会调用监听函数。listener通过store.getState()得到当前状态。如果使用的是React，这时可以触发重新渲染View。
+
+## 中间件和异步操作
 
 
 

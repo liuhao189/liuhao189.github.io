@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Redux学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1636387615370">
+  <link rel="stylesheet" href="/note/note.css?ts=1636560215563">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,7 +13,7 @@
 })();
 </script>
 <h1 id="redux-">Redux学习</h1>
-<h2 id="-redux">是否需要使用Redux</h2>
+<h2 id="-">基本用法</h2>
 <p>Redux是一个有用的架构，但不是非用不可，事实上，大多数情况，只用react就够了。</p>
 <pre><code><div class="highlight"><pre><span class="err">曾经有人说：如果你不知道是否需要</span><span class="nx">Redux</span><span class="err">，那就是不需要它。</span>
 
@@ -21,17 +21,6 @@
 </pre></div>
 
 </code></pre><p>如果你的UI层非常简单，没有很多互动，Redux就是不必要的，用了反而增加复杂度。</p>
-<p>1、用户的使用方式非常简单。</p>
-<p>2、用户之间没有协作。</p>
-<p>3、不需要与服务器大量交互，也没有使用WebSocket。</p>
-<p>4、视图层View只从单一来源获取数据。</p>
-<p>上面这些，都不需要使用Redux。</p>
-<p>1、用户的使用方式复杂</p>
-<p>2、不同身份的用户有不同的使用方式。</p>
-<p>3、多个用户之间可以协作。</p>
-<p>4、与服务器大量交互，或者使用了WebSocket。</p>
-<p>5、View要从多个来源获取数据。</p>
-<p>这些才是Redux的适用场景：多交互，多数据源。</p>
 <p>从组件角度看：</p>
 <p>1、某个组件的状态，需要共享。</p>
 <p>2、某个状态需要在任何地方都可以拿到。</p>
@@ -168,6 +157,131 @@
 
 </code></pre>
 <h2 id="store-">Store的实现</h2>
+<p>上一节介绍了Redux涉及的概念，可以发现Store提供了三个方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">store</span><span class="p">.</span><span class="nx">getState</span><span class="p">();</span>
+<span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">();</span>
+<span class="nx">store</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="p">{</span> <span class="nx">subscribe</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">,</span> <span class="nx">getState</span>  <span class="p">}</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">reducer</span><span class="p">,</span><span class="nx">initState</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>createStore还提供了第二个参数，表示整个应用的状态初始值。如果提供了这个参数，它会覆盖Reducer函数的默认初始值。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">createStore</span> <span class="o">=</span> <span class="p">(</span><span class="nx">reducer</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+
+  <span class="kd">let</span> <span class="nx">state</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">listeners</span> <span class="o">=</span> <span class="p">[];</span>
+
+  <span class="kr">const</span> <span class="nx">getState</span> <span class="o">=</span> <span class="p">()</span><span class="o">=&gt;</span> <span class="nx">state</span><span class="p">;</span>
+
+  <span class="kr">const</span> <span class="nx">dispatch</span> <span class="o">=</span> <span class="p">(</span><span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">state</span> <span class="o">=</span> <span class="nx">reducer</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">);</span>
+    <span class="nx">listeners</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">listener</span> <span class="o">=&gt;</span> <span class="nx">listener</span><span class="p">());</span>
+  <span class="p">}</span>
+
+  <span class="kr">const</span> <span class="nx">subscribe</span> <span class="o">=</span> <span class="p">(</span><span class="nx">listener</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">listeners</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">listener</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">listeners</span> <span class="o">=</span> <span class="nx">listeners</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">l</span><span class="o">=&gt;</span> <span class="nx">l</span><span class="o">!==</span> <span class="nx">listener</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">dispatch</span><span class="p">({});</span>
+
+  <span class="k">return</span> <span class="p">{</span> <span class="nx">getState</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">,</span> <span class="nx">subscribe</span> <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="reducer-">Reducer的拆分</h2>
+<p>Reducer函数负责生成整个state。由于整个应用只有一个State对象，包含所有数据，对于大型应用来说，这个State必然十分庞大，导致了Reducer函数也十分庞大。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">chatReducer</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="nx">defaultState</span><span class="p">,</span> <span class="nx">action</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">action</span><span class="p">;</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nx">ADD_CHAT</span><span class="o">:</span>
+      <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">({},</span> <span class="nx">state</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">chatLog</span><span class="o">:</span> <span class="nx">state</span><span class="p">.</span><span class="nx">chatLog</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">payload</span><span class="p">)</span>
+      <span class="p">});</span>
+    <span class="k">case</span> <span class="nx">CHANGE_STATUS</span><span class="o">:</span>
+      <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">({},</span> <span class="nx">state</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">statusMessage</span><span class="o">:</span> <span class="nx">payload</span>
+      <span class="p">});</span>
+    <span class="k">case</span> <span class="nx">CHANGE_USERNAME</span><span class="o">:</span>
+      <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">({},</span> <span class="nx">state</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">userName</span><span class="o">:</span> <span class="nx">payload</span>
+      <span class="p">});</span>
+    <span class="k">default</span><span class="o">:</span> <span class="k">return</span> <span class="nx">state</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>三种Action分别改变State的三个属性，这三个属性之间没有联系，这提示我们可以把Reducer函数拆分，不同的函数负责处理不同属性，最终合并成一个大的Reducer即可。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">chatReducer</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="nx">defaultState</span><span class="p">,</span> <span class="nx">action</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">chatLog</span><span class="o">:</span> <span class="nx">chatLog</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">chatLog</span><span class="p">,</span> <span class="nx">action</span><span class="p">),</span>
+    <span class="nx">statusMessage</span><span class="o">:</span> <span class="nx">statusMessage</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">statusMessage</span><span class="p">,</span> <span class="nx">action</span><span class="p">),</span>
+    <span class="nx">userName</span><span class="o">:</span> <span class="nx">userName</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">userName</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>这样拆分，Reducer就易读易写多了。而且和组件结构相吻合。Redux提供了一个combineReducers方法，用于合并各个Reducer函数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">combineReducers</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">chatReducer</span> <span class="o">=</span> <span class="nx">combineReducers</span><span class="p">({</span>
+  <span class="nx">chatLog</span><span class="p">,</span>
+  <span class="nx">statusMessage</span><span class="p">,</span>
+  <span class="nx">userName</span>
+<span class="p">})</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">todoApp</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<p>上面那种写法有个前提，那就是State的属性名必须与子Reducer同名。如果不同名，需要使用下面的写法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">reducer</span> <span class="o">=</span> <span class="nx">combineReducers</span><span class="p">({</span>
+  <span class="nx">a</span><span class="o">:</span> <span class="nx">doSomethingWithA</span><span class="p">,</span>
+  <span class="nx">b</span><span class="o">:</span> <span class="nx">processB</span><span class="p">,</span>
+  <span class="nx">c</span><span class="o">:</span> <span class="nx">c</span>
+<span class="p">})</span>
+
+<span class="c1">// 等同于</span>
+<span class="kd">function</span> <span class="nx">reducer</span><span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="p">{},</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">a</span><span class="o">:</span> <span class="nx">doSomethingWithA</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">a</span><span class="p">,</span> <span class="nx">action</span><span class="p">),</span>
+    <span class="nx">b</span><span class="o">:</span> <span class="nx">processB</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">b</span><span class="p">,</span> <span class="nx">action</span><span class="p">),</span>
+    <span class="nx">c</span><span class="o">:</span> <span class="nx">c</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">c</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>总之，combineReducers做的就是产生一个整体的Reducer函数。</p>
+<p>combineReducers的简单实现。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">combineReducers</span> <span class="o">=</span> <span class="nx">reducers</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="p">{},</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">reducers</span><span class="p">).</span><span class="nx">reduce</span><span class="p">(</span>
+      <span class="p">(</span><span class="nx">nextState</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">nextState</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">reducers</span><span class="p">[</span><span class="nx">key</span><span class="p">](</span><span class="nx">state</span><span class="p">[</span><span class="nx">key</span><span class="p">],</span> <span class="nx">action</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">nextState</span><span class="p">;</span>
+      <span class="p">},</span>
+      <span class="p">{}</span> 
+    <span class="p">);</span>
+  <span class="p">};</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">工作流程</h2>
+<p><img src="/note/assets/imgs/redux-flow.jpg" alt="Redux workflow"></p>
+<p>首先，用户发出Action，然后Store自动调用Reducer，并且传入两个参数State和Action。Reducer会返回新的State。</p>
+<p>State一旦有变化，Store就会调用监听函数。listener通过store.getState()得到当前状态。如果使用的是React，这时可以触发重新渲染View。</p>
+<h2 id="-">中间件和异步操作</h2>
 <h2 id="-">参考文档</h2>
 <p><a href="https://www.ruanyifeng.com/blog/2016/09/redux_tutorial_part_one_basic_usages.html">https://www.ruanyifeng.com/blog/2016/09/redux_tutorial_part_one_basic_usages.html</a></p>
 </body>
