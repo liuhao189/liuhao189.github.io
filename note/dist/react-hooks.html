@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>React-Hooks学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1636646821886">
+  <link rel="stylesheet" href="/note/note.css?ts=1636876983180">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -56,5 +56,388 @@
 <p>Hook使你在非class的情况下可以使用更多的React特性。</p>
 <h2 id="-">渐进升级策略</h2>
 <p>没有计划从React中移除class。</p>
+<h1 id="hooks-">Hooks概览</h1>
+<h2 id="state-hook">State Hook</h2>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span> <span class="nx">useState</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">Example</span>: <span class="kt">React.FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="o">&lt;</span><span class="kt">number</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">You</span> <span class="nx">clicked</span> <span class="p">{</span><span class="nx">count</span><span class="p">}</span> <span class="nx">times</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">setCount</span><span class="p">(</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="p">}}</span><span class="o">&gt;</span><span class="nx">Click</span> <span class="nx">me</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+        <span class="o">&lt;</span><span class="err">/div&gt;</span>
+    <span class="p">)</span>
+
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>useState就是一个Hook，通过在函数组件里调用它来给组件添加一些内部State。React会在重复渲染时保留这个state。</p>
+<p>useState的唯一参数就是初始state，返回的值当前状态和一个让你更新它的函数。</p>
+<h3 id="-state">声明多个State</h3>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">Example</span> : <span class="kt">React.FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">//multi state</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">age</span><span class="p">,</span> <span class="nx">setAge</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="mi">18</span><span class="p">);</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">fruit</span><span class="p">,</span> <span class="nx">setFruit</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;banana&#39;</span><span class="p">);</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">todos</span><span class="p">,</span> <span class="nx">setTodos</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">([{</span> <span class="nx">text</span><span class="o">:</span> <span class="s1">&#39;Learn Hooks&#39;</span><span class="p">}])</span>
+    <span class="c1">//</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>当你调用多次useState的时候，你需要能保证每次渲染时它们的调用顺序是不变的。</p>
+<h3 id="-hook-">什么是Hook？</h3>
+<p>Hook是一些可以让你在函数组件里钩入React State及生命周期等特性的函数。</p>
+<h2 id="effect-hook">Effect Hook</h2>
+<p>useEffect就是一个Effect Hook，给函数组件增加了操作副作用的能力。它跟class组件中的componentDidMount，componentDidUpdate和componentWillUnmount具有相同的用途，只不过被合并成了一个API。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre>    <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nb">document</span><span class="p">.</span><span class="nx">title</span> <span class="o">=</span> <span class="err">`</span><span class="nx">You</span> <span class="nx">clicked</span> <span class="nx">$</span><span class="p">{</span><span class="nx">count</span><span class="p">}</span> <span class="nx">times</span><span class="err">`</span><span class="p">;</span>
+    <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>当你调用useEffect时，就是在告诉React在完成对DOM的更改后运行你的副作用函数。默认情况下，React会在每次渲染后调用副作用函数。</p>
+<p>副作用函数还可以返回一个函数来指定如何清除副作用。React函数会在组件销毁时，调用清除副作用的函数。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre> <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">ChatAPI</span><span class="p">.</span><span class="nx">subscribeToFriendStatus</span><span class="p">(</span><span class="nx">props</span><span class="p">.</span><span class="nx">friend</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">handleStatusChange</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">ChatAPI</span><span class="p">.</span><span class="nx">unsubscribeFromFriendStatus</span><span class="p">(</span><span class="nx">props</span><span class="p">.</span><span class="nx">friend</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">handleStatusChange</span><span class="p">);</span>
+    <span class="p">};</span>
+  <span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>通过使用useEffect Hook，你可以把组件内相关的副作用组织在一起（创建订阅和取消订阅），而不是把它们拆分到不同的生命周期函数里。</p>
+<h2 id="hook-">Hook使用规则</h2>
+<p>1、只能在函数最外层调用Hook，不要在循环、条件判断或者子函数中调用。</p>
+<p>2、只能在React的函数组件中调用Hook。不要在其它JS函数中调用。</p>
+<p>React官方提高了linter插件来自动检测这些规则，这些规则是为了让Hook正常工作。</p>
+<h2 id="-hook">自定义Hook</h2>
+<p>通过自定义Hook，可以将组件的逻辑提取到可重用的函数中。</p>
+<p>我们希望FriendStatus和FriendListItem之间共享逻辑。</p>
+<h3 id="-hook">提取自动以Hook</h3>
+<p>想要在两个函数之间共享逻辑时，我们会把它提取到第三个函数中。而组件和Hook都是函数，所以也同样使用这种方式。</p>
+<p>自定义Hook是一个函数，其名称以use开头，函数内部可以调用其它的Hook。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">useState</span><span class="p">,</span> <span class="nx">useEffect</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react&#39;</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">useFriendStatus</span><span class="p">(</span><span class="nx">friendID</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">isOnline</span><span class="p">,</span> <span class="nx">setIsOnline</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+
+  <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">function</span> <span class="nx">handleStatusChange</span><span class="p">(</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">setIsOnline</span><span class="p">(</span><span class="nx">status</span><span class="p">.</span><span class="nx">isOnline</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">ChatAPI</span><span class="p">.</span><span class="nx">subscribeToFriendStatus</span><span class="p">(</span><span class="nx">friendID</span><span class="p">,</span> <span class="nx">handleStatusChange</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">ChatAPI</span><span class="p">.</span><span class="nx">unsubscribeFromFriendStatus</span><span class="p">(</span><span class="nx">friendID</span><span class="p">,</span> <span class="nx">handleStatusChange</span><span class="p">);</span>
+    <span class="p">};</span>
+  <span class="p">});</span>
+
+  <span class="k">return</span> <span class="nx">isOnline</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>自定义Hook不需要具有特殊标识。我们可以自由地决定它的参数是什么，以及它应该返回什么。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">FriendListItem</span><span class="p">(</span><span class="nx">props</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">isOnline</span> <span class="o">=</span> <span class="nx">useFriendStatus</span><span class="p">(</span><span class="nx">props</span><span class="p">.</span><span class="nx">friend</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">li</span> <span class="nx">style</span><span class="o">=</span><span class="p">{{</span> <span class="nx">color</span><span class="o">:</span> <span class="nx">isOnline</span> <span class="o">?</span> <span class="s1">&#39;green&#39;</span> <span class="o">:</span> <span class="s1">&#39;black&#39;</span> <span class="p">}}</span><span class="o">&gt;</span>
+      <span class="p">{</span><span class="nx">props</span><span class="p">.</span><span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span>
+    <span class="o">&lt;</span><span class="err">/li&gt;</span>
+  <span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="useyourimagination">useYourImagination</h3>
+<p>自定义Hook解决了以前在React组件中无法灵活共享逻辑的问题。你可以创建涵盖各种场景的自定义Hook，eg：表单处理、动画、订阅声明、计时器。</p>
+<p>尽量避免过早地增加抽象逻辑，既然函数组件能够做得更多，那么代码库中函数组件的代码行数可能会剧增，这属于正常现象。</p>
+<h3 id="usereducer-hook">useReducer类Hook</h3>
+<p>useReducer的Hook，使用reducer的方式来管理组件的内部state。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">useReducer</span><span class="p">(</span><span class="nx">reducer</span><span class="p">,</span> <span class="nx">initialState</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">state</span><span class="p">,</span> <span class="nx">setStae</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="nx">initialState</span><span class="p">);</span>
+
+    <span class="kd">function</span> <span class="nx">dispatch</span><span class="p">(</span><span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">nextState</span> <span class="o">=</span> <span class="nx">reducer</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">);</span>
+        <span class="nx">setStae</span><span class="p">(</span><span class="nx">nextState</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="nx">state</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>在复杂组件中使用reducer管理内部state的需求很常见，React已经将useReducer的Hook内置到React中。</p>
+<h2 id="hook-api-">Hook API索引</h2>
+<h3 id="-hook">基础Hook</h3>
+<h4 id="usestate">useState</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">state</span><span class="p">,</span> <span class="nx">setState</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="nx">initialState</span><span class="p">);</span> 
+</pre></div>
+
+</code></pre>
+<p>setState函数用于更新state，它接收一个新的state值并将组件的一次重新渲染加入队列。</p>
+<p>函数式更新，如果新的state需要通过使用先前的state计算得出，那么可以将函数传递给setState。如果更新函数的返回值和当前state完全相同，则随后的重新渲染会被完全跳过。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">Example</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">initialCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="o">&lt;</span><span class="nx">number</span><span class="o">&gt;</span><span class="p">(</span><span class="nx">initialCount</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">Count</span><span class="o">:</span><span class="p">{</span><span class="nx">count</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">setCount</span><span class="p">(</span><span class="nx">initialCount</span><span class="p">);</span>
+            <span class="p">}}</span><span class="o">&gt;</span><span class="nx">reset</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">setCount</span><span class="p">((</span><span class="nx">prevCount</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nx">prevCount</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="p">})</span>
+            <span class="p">}}</span><span class="o">&gt;+&lt;</span><span class="err">/button&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">setCount</span><span class="p">(</span><span class="nx">prevCount</span> <span class="o">=&gt;</span> <span class="nx">prevCount</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="p">}}</span><span class="o">&gt;-&lt;</span><span class="err">/button&gt;</span>
+        <span class="o">&lt;</span><span class="err">/div&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>注意：useState不会自动合并更新对象，可以使用函数式的setState结合展开运算符来达到合并更新对象的效果。</p>
+<h4 id="-state">懒惰初始state</h4>
+<p>ininialState参数可以传入一个函数，在函数中计算并返回初始的state，此函数只在初始渲染时被调用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">state</span><span class="p">,</span> <span class="nx">setState</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">initialState</span> <span class="o">=</span> <span class="nx">someExpensiveComputation</span><span class="p">(</span><span class="nx">props</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">initialState</span><span class="p">;</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-state-">跳过state更新</h4>
+<p>传入当前的State时，React将跳过子组件的渲染及Effect的执行。React使用Object.js比较算法来比较state。</p>
+<h3 id="useeffect">useEffect</h3>
+<p>该Hook接收一个命令式、且可能有副作用代码的函数。在函数组件主体内，改变DOM，添加订阅，设置定时器，记录日志以及执行其它包含副作用的操作都是不被允许的。因为这可能产生莫名其妙的bug并破坏UI的一致性。</p>
+<p>默认情况下，effect将在每轮渲染结束后执行，你可以选择让它只在某些值改变的时候才执行。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">useEffect</span><span class="p">(</span><span class="nx">didUpdate</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-effect">清楚effect</h4>
+<p>通常，组件卸载时需要清楚effect创建的诸如订阅或计时器id等资源。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">subscription</span> <span class="o">=</span> <span class="nx">props</span><span class="p">.</span><span class="nx">source</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">();</span>
+  <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// 清除订阅</span>
+    <span class="nx">subscription</span><span class="p">.</span><span class="nx">unsubscribe</span><span class="p">();</span>
+  <span class="p">};</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>为了防止内存泄漏，清除函数会在组件卸载前执行。如果组件存在多次渲染，在执行下一个effect之前，上一个effect就已被清除。</p>
+<h4 id="effect-">effect的执行时机</h4>
+<p>在浏览器完成布局与绘制之后，传给useEffect的函数会延迟调用。然而，并非所有effect都可以被延迟执行。eg：浏览器执行下一次绘制前，用户可见的DOM更新就必须同步执行。</p>
+<p>为此，React提供了useLayoutEffect Hook来处理这类effect。与useEffect的结构相同，区别只是调用时机不同。</p>
+<p>虽然useEffect会在浏览器绘制后延迟执行，但会保证在任何新的渲染前执行。React将在组件更新前刷新上一轮渲染的effect。</p>
+<h4 id="effect-">effect的条件执行</h4>
+<p>默认情况下，effect会在每轮组件渲染完成后执行。</p>
+<p>传递给useEffect的第二个参数，是effect所依赖的值数组。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">useEffect</span><span class="p">(()</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">subscription</span> <span class="o">=</span> <span class="nx">props</span><span class="p">.</span><span class="nx">source</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">subscription</span><span class="p">.</span><span class="nx">unsubscribe</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">},[</span><span class="nx">props</span><span class="p">.</span><span class="nx">source</span><span class="p">])</span>
+</pre></div>
+
+</code></pre>
+<p>如果你要使用此优化方式，请确保数组中包含了所有外部作用域中会发生变化且在effect中使用的变量，否则你的代码会引用到先前渲染中的旧变量。</p>
+<p>如果想只运行一次effect，仅在组件挂载和卸载时执行，可以传递一个空数组，表示不依赖于props或state中的任何值。</p>
+<p>如果传入了空数组，effect内部的props和state就会一直持有其初始值。</p>
+<h3 id="usecontext">useContext</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">useContext</span><span class="p">(</span><span class="nx">MyContext</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>接收一个context对象并返回该context的当前值。当前的context值由上层组件中距离当前组件最近的&lt;MyContext.Provider&gt;的value prop决定。</p>
+<p>调用了useContext的组件总会在context值变化时重新渲染。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">ThemeContext</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createContext</span><span class="p">(</span><span class="nx">themes</span><span class="p">.</span><span class="nx">light</span><span class="p">);</span>
+
+<span class="kr">const</span> <span class="nx">ThemedButton</span>: <span class="kt">React.FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">theme</span> <span class="o">=</span> <span class="nx">useContext</span><span class="p">(</span><span class="nx">ThemeContext</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">style</span><span class="o">=</span><span class="p">{{</span>
+            <span class="nx">background</span>: <span class="kt">theme.background</span><span class="p">,</span> <span class="nx">color</span>: <span class="kt">theme.foreground</span>
+        <span class="p">}}</span><span class="o">&gt;</span> <span class="nx">I</span> <span class="nx">am</span> <span class="nx">styled</span> <span class="nx">by</span> <span class="nx">theme</span> <span class="nx">context</span><span class="o">!&lt;</span><span class="err">/button &gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">ToolBar</span>: <span class="kt">React.FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">ThemedButton</span><span class="o">&gt;&lt;</span><span class="err">/ThemedButton&gt;</span>
+        <span class="o">&lt;</span><span class="err">/div&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">App</span>: <span class="kt">React.FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">ThemeContext</span><span class="p">.</span><span class="nx">Provider</span> <span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">themes</span><span class="p">.</span><span class="nx">light</span><span class="p">}</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">ToolBar</span><span class="o">&gt;&lt;</span><span class="err">/ToolBar&gt;</span>
+        <span class="o">&lt;</span><span class="err">/ThemeContext.Provider&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-hook">额外的Hook</h3>
+<h3 id="usereducer">useReducer</h3>
+<p>useState的替代方案，它接收一个形如(state,action)=&gt;newState的reducer，并返回当前的state以及其配套的dispatch方法。</p>
+<p>某些场景下，useReducer会比useState更适用。eg：state逻辑较复杂且包含多个子值，或者下一个state依赖于之前的state等。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">initialCount</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">count</span><span class="o">:</span> <span class="mi">0</span> <span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">reducer</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="s1">&#39;INCREMENT&#39;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="nx">count</span><span class="o">:</span> <span class="nx">state</span><span class="p">.</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">}</span>
+        <span class="k">case</span> <span class="s1">&#39;DECREMENT&#39;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="nx">count</span><span class="o">:</span> <span class="nx">state</span><span class="p">.</span><span class="nx">count</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">};</span>
+        <span class="k">default</span><span class="o">:</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">App</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">state</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useReducer</span><span class="p">(</span><span class="nx">reducer</span><span class="p">,</span> <span class="nx">initialCount</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="nx">Count</span><span class="o">:</span> <span class="p">{</span><span class="nx">state</span><span class="p">.</span><span class="nx">count</span><span class="p">}</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">dispatch</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;INCREMENT&#39;</span> <span class="p">})</span>
+            <span class="p">}}</span><span class="o">&gt;</span><span class="nx">INCREMENT</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span>
+                <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                    <span class="nx">dispatch</span><span class="p">({</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;DECREMENT&#39;</span> <span class="p">});</span>
+                <span class="p">}</span>
+            <span class="p">}</span><span class="o">&gt;</span><span class="nx">DECREMENT</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>指定初始state，有两种不同初始化useReducer state的方式：</p>
+<p>1、最简单的方法，将state作为第二个参数传入。</p>
+<p>2、惰性初始化，需要将init函数作为useReducer的第三个参数传入，这样初始state将被设置为init(initialArg)。可以将用于计算state的逻辑提取到reducer外部，方便复用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">init</span><span class="p">(</span><span class="nx">initialCount</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span><span class="nx">count</span><span class="o">:</span> <span class="nx">initialCount</span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">reducer</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s1">&#39;increment&#39;</span><span class="o">:</span>
+      <span class="k">return</span> <span class="p">{</span><span class="nx">count</span><span class="o">:</span> <span class="nx">state</span><span class="p">.</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">};</span>
+    <span class="k">case</span> <span class="s1">&#39;decrement&#39;</span><span class="o">:</span>
+      <span class="k">return</span> <span class="p">{</span><span class="nx">count</span><span class="o">:</span> <span class="nx">state</span><span class="p">.</span><span class="nx">count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">};</span>
+    <span class="k">case</span> <span class="s1">&#39;reset&#39;</span><span class="o">:</span>
+      <span class="k">return</span> <span class="nx">init</span><span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">);</span>
+    <span class="k">default</span><span class="o">:</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">Counter</span><span class="p">({</span><span class="nx">initialCount</span><span class="p">})</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">state</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useReducer</span><span class="p">(</span><span class="nx">reducer</span><span class="p">,</span> <span class="nx">initialCount</span><span class="p">,</span> <span class="nx">init</span><span class="p">);</span>
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;&gt;</span>
+      <span class="nx">Count</span><span class="o">:</span> <span class="p">{</span><span class="nx">state</span><span class="p">.</span><span class="nx">count</span><span class="p">}</span>
+      <span class="o">&lt;</span><span class="nx">button</span>
+        <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">({</span><span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;reset&#39;</span><span class="p">,</span> <span class="nx">payload</span><span class="o">:</span> <span class="nx">initialCount</span><span class="p">})}</span><span class="o">&gt;</span>
+        <span class="nx">Reset</span>
+      <span class="o">&lt;</span><span class="err">/button&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">({</span><span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;decrement&#39;</span><span class="p">})}</span><span class="o">&gt;-&lt;</span><span class="err">/button&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">({</span><span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;increment&#39;</span><span class="p">})}</span><span class="o">&gt;+&lt;</span><span class="err">/button&gt;</span>
+    <span class="o">&lt;</span><span class="err">/&gt;</span>
+  <span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="usecallback">useCallback</h3>
+<p>返回一个memoized回调函数。把内联回调函数及依赖项数组作为参数传入useCallback，它将返回该回调函数的memoized版本，该回调函数仅在某个依赖项改变时才会更新。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">memoizedCallback</span> <span class="o">=</span> <span class="nx">useCallback</span><span class="p">(</span>
+  <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">doSomething</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">);</span>
+  <span class="p">},</span>
+  <span class="p">[</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">],</span>
+<span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>useCallback(fn,deps) 相当于 useMemo(()=&gt;fn,deps)。</p>
+<h3 id="usememo">useMemo</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">memoizedValue</span> <span class="o">=</span> <span class="nx">useMemo</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="nx">computeExpensiveValue</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">),</span> <span class="p">[</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<p>把创建函数和依赖项数组作为参数传入useMemo，它仅会在某个依赖项改变时才重新计算memoized值。这种优化有助于避免每次渲染都进行高开销的计算。</p>
+<p>注意：useMemo的函数会在渲染期间执行，请不要在这个函数内部执行与渲染无关的操作。</p>
+<p>你可以把useMemo作为性能优化的手段，但不要把它当成语义上的保证。将来，React可能会选择遗忘一些memorized的值，并在下次渲染时重新计算它们。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">App</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">numA</span><span class="p">,</span> <span class="nx">setNumA</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="o">&lt;</span><span class="nx">number</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">numB</span><span class="p">,</span> <span class="nx">setNumB</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="o">&lt;</span><span class="nx">number</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+    <span class="kr">const</span> <span class="nx">memoSum</span> <span class="o">=</span> <span class="nx">useMemo</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;useMemo&#39;</span><span class="p">,</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nx">numB</span> <span class="o">+</span> <span class="nx">numA</span><span class="p">;</span>
+    <span class="p">},</span> <span class="p">[</span><span class="nx">numA</span><span class="p">,</span> <span class="nx">numB</span><span class="p">]);</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">Sum</span> <span class="nx">is</span> <span class="p">{</span><span class="nx">memoSum</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">setNumA</span><span class="p">(</span><span class="nx">numA</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">}}</span><span class="o">&gt;</span><span class="nx">Increment</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="useref">useRef</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">refContainer</span> <span class="o">=</span> <span class="nx">useRef</span><span class="p">(</span><span class="nx">initialValue</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>useRef返回一个可变的ref对象，其.current属性被初始化为传入的参数。返回的ref对象在组件的整个生命周期内保持不变。</p>
+<p>一个常见的用例便是命令式地访问子组件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">App</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">inputEl</span> <span class="o">=</span> <span class="nx">useRef</span><span class="o">&lt;</span><span class="nx">HTMLInputElement</span><span class="o">&gt;</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+
+    <span class="kr">const</span> <span class="nx">onBtnClick</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">inputEl</span><span class="o">?</span><span class="p">.</span><span class="nx">current</span><span class="o">?</span><span class="p">.</span><span class="nx">focus</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">ref</span><span class="o">=</span><span class="p">{</span><span class="nx">inputEl</span><span class="p">}</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="o">&gt;&lt;</span><span class="err">/input&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onBtnClick</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">Foucus</span> <span class="nx">the</span> <span class="nx">input</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>本质上，useRef就像是可以在其.current属性中保存一个可变值的盒子。你应该熟悉ref这一种访问DOM的主要方式。</p>
+<p>useRef会在每次渲染时返回同一个ref对象。但是请记住：当ref对象内容发生变化时，useRef并不会通知你，变更.current属性不会引发组件重新渲染。如果想要在React绑定或解绑DOM节点的ref时运行某些代码，则需要使用回调ref来实现。</p>
 </body>
 </html>
