@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>React-Hooks学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1636876983180">
+  <link rel="stylesheet" href="/note/note.css?ts=1636992581746">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -183,7 +183,7 @@
 
 </code></pre>
 <p>setState函数用于更新state，它接收一个新的state值并将组件的一次重新渲染加入队列。</p>
-<p>函数式更新，如果新的state需要通过使用先前的state计算得出，那么可以将函数传递给setState。如果更新函数的返回值和当前state完全相同，则随后的重新渲染会被完全跳过。</p>
+<p>函数式更新，如果新的state需要通过使用先前的state计算得出，那么可以将函数传递给setState。如果更新函数的返回值和当前state完全相同，则随后的重新渲染会被跳过。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">Example</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="kr">const</span> <span class="nx">initialCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="kr">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="o">&lt;</span><span class="nx">number</span><span class="o">&gt;</span><span class="p">(</span><span class="nx">initialCount</span><span class="p">);</span>
@@ -219,7 +219,7 @@
 
 </code></pre>
 <h4 id="-state-">跳过state更新</h4>
-<p>传入当前的State时，React将跳过子组件的渲染及Effect的执行。React使用Object.js比较算法来比较state。</p>
+<p>传入相同的State时，React将跳过子组件的渲染及Effect的执行。React使用Object.js比较算法来比较state。</p>
 <h3 id="useeffect">useEffect</h3>
 <p>该Hook接收一个命令式、且可能有副作用代码的函数。在函数组件主体内，改变DOM，添加订阅，设置定时器，记录日志以及执行其它包含副作用的操作都是不被允许的。因为这可能产生莫名其妙的bug并破坏UI的一致性。</p>
 <p>默认情况下，effect将在每轮渲染结束后执行，你可以选择让它只在某些值改变的时候才执行。</p>
@@ -227,8 +227,8 @@
 </pre></div>
 
 </code></pre>
-<h4 id="-effect">清楚effect</h4>
-<p>通常，组件卸载时需要清楚effect创建的诸如订阅或计时器id等资源。</p>
+<h4 id="-effect">清除effect</h4>
+<p>通常，组件卸载时需要清除effect创建的诸如订阅或计时器id等资源。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="kr">const</span> <span class="nx">subscription</span> <span class="o">=</span> <span class="nx">props</span><span class="p">.</span><span class="nx">source</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">();</span>
   <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
@@ -439,5 +439,93 @@
 </code></pre>
 <p>本质上，useRef就像是可以在其.current属性中保存一个可变值的盒子。你应该熟悉ref这一种访问DOM的主要方式。</p>
 <p>useRef会在每次渲染时返回同一个ref对象。但是请记住：当ref对象内容发生变化时，useRef并不会通知你，变更.current属性不会引发组件重新渲染。如果想要在React绑定或解绑DOM节点的ref时运行某些代码，则需要使用回调ref来实现。</p>
+<h3 id="useimperativehandle">useImperativeHandle</h3>
+<p>useImperativeHandle可以让你在使用ref时自定义暴露给父组件的实例值。在大多数情况下，应当避免使用ref这样的命令式代码。useImperativeHandle应当与forwardRef一起使用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">FancyInput</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">forwardRef</span><span class="p">((</span><span class="nx">props</span><span class="p">,</span> <span class="nx">instanceRef</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">inputRef</span> <span class="o">=</span> <span class="nx">useRef</span><span class="o">&lt;</span><span class="nx">any</span><span class="o">&gt;</span><span class="p">();</span>
+    <span class="nx">useImperativeHandle</span><span class="p">(</span><span class="nx">instanceRef</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="nx">focus</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">inputRef</span><span class="p">.</span><span class="nx">current</span><span class="o">?</span><span class="p">.</span><span class="nx">focus</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">ref</span><span class="o">=</span><span class="p">{</span><span class="nx">inputRef</span><span class="p">}</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;text&quot;</span> <span class="o">/&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">});</span>
+
+<span class="kr">const</span> <span class="nx">App</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">inputRef</span> <span class="o">=</span> <span class="nx">useRef</span><span class="p">();</span>
+
+    <span class="kr">const</span> <span class="nx">foucusInput</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">inputEl</span> <span class="o">=</span> <span class="nx">inputRef</span><span class="p">.</span><span class="nx">current</span> <span class="nx">as</span> <span class="nx">any</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">inputEl</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">inputEl</span><span class="p">.</span><span class="nx">focus</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">inputEl</span><span class="p">.</span><span class="nx">focus</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+                <span class="o">&lt;</span><span class="nx">FancyInput</span> <span class="nx">ref</span><span class="o">=</span><span class="p">{</span><span class="nx">inputRef</span><span class="p">}</span> <span class="o">&gt;&lt;</span><span class="err">/FancyInput&gt;</span>
+                <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">foucusInput</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">Focus</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+            <span class="o">&lt;</span><span class="err">/div&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="uselayouteffect">useLayoutEffect</h3>
+<p>函数签名与useEffect相同，但它会在所有的DOM变更之后同步调用effect。可以使用它来读取DOM布局并同步触发重渲染。</p>
+<h3 id="usedebugvalue">useDebugValue</h3>
+<p>useDebugValue(value)可用于在React开发者工具中显示自定义Hook的标签。</p>
+<p>延迟格式化debug值，某些情况下，格式化值的显示可能是一项开销很大的操作。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">useDebugValue</span><span class="p">(</span><span class="nx">date</span><span class="p">,</span> <span class="nx">date</span> <span class="o">=&gt;</span> <span class="nx">date</span><span class="p">.</span><span class="nx">toDateString</span><span class="p">());</span>
+</pre></div>
+
+</code></pre>
+<p>useDebugValue第二个参数为格式化函数，该函数只有在Hook被检查时才会被调用。</p>
+<h2 id="hooks-faq">Hooks FAQ</h2>
+<h3 id="-react-hook">哪个版本的React包含了Hook</h3>
+<p>从16.8.0开始，React在以下的模块中包含了React Hook的稳定实现。要启用Hook，所有React相关的package都必须升级到16.8.0或更高版本。</p>
+<p>React Native 0.59及以上版本支持Hook。</p>
+<h3 id="-class-">需要重写所有的class组件吗？</h3>
+<p>不需要。没有计划从React中移除class。</p>
+<h3 id="hook-class-">hook能做而class做不到的？</h3>
+<p>Hook提供了强大的富有表现力的方式来在组件之间复用功能。</p>
+<h3 id="-react-">我的React知识还有多少是仍然有用的？</h3>
+<p>Hook是使用你已经知道的React特性的一种更直接的方式。eg：state，生命周期，context以及refs。</p>
+<p>它们并没有从根本上改变React的工作方式，你对组件，props以及自顶向下的数据流的知识并没有改变。</p>
+<h3 id="-hook-class-">我应该使用Hook，class，还是两者混用？</h3>
+<p>鼓励你在写新组件的时候开始尝试Hook。请确保你的团队中的每个人都愿意使用它们并且熟知这份文档的内容。</p>
+<h3 id="hook-class-">Hook能覆盖class的所有使用场景？</h3>
+<p>我们给Hook设定的目标是尽早覆盖class的所有使用场景。目前暂时没有对应不常用的getSnapshotBeforeUpdate，getDerivedStateFromError和componentDidCatch生命周期的Hook等价写法，但我们计划尽早把它们加进来。</p>
+<h3 id="hook-render-props-">Hook会代替render props和高阶组件吗？</h3>
+<p>通常，render props和高阶组件只渲染一个子节点。我们认为让Hook来服务这个使用场景更加简单。这两种模式仍有用武之地。</p>
+<h3 id="hook-redux-connect-react-router-api-">Hook对于Redux connect()和React Router等流行的API来说，意味着什么？</h3>
+<p>你可以继续使用之前使用的API，它们仍然会继续有效。</p>
+<p>React Redux从V7.1.0开始支持Hook API并暴露useDispatch和useSelector等hook。</p>
+<p>React Router从V5.1开始支持hook。</p>
+<h3 id="hook-">Hook能和静态类型一起用吗？</h3>
+<p>Hook在设计阶段就考虑了静态类型的问题，因为它们是函数，最新版本的Flow和TypeScript React定义已经包含了React Hook的支持。</p>
+<h3 id="-hook-">如何测试使用了Hook的组件？</h3>
+<p>在React看来，一个使用了Hook的组件只不过是一个常规的组件。如果你的测试方案不依赖于React的内部实现，测试带Hook的组件应该和你通常测试组件的方式没什么差别。</p>
+<h3 id="lint-">lint规则具体强制了哪些内容？</h3>
+<p>它假设任何以 「use」 开头并紧跟着一个大写字母的函数就是一个 Hook。</p>
+<p>强制了以下内容：</p>
+<p>1、对 Hook 的调用要么在一个大驼峰法命名的函数（视作一个组件）内部，要么在另一个 useSomething 函数（视作一个自定义 Hook）中。</p>
+<p>2、Hook 在每次渲染时都按照相同的顺序被调用。</p>
+<h2 id="-class-hook">从Class迁移到Hook</h2>
+<h3 id="-hook-">生命周期方法要如何对应到Hook？</h3>
+<p>1、constructor，函数不需要构造函数。可以通过调用useState来初始化state。</p>
+<p>2、getDerivedStateFromProps，改为在渲染时安排一次更新。</p>
+<p>3、shouldComponentUpdate，React.memo。</p>
+<p>4、render，这就是函数组件体本身。</p>
+<p>5、componentDidMount，componentDidUpdate，componentWillUnmount统一使用useEffect Hook。</p>
+<p>6、getSnapshotBeforeUpdate，componentDidCatch以及getDerivedStateFromError，目前没有这些方法对应的Hook等价写法。</p>
 </body>
 </html>

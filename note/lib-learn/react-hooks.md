@@ -229,7 +229,7 @@ const [state, setState] = useState(initialState);
 
 setState函数用于更新state，它接收一个新的state值并将组件的一次重新渲染加入队列。
 
-函数式更新，如果新的state需要通过使用先前的state计算得出，那么可以将函数传递给setState。如果更新函数的返回值和当前state完全相同，则随后的重新渲染会被完全跳过。
+函数式更新，如果新的state需要通过使用先前的state计算得出，那么可以将函数传递给setState。如果更新函数的返回值和当前state完全相同，则随后的重新渲染会被跳过。
 
 ```js
 const Example: React.FC = () => {
@@ -270,7 +270,7 @@ const [state, setState] = useState(() => {
 
 #### 跳过state更新
 
-传入当前的State时，React将跳过子组件的渲染及Effect的执行。React使用Object.js比较算法来比较state。
+传入相同的State时，React将跳过子组件的渲染及Effect的执行。React使用Object.js比较算法来比较state。
 
 ### useEffect
 
@@ -282,9 +282,9 @@ const [state, setState] = useState(() => {
 useEffect(didUpdate)
 ```
 
-#### 清楚effect
+#### 清除effect
 
-通常，组件卸载时需要清楚effect创建的诸如订阅或计时器id等资源。
+通常，组件卸载时需要清除effect创建的诸如订阅或计时器id等资源。
 
 ```js
 useEffect(() => {
@@ -527,4 +527,139 @@ const App: React.FC = () => {
 本质上，useRef就像是可以在其.current属性中保存一个可变值的盒子。你应该熟悉ref这一种访问DOM的主要方式。
 
 useRef会在每次渲染时返回同一个ref对象。但是请记住：当ref对象内容发生变化时，useRef并不会通知你，变更.current属性不会引发组件重新渲染。如果想要在React绑定或解绑DOM节点的ref时运行某些代码，则需要使用回调ref来实现。
+
+### useImperativeHandle
+
+useImperativeHandle可以让你在使用ref时自定义暴露给父组件的实例值。在大多数情况下，应当避免使用ref这样的命令式代码。useImperativeHandle应当与forwardRef一起使用。
+
+```js
+const FancyInput = React.forwardRef((props, instanceRef) => {
+    const inputRef = useRef<any>();
+    useImperativeHandle(instanceRef, () => {
+        return {
+            focus: () => {
+                inputRef.current?.focus();
+            }
+        }
+    })
+    return (
+        <>
+            <input ref={inputRef} type="text" />
+        </>
+    )
+});
+
+const App: React.FC = () => {
+    let inputRef = useRef();
+
+    const foucusInput = () => {
+        let inputEl = inputRef.current as any;
+        if (inputEl && typeof inputEl.focus === 'function') {
+            inputEl.focus();
+        }
+    }
+
+    return (
+        <>
+            <div>
+                <FancyInput ref={inputRef} ></FancyInput>
+                <button onClick={foucusInput}>Focus</button>
+            </div>
+        </>
+    )
+}
+```
+
+### useLayoutEffect
+
+函数签名与useEffect相同，但它会在所有的DOM变更之后同步调用effect。可以使用它来读取DOM布局并同步触发重渲染。
+
+### useDebugValue
+
+useDebugValue(value)可用于在React开发者工具中显示自定义Hook的标签。
+
+延迟格式化debug值，某些情况下，格式化值的显示可能是一项开销很大的操作。
+
+```js
+useDebugValue(date, date => date.toDateString());
+```
+
+useDebugValue第二个参数为格式化函数，该函数只有在Hook被检查时才会被调用。
+
+
+## Hooks FAQ
+
+### 哪个版本的React包含了Hook
+
+从16.8.0开始，React在以下的模块中包含了React Hook的稳定实现。要启用Hook，所有React相关的package都必须升级到16.8.0或更高版本。
+
+React Native 0.59及以上版本支持Hook。
+
+### 需要重写所有的class组件吗？
+
+不需要。没有计划从React中移除class。
+
+### hook能做而class做不到的？
+
+Hook提供了强大的富有表现力的方式来在组件之间复用功能。
+
+### 我的React知识还有多少是仍然有用的？
+
+Hook是使用你已经知道的React特性的一种更直接的方式。eg：state，生命周期，context以及refs。
+
+它们并没有从根本上改变React的工作方式，你对组件，props以及自顶向下的数据流的知识并没有改变。
+
+### 我应该使用Hook，class，还是两者混用？
+
+鼓励你在写新组件的时候开始尝试Hook。请确保你的团队中的每个人都愿意使用它们并且熟知这份文档的内容。
+
+### Hook能覆盖class的所有使用场景？
+
+我们给Hook设定的目标是尽早覆盖class的所有使用场景。目前暂时没有对应不常用的getSnapshotBeforeUpdate，getDerivedStateFromError和componentDidCatch生命周期的Hook等价写法，但我们计划尽早把它们加进来。
+
+### Hook会代替render props和高阶组件吗？
+
+通常，render props和高阶组件只渲染一个子节点。我们认为让Hook来服务这个使用场景更加简单。这两种模式仍有用武之地。
+
+### Hook对于Redux connect()和React Router等流行的API来说，意味着什么？
+
+你可以继续使用之前使用的API，它们仍然会继续有效。
+
+React Redux从V7.1.0开始支持Hook API并暴露useDispatch和useSelector等hook。
+
+React Router从V5.1开始支持hook。
+
+### Hook能和静态类型一起用吗？
+
+Hook在设计阶段就考虑了静态类型的问题，因为它们是函数，最新版本的Flow和TypeScript React定义已经包含了React Hook的支持。
+
+### 如何测试使用了Hook的组件？
+
+在React看来，一个使用了Hook的组件只不过是一个常规的组件。如果你的测试方案不依赖于React的内部实现，测试带Hook的组件应该和你通常测试组件的方式没什么差别。
+
+### lint规则具体强制了哪些内容？
+
+它假设任何以 「use」 开头并紧跟着一个大写字母的函数就是一个 Hook。
+
+强制了以下内容：
+
+1、对 Hook 的调用要么在一个大驼峰法命名的函数（视作一个组件）内部，要么在另一个 useSomething 函数（视作一个自定义 Hook）中。
+
+2、Hook 在每次渲染时都按照相同的顺序被调用。
+
+## 从Class迁移到Hook
+
+### 生命周期方法要如何对应到Hook？
+
+1、constructor，函数不需要构造函数。可以通过调用useState来初始化state。
+
+2、getDerivedStateFromProps，改为在渲染时安排一次更新。
+
+3、shouldComponentUpdate，React.memo。
+
+4、render，这就是函数组件体本身。
+
+5、componentDidMount，componentDidUpdate，componentWillUnmount统一使用useEffect Hook。
+
+6、getSnapshotBeforeUpdate，componentDidCatch以及getDerivedStateFromError，目前没有这些方法对应的Hook等价写法。
 

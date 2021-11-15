@@ -32,3 +32,7 @@ https://www.bagevent.com/event/7481268?bag_track=juejincebianlan
 ## 架构设计——架构知识体系
 
 https://zhuanlan.zhihu.com/p/42830778
+
+## catalog-of-wealth-creation-mechanisms
+
+https://blog.rongarret.info/2009/10/catalog-of-wealth-creation-mechanisms.html
