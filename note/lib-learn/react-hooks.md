@@ -663,3 +663,170 @@ Hook在设计阶段就考虑了静态类型的问题，因为它们是函数，�
 
 6、getSnapshotBeforeUpdate，componentDidCatch以及getDerivedStateFromError，目前没有这些方法对应的Hook等价写法。
 
+### 有类似实例变量的东西吗？
+
+有。useRef Hook不仅可以用于DOM refs。ref对象的current属性可变且可以容纳任意值的通用容器。
+
+```js
+function handleCancelClick() {
+    clearInterval(intervalRef.current);
+}
+```
+如果我们想要在一个事件处理器中清除这个循环定时器的话这就很有用。
+
+### 应该使用单个还是多个state变量
+
+为了复用和逻辑清晰，推荐把state切分成多个state变量，每个变量包含的不同值会在同时发生变化。
+
+把所有state都放在同一个useState调用中，或者每一个字段都对应一个useState调用，这两种方式都能跑通。你需要在两个极端之间找到平衡。
+
+可以把相关的state组合到独立的state变量，组件就会更加可读，如果state的逻辑开始变得复杂，推荐用reducer来管理它，或自定义hook。
+
+### 可以只在更新时运行effect吗？
+
+比较罕见的场景，如果你需要的话，可以使用一个可变的ref手动存储布尔值来表示是否是首次渲染还是后续渲染。然后后effect中检查这个标识。
+
+### 如何获取上一轮的props或state？
+
+可以通过ref来手动实现。
+
+```js
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  const prevCount = usePrevious(count);
+  return <h1>Now: {count}, before: {prevCount}</h1>;
+}
+
+//usePrevious
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+```
+
+### 为什么我会在我的函数中看到陈旧的props和state？
+
+组件内部的任何函数，包括事件处理器函数和effect，都是从它被创建的那次渲染中被看到的。
+
+```js
+function Example() {
+  const [count, setCount] = useState(0);
+
+  function handleAlertClick() {
+    setTimeout(() => {
+      alert('You clicked on: ' + count);
+    }, 3000);
+  }
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+      <button onClick={handleAlertClick}>
+        Show alert
+      </button>
+    </div>
+  );
+}
+```
+
+如果你要刻意地想要从某些异步回调中读取最新的state，可以用一个ref来保存它，修改它，并从中读取。
+
+另外一个原因是，你使用了依赖数组优化但没有正确地指定所有的依赖。
+
+### 有类似forceUpdate的东西吗？
+
+如果前后两次的值相同，useState和useReducer Hook都会放弃更新。通常，你不应该在React中这样做。
+
+但是可以用一个增长的计数器来在state没变的时候依然强制一次重新渲染。
+
+```js
+ const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+
+    function handleClick() {
+        forceUpdate();
+    }
+```
+
+### 可以引用一个函数组件吗？
+
+不推荐你这么做，但你可以通过useImperativeHandle Hook暴露一些命令式的方法给父组件。
+
+### 我该如何测量DOM节点？
+
+获取DOM节点的位置或是大小的基本方式是使用callback ref。每当ref被附加到一个另一个节点，React就会调用callback。
+
+```js
+function MeasureExample() {
+  const [height, setHeight] = useState(0);
+
+  const measuredRef = useCallback(node => {
+    if (node !== null) {
+      setHeight(node.getBoundingClientRect().height);
+    }
+  }, []);
+
+  return (
+    <>
+      <h1 ref={measuredRef}>Hello, world</h1>
+      <h2>The above header is {Math.round(height)}px tall</h2>
+    </>
+  );
+}
+```
+
+没有使用useRef，因为当ref是一个对象时，它并不会把当前ref的值的变化通知到我们。
+
+
+## 性能优化
+
+### 我可以在更新时跳过effect吗？
+
+可以的。后面的依赖列表数组可以指定更新时机。
+
+### 在依赖列表中省略函数是否安全？
+
+一般来说，是不安全的。
+
+```js
+function Example({ someProp }) {
+  function doSomething() {
+    console.log(someProp);
+  }
+
+  useEffect(() => {
+    doSomething();
+  }, []); // 🔴 这样不安全（它调用的 `doSomething` 函数使用了 `someProp`）
+}
+```
+
+要记住effect外部的函数使用了哪些props和state很难。这也是为什么通常你会想要在effect内部去声明它所需要的函数。
+
+```js
+function Example({ someProp }) {
+  useEffect(() => {
+    function doSomething() {
+      console.log(someProp);
+    }
+
+    doSomething();
+  }, [someProp]); // ✅ 安全（我们的 effect 仅用到了 `someProp`）
+}
+```
+
+只有当函数以及它所调用的函数不引用props、state以及由它们衍生而来的值时，你才能放心地把它们从依赖列表中省略。
+
+如果出于某些原因你无法把一个函数移动到effect内部，还有其它方法：
+
+1、可以尝试把那个函数移动到你的组件之外。这样这个函数肯定不会依赖于任何props或state。
+
+2、如果你所调用的方法是一个纯计算，并且可以在渲染时调用，你可以转而在effect之外调用它，并让effect依赖于它的返回值。
+
+3、万不得已的情况，你可以把函数加入effect的依赖但把它的定义包裹进useCallback Hook，这样确保它不会随渲染而改变，除非它的自身的依赖发生了改变。
+
