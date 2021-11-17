@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>React-Hooks学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1637078148333">
+  <link rel="stylesheet" href="/note/note.css?ts=1637164600039">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -541,7 +541,7 @@
 <p>把所有state都放在同一个useState调用中，或者每一个字段都对应一个useState调用，这两种方式都能跑通。你需要在两个极端之间找到平衡。</p>
 <p>可以把相关的state组合到独立的state变量，组件就会更加可读，如果state的逻辑开始变得复杂，推荐用reducer来管理它，或自定义hook。</p>
 <h3 id="-effect-">可以只在更新时运行effect吗？</h3>
-<p>比较罕见的场景，如果你需要的话，可以使用一个可变的ref手动存储布尔值来表示是否是首次渲染还是后续渲染。然后后effect中检查这个标识。</p>
+<p>比较罕见的场景，如果你需要的话，可以使用一个可变的ref手动存储布尔值来表示是否是首次渲染还是后续渲染。然后在effect中检查这个标识。</p>
 <h3 id="-props-state-">如何获取上一轮的props或state？</h3>
 <p>可以通过ref来手动实现。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">Counter</span><span class="p">()</span> <span class="p">{</span>
@@ -659,5 +659,112 @@
 <p>1、可以尝试把那个函数移动到你的组件之外。这样这个函数肯定不会依赖于任何props或state。</p>
 <p>2、如果你所调用的方法是一个纯计算，并且可以在渲染时调用，你可以转而在effect之外调用它，并让effect依赖于它的返回值。</p>
 <p>3、万不得已的情况，你可以把函数加入effect的依赖但把它的定义包裹进useCallback Hook，这样确保它不会随渲染而改变，除非它的自身的依赖发生了改变。</p>
+<h3 id="-effect-">如果我的effect的依赖频繁变动，我该怎么办？</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">Counter</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+  <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">setCount</span><span class="p">(</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span> <span class="c1">// 这个 effect 依赖于 `count` state</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">clearInterval</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+  <span class="p">},</span> <span class="p">[]);</span> <span class="c1">// 🔴 Bug: `count` 没有被指定为依赖</span>
+
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">count</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/h1&gt;;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>要解决这个问题，可以使用setState的函数式更新形式，它允许我们指定state该如何改变而不用引用当前state。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">App</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="o">&lt;</span><span class="nx">number</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">setCount</span><span class="p">(</span><span class="nx">count</span> <span class="o">=&gt;</span> <span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">},</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">clearInterval</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+    <span class="p">},</span> <span class="p">[]);</span>
+
+    <span class="k">return</span> <span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">count</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>复杂的场景，尝试用useReducer Hook把State更新逻辑移到effect之外。</p>
+<p>useReducer的dispatch的身份永远是稳定的，即使reducer函数是定义在组件内部并且依赖props。</p>
+<p>万不得已的情况下，可以使用一个ref来保存一个可变的变量。然后你就可以对它进行读写了。</p>
+<h3 id="-shouldcomponentupdate-">我该如何实现shouldComponentUpdate？</h3>
+<p>可以用React.momo包裹一个组件来对它的props进行浅比较。React.momo等效于PureComponent。</p>
+<p>React.momo只比较props，不比较state，因为没有单一的state对象可供比较，但你可以让子节点变为纯组件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="kr">const</span> <span class="nx">DivEl</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">memo</span><span class="p">((</span><span class="nx">props</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">(</span>
+          <span class="o">&lt;&gt;</span>
+              <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span><span class="nx">I</span> <span class="nx">am</span> <span class="nx">memoed</span><span class="p">....</span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+          <span class="o">&lt;</span><span class="err">/&gt;</span>
+      <span class="p">)</span>
+  <span class="p">})</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+      <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="nx">DivEl</span><span class="o">&gt;&lt;</span><span class="err">/DivEl&gt;</span>
+      <span class="o">&lt;</span><span class="err">/div&gt;</span>
+  <span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">如何记忆计算结果？</h3>
+<p>useMemo Hook允许你通过记住上一次计算结果的方式在多次渲染之间缓存计算结果。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">memorizedSum</span> <span class="o">=</span> <span class="nx">useMemo</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">count</span> <span class="o">+</span> <span class="nx">count2</span> <span class="p">},</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">count2</span><span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<p>传给useMemo的函数是在渲染期间运行的。你可以把useMemo作为一种性能优化的手段，但不要把它当做一种语义上的保证。</p>
+<p>useMomo也允许你跳过一次子节点的昂贵的重新渲染。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">child1</span> <span class="o">=</span> <span class="nx">useMemo</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="o">&lt;</span><span class="nx">Child1</span> <span class="nx">a</span><span class="o">=</span><span class="p">{</span><span class="nx">a</span><span class="p">}</span> <span class="o">/&gt;</span><span class="p">,[</span><span class="nx">a</span><span class="p">]);</span>
+<span class="kr">const</span> <span class="nx">child2</span> <span class="o">=</span> <span class="nx">useMemo</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="o">&lt;</span><span class="nx">Child2</span> <span class="nx">b</span><span class="o">=</span><span class="p">{</span><span class="nx">b</span><span class="p">}</span> <span class="o">/&gt;</span><span class="p">,</span> <span class="p">[</span><span class="nx">b</span><span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">如何惰性创建昂贵的对象？</h3>
+<p>如果依赖数组的值相同，useMemo允许你记住一次昂贵的计算。但有时候需要确保一个对象仅被创建一次。</p>
+<p>第一个场景的使用场景是当创建初始state很昂贵时。为了避免重新创建被忽略的初始state，我们可以传入一个函数给useState。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">rows</span><span class="p">,</span> <span class="nx">setRows</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(()</span><span class="o">=&gt;</span><span class="nx">createRows</span><span class="p">(</span><span class="nx">props</span><span class="p">.</span><span class="nx">count</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<p>你或许会偶尔想要避免重新创建useRef的初始值。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">ref</span> <span class="o">=</span> <span class="nx">useRef</span><span class="p">(</span><span class="k">new</span> <span class="nx">IntersectionObserver</span><span class="p">(</span><span class="nx">onIntersect</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<p>useRef不会像useState那样接受一个特殊的函数重载，你可以编写你自己的函数来创建并将其设为惰性的。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">ref</span> <span class="o">=</span> <span class="nx">useRef</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+
+<span class="kd">function</span> <span class="nx">getObserver</span><span class="p">()</span> <span class="p">{</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">ref</span><span class="p">.</span><span class="nx">current</span> <span class="o">===</span> <span class="kc">null</span><span class="p">){</span>
+     <span class="nx">ref</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">IntersectionObserver</span><span class="p">(</span><span class="nx">onIntersect</span><span class="p">);</span>
+   <span class="p">}</span>
+
+   <span class="k">return</span> <span class="nx">ref</span><span class="p">.</span><span class="nx">current</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="hook-">Hook会因为在渲染时创建函数而变慢吗？</h3>
+<p>不会。现代浏览器中，闭包和类的原始性能只在极端场景下才会有明显差异。</p>
+<p>Hook在某些方面更加高效：</p>
+<p>1、Hook避免了class需要的额外开支，像是创建类实例和构造函数中绑定事件处理器的成本。</p>
+<p>2、符合语言习惯的diam在使用Hook时不需要很深的组件树嵌套。组件树小了，React的工作量也随之减少。</p>
+<p>传统上认为，在React中使用内联函数对性能的影响，与每次渲染都传递新的回调会破坏子组件的shouldComponetUpdate优化有关。</p>
+<p>Hook从三个方面解决了这个问题：</p>
+<p>1、useCallback Hook允许你在重新渲染之间保持对相同的回调引用以使得shouldComponentUpdate继续工作。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">memoizedCallback</span> <span class="o">=</span> <span class="nx">useCallback</span><span class="p">(()</span><span class="o">=</span><span class="p">{</span> <span class="nx">doSomething</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span><span class="nx">b</span><span class="p">)</span> <span class="p">},[</span><span class="nx">a</span><span class="p">,</span><span class="nx">b</span><span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<p>2、useMemo Hook使得控制具体子节点何时更新变得更容易，减少了对纯组件的需要。</p>
+<p>3、最后，useReducer Hook减少了对深层传递回调的依赖。</p>
+<p>### </p>
 </body>
 </html>
