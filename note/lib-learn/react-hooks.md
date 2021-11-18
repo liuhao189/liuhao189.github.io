@@ -964,4 +964,79 @@ const memoizedCallback = useCallback(()={ doSomething(a,b) },[a,b]);
 
 3、最后，useReducer Hook减少了对深层传递回调的依赖。
 
-### 
+### 如何避免向下传递回调？
+
+大部分人都不喜欢在组件树的每一层手动传递回调。尽管这种写法更明确，但这给人感觉像错综复杂的管道工程一样麻烦。
+
+在大型的组件树中，我们推荐的替代方案是通过context用useReducer往下传一个disatch函数。
+
+这样在组件树的任意子节点都可以使用dispatch函数向上传递actions到跟组件。
+
+从维护的角度来看这样更加方便，同时也避免了回调的问题。像这样向下传递dispatch是处理深度更新的推荐模式。
+
+### 如何从useCallbac读取一个经常变化的值？
+
+某些罕见场景下，你可能会需要用useCallback记住一个回调。如果你想记住的函数是一个事件处理器并且在渲染期间没有被用到。可以把ref当做实例变量来用。
+
+```js
+const [text, updateText] = useState('');
+const textRef = useRef();
+
+useEffect(() => {
+  textRef.current = text; // 把它写入 ref
+});
+
+const handleSubmit = useCallback(() => {
+  const currentText = textRef.current; // 从 ref 读取它
+  alert(currentText);
+}, [textRef]); // 不要像 [text] 那样重新创建 handleSubmit
+
+return (
+  <>
+    <input value={text} onChange={e => updateText(e.target.value)} />
+    <ExpensiveTree onSubmit={handleSubmit} />
+  </>
+);
+```
+
+也可以把它抽取成自定义Hook。
+
+```js
+function Form() {
+  const [text, updateText] = useState('');
+  // 即便 `text` 变了也会被记住:
+  const handleSubmit = useEventCallback(() => {
+    alert(text);
+  }, [text]);
+
+  return (
+    <>
+      <input value={text} onChange={e => updateText(e.target.value)} />
+      <ExpensiveTree onSubmit={handleSubmit} />
+    </>
+  );
+}
+
+function useEventCallback(fn, dependencies) {
+  const ref = useRef(() => {
+    throw new Error('Cannot call an event handler while rendering.');
+  });
+
+  useEffect(() => {
+    ref.current = fn;
+  }, [fn, ...dependencies]);
+
+  return useCallback(() => {
+    const fn = ref.current;
+    return fn();
+  }, [ref]);
+}
+```
+
+## 底层原理
+
+### React是如何把对Hook的调用和组件联系起来的？
+
+React保持对当前渲染中的组件的追踪。因为Hook规范，我们得知Hook只会在React组件中被调用。
+
+每个组件都有一个记忆单元格列表，它们只不过是我们用来存储一些数据的JS对象。当你用useState调用一个Hook时，它会读取当前的单元格，然后把指针移动到下一个。

@@ -38,10 +38,12 @@ Redux的设计思想很简单：
 
 Store就是保存数据的地方，你可以把它看成一个容器。整个应用只能有一个Store。
 
-Redux提高createStore这个函数，用来生成Store。
+Redux提供createStore这个函数，用来生成Store。
 
 ```js
-import { createStore } from 'redux';
+import {
+    createStore
+} from 'redux';
 const store = createStore(fn);
 ```
 
@@ -50,9 +52,11 @@ const store = createStore(fn);
 Store对象包含所有数据，如果想得到某个时点的数据，就要对Store生成快照。这种时点的数据集合，就叫做State。
 
 ```js
-import { createStore } from 'redux';
+import {
+    createStore
+} from 'redux';
 const store = createStore(fn);
-const state = store.getState(); 
+const state = store.getState();
 ```
 
 Redux规定，一个State对应一个View，只要State相同，View就相同。
@@ -80,10 +84,10 @@ View要发送多少种消息，就会有多少种Action。可以定义一个函�
 const ADD_TODO = '添加 TODO';
 
 function addTodo(text) {
-  return {
-    type: ADD_TODO,
-    text
-  }
+    return {
+        type: ADD_TODO,
+        text
+    }
 }
 
 const action = addTodo('Learn Redux');
@@ -94,17 +98,18 @@ const action = addTodo('Learn Redux');
 Store.dispatch是View发出Action的唯一方法。
 
 ```js
-import { createStore } from 'redux';
+import {
+    createStore
+} from 'redux';
 const store = createStore(fn);
 
 store.dispatch({
-  type: 'ADD_TODO',
-  payload: 'Learn Redux'
+    type: 'ADD_TODO',
+    payload: 'Learn Redux'
 });
 ```
 
 接受一个Action对象作为参数，将它发送出去。
-
 
 ### Reducer
 
@@ -113,7 +118,7 @@ Store收到Action以后，必须给出一个新的State，这样View才会发生
 Reducer是一个函数，它接受Action和当前State作为参数，返回一个新的State。
 
 ```js
-const reducer = function (state, action) {
+const reducer = function(state, action) {
     // ...
     return new_state;
 }
@@ -122,17 +127,27 @@ const reducer = function (state, action) {
 实际应用中，Reducer函数不用像上面这样手动调用，store.dispatch方法会触发Reducer的自动执行。为此，Store需要知道Reducer函数，做法就是生成Store的时候，将Reducer传入createStore方法。
 
 ```js
-import { createStore } from 'redux';
+import {
+    createStore
+} from 'redux';
 const store = createStore(reducer);
 ```
 
 为什么叫Reducer呢？因为它可以作为数组reduce方法的参数。
 
 ```js
-const actions = [
-  { type: 'ADD', payload: 0 },
-  { type: 'ADD', payload: 1 },
-  { type: 'ADD', payload: 2 }
+const actions = [{
+        type: 'ADD',
+        payload: 0
+    },
+    {
+        type: 'ADD',
+        payload: 1
+    },
+    {
+        type: 'ADD',
+        payload: 2
+    }
 ];
 
 const total = actions.reduce(reducer, 0); // 3
@@ -155,14 +170,19 @@ Reducer函数最重要的特征，它是一个纯函数，也就是说，只要�
 ```js
 // State 是一个对象
 function reducer(state, action) {
-  return Object.assign({}, state, { thingToChange });
-  // 或者
-  return { ...state, ...newState };
+    return Object.assign({}, state, {
+        thingToChange
+    });
+    // 或者
+    return {
+        ...state,
+        ...newState
+    };
 }
 
 // State 是一个数组
 function reducer(state, action) {
-  return [...state, newItem];
+    return [...state, newItem];
 }
 ```
 
@@ -171,7 +191,9 @@ function reducer(state, action) {
 Store允许使用store.subscribe方法设置监听函数，一旦State发生变化，就自动执行这个函数。
 
 ```js
-import { createStore } from 'redux';
+import {
+    createStore
+} from 'redux';
 const store = createStore(reducer);
 
 store.subscribe(listener);
@@ -179,11 +201,11 @@ store.subscribe(listener);
 
 只要把View的更新函数放入listener，就会实现View的自动渲染。
 
-store.subscribe方法返回一个函数，调用这个函数可以接触监听。
+store.subscribe方法返回一个函数，调用这个函数可以解除监听。
 
 ```js
 let unsubscribe = store.subscribe(() =>
-  console.log(store.getState())
+    console.log(store.getState())
 );
 
 unsubscribe();
@@ -200,8 +222,14 @@ store.subscribe();
 ```
 
 ```js
-import { createStore } from 'redux';
-let { subscribe, dispatch, getState  } = createStore(reducer,initState);
+import {
+    createStore
+} from 'redux';
+let {
+    subscribe,
+    dispatch,
+    getState
+} = createStore(reducer, initState);
 ```
 
 createStore还提供了第二个参数，表示整个应用的状态初始值。如果提供了这个参数，它会覆盖Reducer函数的默认初始值。
@@ -209,26 +237,30 @@ createStore还提供了第二个参数，表示整个应用的状态初始值。
 ```js
 const createStore = (reducer) => {
 
-  let state;
-  let listeners = [];
+    let state;
+    let listeners = [];
 
-  const getState = ()=> state;
+    const getState = () => state;
 
-  const dispatch = (action) => {
-    state = reducer(state, action);
-    listeners.forEach(listener => listener());
-  }
-
-  const subscribe = (listener) => {
-    listeners.push(listener);
-    return () => {
-      listeners = listeners.filter(l=> l!== listener);
+    const dispatch = (action) => {
+        state = reducer(state, action);
+        listeners.forEach(listener => listener());
     }
-  }
 
-  dispatch({});
-  
-  return { getState, dispatch, subscribe };
+    const subscribe = (listener) => {
+        listeners.push(listener);
+        return () => {
+            listeners = listeners.filter(l => l !== listener);
+        }
+    }
+
+    dispatch({});
+
+    return {
+        getState,
+        dispatch,
+        subscribe
+    };
 }
 ```
 
@@ -238,22 +270,26 @@ Reducer函数负责生成整个state。由于整个应用只有一个State对象
 
 ```js
 const chatReducer = (state = defaultState, action = {}) => {
-  const { type, payload } = action;
-  switch (type) {
-    case ADD_CHAT:
-      return Object.assign({}, state, {
-        chatLog: state.chatLog.concat(payload)
-      });
-    case CHANGE_STATUS:
-      return Object.assign({}, state, {
-        statusMessage: payload
-      });
-    case CHANGE_USERNAME:
-      return Object.assign({}, state, {
-        userName: payload
-      });
-    default: return state;
-  }
+    const {
+        type,
+        payload
+    } = action;
+    switch (type) {
+        case ADD_CHAT:
+            return Object.assign({}, state, {
+                chatLog: state.chatLog.concat(payload)
+            });
+        case CHANGE_STATUS:
+            return Object.assign({}, state, {
+                statusMessage: payload
+            });
+        case CHANGE_USERNAME:
+            return Object.assign({}, state, {
+                userName: payload
+            });
+        default:
+            return state;
+    }
 };
 ```
 
@@ -261,23 +297,25 @@ const chatReducer = (state = defaultState, action = {}) => {
 
 ```js
 const chatReducer = (state = defaultState, action = {}) => {
-  return {
-    chatLog: chatLog(state.chatLog, action),
-    statusMessage: statusMessage(state.statusMessage, action),
-    userName: userName(state.userName, action)
-  }
+    return {
+        chatLog: chatLog(state.chatLog, action),
+        statusMessage: statusMessage(state.statusMessage, action),
+        userName: userName(state.userName, action)
+    }
 };
 ```
 
 这样拆分，Reducer就易读易写多了。而且和组件结构相吻合。Redux提供了一个combineReducers方法，用于合并各个Reducer函数。
 
 ```js
-import { combineReducers } from 'redux';
+import {
+    combineReducers
+} from 'redux';
 
 const chatReducer = combineReducers({
-  chatLog,
-  statusMessage,
-  userName
+    chatLog,
+    statusMessage,
+    userName
 })
 
 export default todoApp;
@@ -287,18 +325,18 @@ export default todoApp;
 
 ```js
 const reducer = combineReducers({
-  a: doSomethingWithA,
-  b: processB,
-  c: c
+    a: doSomethingWithA,
+    b: processB,
+    c: c
 })
 
 // 等同于
 function reducer(state = {}, action) {
-  return {
-    a: doSomethingWithA(state.a, action),
-    b: processB(state.b, action),
-    c: c(state.c, action)
-  }
+    return {
+        a: doSomethingWithA(state.a, action),
+        b: processB(state.b, action),
+        c: c(state.c, action)
+    }
 }
 ```
 
@@ -308,15 +346,14 @@ combineReducers的简单实现。
 
 ```js
 const combineReducers = reducers => {
-  return (state = {}, action) => {
-    return Object.keys(reducers).reduce(
-      (nextState, key) => {
-        nextState[key] = reducers[key](state[key], action);
-        return nextState;
-      },
-      {} 
-    );
-  };
+    return (state = {}, action) => {
+        return Object.keys(reducers).reduce(
+            (nextState, key) => {
+                nextState[key] = reducers[key](state[key], action);
+                return nextState;
+            }, {}
+        );
+    };
 };
 ```
 
@@ -329,6 +366,78 @@ const combineReducers = reducers => {
 State一旦有变化，Store就会调用监听函数。listener通过store.getState()得到当前状态。如果使用的是React，这时可以触发重新渲染View。
 
 ## 中间件和异步操作
+
+Redux的基本做法：用户发出action，reducer函数算出新的state，view重新渲染。
+
+怎样才能Reducer在异步操作结束后自动执行呢？这就要用到新的工具：中间件。
+
+### 中间件的概念
+
+为了理解中间件，让我们站在框架作者的角度思考问题，如果要添加功能，你会在哪个环节添加？
+
+1、reducer纯函数，只承担计算State的功能，不合适承担其它功能，也承担不了。
+
+2、View，与state一一对应，可以看做state的视图层，也不适合承担其它功能。
+
+3、Action，存放数据的对象，即消息的载体，只能被别人操作，自己不能进行任何操作。
+
+想来想去，只有发送Action的这个步骤，store.dispatch方法，可以添加功能。
+
+```js
+let next = store.dispatch
+store.dispatch = funciton dispatchAndLog(action) {
+    console.log(`dispatching`, aciton);
+    next(action);
+    console.log(`next state`, store.getState());
+}
+```
+
+中间件是一个函数，对store.disatch方法进行改造。在发出action和执行reducer这两步之间，添加其它功能。
+
+### 中间件的用法
+
+常用的中间件都有现成的，只要引用别人写好的模块即可。
+
+```js
+import { applyMiddleware, createStore } from 'redux';
+import createLogger from 'redux-logger';
+const logger = createLogger();
+
+const store = createStore(
+  reducer,
+  applyMiddleware(logger)
+);
+```
+
+redux-logger提供一个生成器createLogger，可以生成中间件logger。然后，将它放在applyMiddleware方法之中，传入createStore方法，就完成了store.dispatch的功能增强。
+
+中间件的次序有讲究，有的中间件有次序要求，使用前要查一下文档。
+
+### applyMiddlewares
+
+它是Redux的原生方法，作用是将所有中间件组合成一个数组，一次执行。
+
+```js
+export default function applyMiddleware(...middlewares) {
+  return (createStore) => (reducer, preloadedState, enhancer) => {
+    var store = createStore(reducer, preloadedState, enhancer);
+    var dispatch = store.dispatch;
+    var chain = [];
+
+    var middlewareAPI = {
+      getState: store.getState,
+      dispatch: (action) => dispatch(action)
+    };
+    chain = middlewares.map(middleware => middleware(middlewareAPI));
+    dispatch = compose(...chain)(store.dispatch);
+
+    return {...store, dispatch}
+  }
+}
+```
+
+所有中间件被放入一个数组chain，然后嵌套执行，最后执行store.dispatch。中间件可以拿到getState和dispatch这两个方法。
+
 
 
 

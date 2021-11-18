@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>React-Hooks学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1637164600039">
+  <link rel="stylesheet" href="/note/note.css?ts=1637251739901">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -765,6 +765,70 @@
 </code></pre>
 <p>2、useMemo Hook使得控制具体子节点何时更新变得更容易，减少了对纯组件的需要。</p>
 <p>3、最后，useReducer Hook减少了对深层传递回调的依赖。</p>
-<p>### </p>
+<h3 id="-">如何避免向下传递回调？</h3>
+<p>大部分人都不喜欢在组件树的每一层手动传递回调。尽管这种写法更明确，但这给人感觉像错综复杂的管道工程一样麻烦。</p>
+<p>在大型的组件树中，我们推荐的替代方案是通过context用useReducer往下传一个disatch函数。</p>
+<p>这样在组件树的任意子节点都可以使用dispatch函数向上传递actions到跟组件。</p>
+<p>从维护的角度来看这样更加方便，同时也避免了回调的问题。像这样向下传递dispatch是处理深度更新的推荐模式。</p>
+<h3 id="-usecallbac-">如何从useCallbac读取一个经常变化的值？</h3>
+<p>某些罕见场景下，你可能会需要用useCallback记住一个回调。如果你想记住的函数是一个事件处理器并且在渲染期间没有被用到。可以把ref当做实例变量来用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">text</span><span class="p">,</span> <span class="nx">updateText</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">textRef</span> <span class="o">=</span> <span class="nx">useRef</span><span class="p">();</span>
+
+<span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">textRef</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="nx">text</span><span class="p">;</span> <span class="c1">// 把它写入 ref</span>
+<span class="p">});</span>
+
+<span class="kr">const</span> <span class="nx">handleSubmit</span> <span class="o">=</span> <span class="nx">useCallback</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">currentText</span> <span class="o">=</span> <span class="nx">textRef</span><span class="p">.</span><span class="nx">current</span><span class="p">;</span> <span class="c1">// 从 ref 读取它</span>
+  <span class="nx">alert</span><span class="p">(</span><span class="nx">currentText</span><span class="p">);</span>
+<span class="p">},</span> <span class="p">[</span><span class="nx">textRef</span><span class="p">]);</span> <span class="c1">// 不要像 [text] 那样重新创建 handleSubmit</span>
+
+<span class="k">return</span> <span class="p">(</span>
+  <span class="o">&lt;&gt;</span>
+    <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">text</span><span class="p">}</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">e</span> <span class="o">=&gt;</span> <span class="nx">updateText</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span><span class="p">)}</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="nx">ExpensiveTree</span> <span class="nx">onSubmit</span><span class="o">=</span><span class="p">{</span><span class="nx">handleSubmit</span><span class="p">}</span> <span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="err">/&gt;</span>
+<span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>也可以把它抽取成自定义Hook。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">Form</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">text</span><span class="p">,</span> <span class="nx">updateText</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+  <span class="c1">// 即便 `text` 变了也会被记住:</span>
+  <span class="kr">const</span> <span class="nx">handleSubmit</span> <span class="o">=</span> <span class="nx">useEventCallback</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">alert</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+  <span class="p">},</span> <span class="p">[</span><span class="nx">text</span><span class="p">]);</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;&gt;</span>
+      <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">text</span><span class="p">}</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">e</span> <span class="o">=&gt;</span> <span class="nx">updateText</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span><span class="p">)}</span> <span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="nx">ExpensiveTree</span> <span class="nx">onSubmit</span><span class="o">=</span><span class="p">{</span><span class="nx">handleSubmit</span><span class="p">}</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="err">/&gt;</span>
+  <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">useEventCallback</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">dependencies</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">ref</span> <span class="o">=</span> <span class="nx">useRef</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Cannot call an event handler while rendering.&#39;</span><span class="p">);</span>
+  <span class="p">});</span>
+
+  <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">ref</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="nx">fn</span><span class="p">;</span>
+  <span class="p">},</span> <span class="p">[</span><span class="nx">fn</span><span class="p">,</span> <span class="p">...</span><span class="nx">dependencies</span><span class="p">]);</span>
+
+  <span class="k">return</span> <span class="nx">useCallback</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">fn</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">.</span><span class="nx">current</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">fn</span><span class="p">();</span>
+  <span class="p">},</span> <span class="p">[</span><span class="nx">ref</span><span class="p">]);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">底层原理</h2>
+<h3 id="react-hook-">React是如何把对Hook的调用和组件联系起来的？</h3>
+<p>React保持对当前渲染中的组件的追踪。因为Hook规范，我们得知Hook只会在React组件中被调用。</p>
+<p>每个组件都有一个记忆单元格列表，它们只不过是我们用来存储一些数据的JS对象。当你用useState调用一个Hook时，它会读取当前的单元格，然后把指针移动到下一个。</p>
 </body>
 </html>
