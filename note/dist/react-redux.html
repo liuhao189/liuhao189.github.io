@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>React-Redux官方文档学习</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1637425036065">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="react-redux-">React-Redux官方文档学习</h1>
+<p>React-Redux是React官方库，它可以让React组件从Redux Store中读取数据，dispatch Action到store中去更新数据。</p>
+<p>为了使用React Hooks，React Redux7.1+需要React 16.8.3或以后的版本。</p>
+<h2 id="-">安装</h2>
+<h3 id="-create-react-app">使用Create React App</h3>
+<p>推荐的使用方式是使用Create React App来使用。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># redux + plain js template</span>
+npx create-react-app my-app --template redux
+<span class="c"># redux + ts template</span>
+npx create-react-app my-app --template redux-typescript
+</pre></div>
+
+</code></pre>
+<h3 id="-react-">已经存在的React项目</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># If you use npm</span>
+npm install react-redux
+<span class="c"># if you use yarn</span>
+yarn add react-redux
+</pre></div>
+
+</code></pre>
+<p>如果你使用TypeScript，React Redux的类型信息被维护在另外的地方，但是会作为react-redux的依赖包。所以当你安装react-redux时，会自动安装。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm install @types/react-redux
+</pre></div>
+
+</code></pre>
+<h2 id="api-">API概述</h2>
+</body>
+</html>
