@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Redux学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1637251739901">
+  <link rel="stylesheet" href="/note/note.css?ts=1637423636124">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -354,7 +354,7 @@
 <p>redux-logger提供一个生成器createLogger，可以生成中间件logger。然后，将它放在applyMiddleware方法之中，传入createStore方法，就完成了store.dispatch的功能增强。</p>
 <p>中间件的次序有讲究，有的中间件有次序要求，使用前要查一下文档。</p>
 <h3 id="applymiddlewares">applyMiddlewares</h3>
-<p>它是Redux的原生方法，作用是将所有中间件组合成一个数组，一次执行。</p>
+<p>它是Redux的原生方法，作用是将所有中间件组合成一个数组依次执行。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">applyMiddleware</span><span class="p">(...</span><span class="nx">middlewares</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="p">(</span><span class="nx">createStore</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nx">reducer</span><span class="p">,</span> <span class="nx">preloadedState</span><span class="p">,</span> <span class="nx">enhancer</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">reducer</span><span class="p">,</span> <span class="nx">preloadedState</span><span class="p">,</span> <span class="nx">enhancer</span><span class="p">);</span>
@@ -375,6 +375,272 @@
 
 </code></pre>
 <p>所有中间件被放入一个数组chain，然后嵌套执行，最后执行store.dispatch。中间件可以拿到getState和dispatch这两个方法。</p>
+<h3 id="-">异步操作的基本思路</h3>
+<p>理解了中间件以后，就可以处理异步操作了。</p>
+<p>同步操作只要发出一种action即可，异步操作的差别是它要发出三种Action。</p>
+<p>1、操作发起的Action。</p>
+<p>2、操作成功的Action。</p>
+<p>3、操作失败的Action。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;FETCH_POSTS&#39;</span> <span class="p">}</span>
+<span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;FETCH_POSTS&#39;</span><span class="p">,</span> <span class="nx">status</span><span class="o">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="nx">error</span><span class="o">:</span> <span class="s1">&#39;Oops&#39;</span> <span class="p">}</span>
+<span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;FETCH_POSTS&#39;</span><span class="p">,</span> <span class="nx">status</span><span class="o">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="nx">response</span><span class="o">:</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span> <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>除了Action种类不同，异步操作的State也要进行改造，反映不同的操作状态。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">state</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1">// ... </span>
+  <span class="nx">isFetching</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nx">didInvalidate</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nx">lastUpdated</span><span class="o">:</span> <span class="s1">&#39;xxxxxxx&#39;</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>异步的思路：</p>
+<p>1、操作开始时，送出一个Action，触发State更新为“正在操作”状态，View重新渲染。</p>
+<p>2、操作结束后，再送出一个Action，触发State更新为“操作结束”状态，View再一次重新渲染。</p>
+<h3 id="redux-thunk-">redux-thunk中间件</h3>
+<p>异步操作至少要送出两个Action，用户触发第一个Action，这个跟同步操作一样。如何才能在异步结束时，系统自动送出第二个Action呢？</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">AsyncApp</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+  <span class="nx">componentDidMount</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">dispatch</span><span class="p">,</span> <span class="nx">selectedPost</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span>
+    <span class="nx">dispatch</span><span class="p">(</span><span class="nx">fetchPosts</span><span class="p">(</span><span class="nx">selectedPost</span><span class="p">))</span>
+  <span class="p">}</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>这里的fetchPosts的代码就是Action Creator。下面就是fetchPosts的代码，关键之处就在里面。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">fetchPosts</span> <span class="o">=</span> <span class="nx">postTitle</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nx">dispatch</span><span class="p">,</span> <span class="nx">getState</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">dispatch</span><span class="p">(</span><span class="nx">requestPosts</span><span class="p">(</span><span class="nx">postTitle</span><span class="p">));</span>
+  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="err">`</span><span class="o">/</span><span class="nx">some</span><span class="o">/</span><span class="nx">API</span><span class="o">/</span><span class="nx">$</span><span class="p">{</span><span class="nx">postTitle</span><span class="p">}.</span><span class="nx">json</span><span class="err">`</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">json</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">(</span><span class="nx">receivePosts</span><span class="p">(</span><span class="nx">postTitle</span><span class="p">,</span> <span class="nx">json</span><span class="p">)));</span>
+  <span class="p">};</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>这个函数执行后，先发出一个Action(requestPosts)，然后进行异步操作。拿到结果后，然后再发出一个Action(receivePosts)。</p>
+<p>Action是由store.dispatch方法送出的，而store.dispatch方法正常情况下，参数只能是对象，不能是函数。这时，就需要使用中间件redux-thunk。</p>
+<p>异步操作的第一种解决方案就是：写出一个返回函数的Action Creator，然后使用redux-thunk中间件改造store.dispatch。</p>
+<h3 id="redux-promise-">redux-promise中间件</h3>
+<p>另外一种异步操作的解决方案，就是让Action Creator返回一个Promise对象。这时需要使用redux-promise中间件。</p>
+<p>这个中间件使得store.dispatch方法可以接受Promise对象作为参数。</p>
+<p>这时，Action Creattor有两种写法。</p>
+<p>1、返回值是一个Promise对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">fetchPosts</span> <span class="o">=</span> 
+  <span class="p">(</span><span class="nx">dispatch</span><span class="p">,</span> <span class="nx">postTitle</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">{</span>
+     <span class="nx">dispatch</span><span class="p">(</span><span class="nx">requestPosts</span><span class="p">(</span><span class="nx">postTitle</span><span class="p">));</span>
+     <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="err">`</span><span class="o">/</span><span class="nx">some</span><span class="o">/</span><span class="nx">API</span><span class="o">/</span><span class="nx">$</span><span class="p">{</span><span class="nx">postTitle</span><span class="p">}.</span><span class="nx">json</span><span class="err">`</span><span class="p">)</span>
+       <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+         <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;FETCH_POSTS&#39;</span><span class="p">,</span>
+         <span class="nx">payload</span><span class="o">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">()</span>
+       <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>2、Action对象的payload属性是一个Promise对象。这需要从redux-actions模块引入createAction方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createAction</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux-actions&#39;</span><span class="p">;</span>
+
+<span class="kr">class</span> <span class="nx">AsyncApp</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+  <span class="nx">componentDidMount</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">dispatch</span><span class="p">,</span> <span class="nx">selectedPost</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span>
+    <span class="c1">// 发出同步 Action</span>
+    <span class="nx">dispatch</span><span class="p">(</span><span class="nx">requestPosts</span><span class="p">(</span><span class="nx">selectedPost</span><span class="p">));</span>
+    <span class="c1">// 发出异步 Action</span>
+    <span class="nx">dispatch</span><span class="p">(</span><span class="nx">createAction</span><span class="p">(</span>
+      <span class="s1">&#39;FETCH_POSTS&#39;</span><span class="p">,</span> 
+      <span class="nx">fetch</span><span class="p">(</span><span class="err">`</span><span class="o">/</span><span class="nx">some</span><span class="o">/</span><span class="nx">API</span><span class="o">/</span><span class="nx">$</span><span class="p">{</span><span class="nx">postTitle</span><span class="p">}.</span><span class="nx">json</span><span class="err">`</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">())</span>
+    <span class="p">));</span>
+  <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>下面看一下redux-promise的源码，就会明白它内部是怎么操作的。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">promiseMiddleware</span><span class="p">({</span> <span class="nx">dispatch</span> <span class="p">})</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">next</span> <span class="o">=&gt;</span> <span class="nx">action</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isFSA</span><span class="p">(</span><span class="nx">action</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">isPromise</span><span class="p">(</span><span class="nx">action</span><span class="p">)</span>
+        <span class="o">?</span> <span class="nx">action</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">dispatch</span><span class="p">)</span>
+        <span class="o">:</span> <span class="nx">next</span><span class="p">(</span><span class="nx">action</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">isPromise</span><span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">)</span>
+      <span class="o">?</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span>
+          <span class="nx">result</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">({</span> <span class="p">...</span><span class="nx">action</span><span class="p">,</span> <span class="nx">payload</span><span class="o">:</span> <span class="nx">result</span> <span class="p">}),</span>
+          <span class="nx">error</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">dispatch</span><span class="p">({</span> <span class="p">...</span><span class="nx">action</span><span class="p">,</span> <span class="nx">payload</span><span class="o">:</span> <span class="nx">error</span><span class="p">,</span> <span class="nx">error</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span>
+            <span class="k">return</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">)</span>
+      <span class="o">:</span> <span class="nx">next</span><span class="p">(</span><span class="nx">action</span><span class="p">);</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="react-redux">React-Redux</h2>
+<p>Redux的作者封装了一个React专用的库，React-Redux。React-Redux虽然提供了便利，但是需要掌握额外的API，并且要遵循它的组件拆分规范。</p>
+<h3 id="ui-">UI组件</h3>
+<p>React-Redux将所有组件分成两大类：UI组件和容器组件。</p>
+<p>UI组件有以下几个特征：</p>
+<p>1、只负责UI的呈现，不带有任何业务逻辑。</p>
+<p>2、没有状态，不使用useState或this.state这个变量。</p>
+<p>3、所有的数据都由参数this.props提供。</p>
+<p>4、不使用任何Redux的API。</p>
+<p>因为不含有状态，UI组件又称为纯组件，它和纯函数一样，纯粹由参数决定它的值。</p>
+<h3 id="-">容器组件</h3>
+<p>容器组件的特征恰恰相反。</p>
+<p>1、负责管理数据和业务逻辑，不负责UI的呈现。</p>
+<p>2、带有内部状态。</p>
+<p>3、使用Redux的API。</p>
+<p>总之：UI组件负责UI的呈现，容器组件负责管理数据和逻辑。</p>
+<p>React-Redux规定，所有的UI组件都由用户提供，容器组件则由Redux-Redux自动生成。也就是说，用户负责视觉层，状态管理则是全部交给它。</p>
+<h3 id="connect-">connect()</h3>
+<p>React-Redux提供connect方法，用于从UI组件生成容器组件。connect的意思，就是将这两种组件连起来。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">connect</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react-redux&#39;</span>
+<span class="kr">const</span> <span class="nx">VisibleTodoList</span> <span class="o">=</span> <span class="nx">connect</span><span class="p">()(</span><span class="nx">TodoList</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>TodoList是UI组件，VisibleTodoList就是由React-Redux通过connect方法自动生成的容器组件。</p>
+<p>为了定义业务逻辑，需要给出下面两方面的信息：</p>
+<p>1、输入逻辑，外部的数据如何转换为UI组件的参数。</p>
+<p>2、输出逻辑，用户发出的动作如何变为Action对象，从UI组件传出去。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">connect</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react-redux&#39;</span>
+
+<span class="kr">const</span> <span class="nx">VisibleTodoList</span> <span class="o">=</span> <span class="nx">connect</span><span class="p">(</span>
+  <span class="nx">mapStateToProps</span><span class="p">,</span>
+  <span class="nx">mapDispatchToProps</span>
+<span class="p">)(</span><span class="nx">TodoList</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>mapStateToProps前者负责输入逻辑，即将state映射到UI组件的参数props。后者负责输出逻辑，即将用户对UI组件的操作映射成Action。</p>
+<h3 id="mapstatetoprops">mapStateToProps</h3>
+<p>mapStateToProps是一个函数，建立一个从外部的state对象到props对象的映射关系。执行后返回一个对象，里面的每一个键值对就是一个映射。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">mapStateToProps</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">todos</span><span class="o">:</span> <span class="nx">getVisibleTodos</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">,</span> <span class="nx">state</span><span class="p">.</span><span class="nx">visibilityFilter</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>mapStateToProps会订阅Store，每当state更新的时候，就会自动执行。</p>
+<p>mapStateToProps还可以使用第二个参数，代表容器组件的props对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// 容器组件的代码</span>
+<span class="c1">//    &lt;FilterLink filter=&quot;SHOW_ALL&quot;&gt;</span>
+<span class="c1">//      All</span>
+<span class="c1">//    &lt;/FilterLink&gt;</span>
+
+<span class="kr">const</span> <span class="nx">mapStateToProps</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">ownProps</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">active</span><span class="o">:</span> <span class="nx">ownProps</span><span class="p">.</span><span class="nx">filter</span> <span class="o">===</span> <span class="nx">state</span><span class="p">.</span><span class="nx">visibilityFilter</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>使用ownProps作为参数后，如果容器组件的参数发生变化，也会引发UI组件的重新渲染。</p>
+<p>如果省略mapStateToProps参数，UI组件就不会订阅Store，就是说Store的更新不会引起UI组件的更新。</p>
+<h3 id="mapdispatchtoprops">mapDispatchToProps</h3>
+<p>mapDispatchToProps是connect函数的第二个参数。用来建立UI组件的参数到store.dispatch方法的映射。也就是说，它定义了哪些用户的操作应该当作Action，传给Store，它可以是一个函数，也可以是一个对象。</p>
+<p>如果是一个函数，会得到dispatch和ownProps两个参数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">mapDispatchToProps</span> <span class="o">=</span> <span class="p">(</span>
+  <span class="nx">dispatch</span><span class="p">,</span>
+  <span class="nx">ownProps</span>
+<span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">onClick</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">dispatch</span><span class="p">({</span>
+        <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;SET_VISIBILITY_FILTER&#39;</span><span class="p">,</span>
+        <span class="nx">filter</span><span class="o">:</span> <span class="nx">ownProps</span><span class="p">.</span><span class="nx">filter</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>该对象的每个键值对都是一个映射，定义了UI组件的参数怎样发出Action。如果mapDispatchToProps是一个对象，它的每个键也是对应UI组件的同名参数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">mapDispatchToProps</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">onClick</span><span class="o">:</span> <span class="p">(</span><span class="nx">filter</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;SET_VISIBILITY_FILTER&#39;</span><span class="p">,</span>
+    <span class="nx">filter</span><span class="o">:</span> <span class="nx">filter</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>键值应该是一个函数，会被当作Action Creator，返回的Action会有Redux自动发出。</p>
+<h3 id="provide-">Provide组件</h3>
+<p>connect方法生成容器组件以后，需要让容器组件拿到state对象，才能生成UI组件的参数。</p>
+<p>一种解决方案是将state对象作为参数，传入容器组件。但这样很麻烦，尤其是容器组件可能在很深的层级。</p>
+<p>React-Redux提供Provider组件，可以让容器组件拿到state。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">Provider</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react-redux&#39;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span>
+<span class="kr">import</span> <span class="nx">todoApp</span> <span class="nx">from</span> <span class="s1">&#39;./reducers&#39;</span>
+<span class="kr">import</span> <span class="nx">App</span> <span class="nx">from</span> <span class="s1">&#39;./components/App&#39;</span>
+
+<span class="kd">let</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">todoApp</span><span class="p">);</span>
+
+<span class="nx">render</span><span class="p">(</span>
+  <span class="o">&lt;</span><span class="nx">Provider</span> <span class="nx">store</span><span class="o">=</span><span class="p">{</span><span class="nx">store</span><span class="p">}</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="nx">App</span> <span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="err">/Provider&gt;,</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>Provider在根组件外面包了一层，这样一来，App的所有子组件就默认都可以拿到state了。</p>
+<p>它的原理是React的context属性。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">Provider</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+  <span class="nx">getChildContext</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="nx">store</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">store</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+  <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">children</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">Provider</span><span class="p">.</span><span class="nx">childContextTypes</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">store</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">PropTypes</span><span class="p">.</span><span class="nx">object</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">VisibleTodoList</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+  <span class="nx">componentDidMount</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">store</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">unsubscribe</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(()</span> <span class="o">=&gt;</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">forceUpdate</span><span class="p">()</span>
+    <span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">props</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">store</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="nx">state</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">getState</span><span class="p">();</span>
+    <span class="c1">// ...</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">VisibleTodoList</span><span class="p">.</span><span class="nx">contextTypes</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">store</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">PropTypes</span><span class="p">.</span><span class="nx">object</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>React-Redux自动生成的容器组件的代码，就类似上面这样，从而拿到store。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://www.ruanyifeng.com/blog/2016/09/redux_tutorial_part_one_basic_usages.html">https://www.ruanyifeng.com/blog/2016/09/redux_tutorial_part_one_basic_usages.html</a></p>
 </body>
