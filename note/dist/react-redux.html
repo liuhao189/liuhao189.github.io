@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>React-Redux官方文档学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1637511460748">
+  <link rel="stylesheet" href="/note/note.css?ts=1637548026622">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -114,34 +114,14 @@ yarn add react-redux
 </code></pre>
 <h3 id="-slice-store-">添加Slice到Store中</h3>
 <p>通过在reducers参数里定义一个属性，我们可以指定store来使用这个slice reducer来处理该属性下的State的更新。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createSlice</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">configureStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">counterReducer</span> <span class="nx">from</span> <span class="s1">&#39;./features/counters/counter-slice&#39;</span><span class="p">;</span>
 
-<span class="kr">export</span> <span class="kr">const</span> <span class="nx">counterSlice</span> <span class="o">=</span> <span class="nx">createSlice</span><span class="p">(</span>
-    <span class="p">{</span>
-        <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;counter&#39;</span><span class="p">,</span>
-        <span class="nx">initialState</span><span class="o">:</span> <span class="p">{</span>
-            <span class="nx">value</span><span class="o">:</span> <span class="mi">0</span>
-        <span class="p">},</span>
-        <span class="nx">reducers</span><span class="o">:</span> <span class="p">{</span>
-            <span class="nx">increment</span><span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-                <span class="c1">// Redux Toolkit允许我们直接变更state的值。这并不会真的改变state的值。</span>
-                <span class="c1">// 因为它使用Immer的类库，该类库会检查变更，并生成一个新的State</span>
-                <span class="nx">state</span><span class="p">.</span><span class="nx">value</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
-            <span class="p">},</span>
-            <span class="nx">decrement</span><span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-                <span class="nx">state</span><span class="p">.</span><span class="nx">value</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
-            <span class="p">},</span>
-            <span class="nx">incrementByMount</span><span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-                <span class="nx">state</span><span class="p">.</span><span class="nx">value</span> <span class="o">+=</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">configureStore</span><span class="p">({</span>
+    <span class="nx">reducer</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">counter</span><span class="o">:</span> <span class="nx">counterReducer</span><span class="p">,</span>
     <span class="p">}</span>
-<span class="p">);</span>
-
-<span class="c1">//Action creator会根据reducers的内容自动生成</span>
-<span class="kr">export</span> <span class="kr">const</span> <span class="p">{</span> <span class="nx">increment</span><span class="p">,</span> <span class="nx">decrement</span><span class="p">,</span> <span class="nx">incrementByMount</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">counterSlice</span><span class="p">.</span><span class="nx">actions</span><span class="p">;</span>
-
-<span class="kr">export</span> <span class="k">default</span> <span class="nx">counterSlice</span><span class="p">.</span><span class="nx">reducer</span><span class="p">;</span>
+<span class="p">})</span>
 </pre></div>
 
 </code></pre>

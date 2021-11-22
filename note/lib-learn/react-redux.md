@@ -128,34 +128,14 @@ export default counterSlice.reducer;
 通过在reducers参数里定义一个属性，我们可以指定store来使用这个slice reducer来处理该属性下的State的更新。
 
 ```js
-import { createSlice } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
+import counterReducer from './features/counters/counter-slice';
 
-export const counterSlice = createSlice(
-    {
-        name: 'counter',
-        initialState: {
-            value: 0
-        },
-        reducers: {
-            increment: (state) => {
-                // Redux Toolkit允许我们直接变更state的值。这并不会真的改变state的值。
-                // 因为它使用Immer的类库，该类库会检查变更，并生成一个新的State
-                state.value += 1;
-            },
-            decrement: (state) => {
-                state.value -= 1;
-            },
-            incrementByMount: (state, action) => {
-                state.value += action.payload;
-            }
-        }
+const store = configureStore({
+    reducer: {
+        counter: counterReducer,
     }
-);
-
-//Action creator会根据reducers的内容自动生成
-export const { increment, decrement, incrementByMount } = counterSlice.actions;
-
-export default counterSlice.reducer;
+})
 ```
 
 ### 在组件中使用State和Actions
