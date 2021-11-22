@@ -190,3 +190,116 @@ Counter组件会监听到state变化，并重新渲染。
 4、在React组件中使用useSelector和useDispatch hook。useSelector来读取属性，useDispatch来获得dispatch方法。
 
 ## 在TypeScript中使用
+
+React Toolkit的configureStore不用更多的类型定义。但是，你需要导出RootState和Dispatch的类型，以便在其它地方使用。
+
+```js
+import { configureStore } from '@reduxjs/toolkit';
+
+import counterReducer from './features/counters/counter-slice';
+
+const store = configureStore({
+    reducer: {
+        counter: counterReducer
+    }
+});
+//
+export type RootState = ReturnType<typeof store.getState>;
+//
+export type AppDispatch = typeof store.dispatch;
+```
+
+### 定义Typed的Hooks
+
+主要是定义useDispatch和useSelector Hook在你的应用中。
+
+```js
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from './store';
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+useSelector，主要是定义了参数为RootState。
+
+useDispatch，主要是增加Slice的相关定义。
+
+定义在一个新的文件中app/hooks.ts，以避免循环依赖的问题。
+
+### 定义Slice State和Action Types
+
+每一个切片文件应该定义它的初始状态的类型，这样createSlice可以正确的推断reducer的state类型。
+
+所有Action生成器应该使用PayloadAction<T>类型来指定payload的类型。
+
+你可以安全地从store.ts中引入RootState类型，它是循环引入，但是TypeScript的编译器可以很好地处理这种情况。
+
+```ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+//
+import type { RootState } from '../../store';
+
+interface CounterState {
+    value: number
+}
+
+const initialState: CounterState = {
+    value: 0
+}
+
+//createSlice
+export const counterSlice = createSlice({
+    name: 'counter',
+    initialState,
+    reducers: {
+        increment: (state) => {
+            state.value + 1;
+        },
+        decrement: (state) => {
+            state.value -= 1;
+        },
+        incrementByAmount: (state, action: PayloadAction<number>) => {
+            state.value += action.payload;
+        }
+    }
+});
+
+export const { increment, decrement, incrementByAmount } = counterSlice.actions;
+
+export const selectCount = (state: RootState) => state.counter.value;
+
+export default counterSlice.reducer;
+```
+
+### 在组件中使用Typed Hooks
+
+```ts
+import React, { useState } from 'react';
+import { useAppDispatch, useAppSelector } from './../../hooks';
+import { increment, decrement } from './counter-slice';
+
+const Counter: React.FC = () => {
+
+    const count = useAppSelector((state) => state.counter.value);
+    const dispatch = useAppDispatch();
+
+    return (
+        <>
+            <button onClick={() => {
+                dispatch(increment())
+            }}>
+                Increment
+            </button>
+            <span>{count}</span>
+            <button onClick={() => {
+                dispatch(decrement())
+            }}>Decrement</button>
+        </>
+    )
+}
+
+export default Counter;
+```
+

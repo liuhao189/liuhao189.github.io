@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>React-Redux官方文档学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1637548026622">
+  <link rel="stylesheet" href="/note/note.css?ts=1637597200066">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -167,5 +167,106 @@ yarn add react-redux
 <p>3、createSlice来创建一个Redux Slice Reducer。createSlice的参数包括，name，初始状态，reducer函数。</p>
 <p>4、在React组件中使用useSelector和useDispatch hook。useSelector来读取属性，useDispatch来获得dispatch方法。</p>
 <h2 id="-typescript-">在TypeScript中使用</h2>
+<p>React Toolkit的configureStore不用更多的类型定义。但是，你需要导出RootState和Dispatch的类型，以便在其它地方使用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">configureStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span><span class="p">;</span>
+
+<span class="kr">import</span> <span class="nx">counterReducer</span> <span class="nx">from</span> <span class="s1">&#39;./features/counters/counter-slice&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">configureStore</span><span class="p">({</span>
+    <span class="nx">reducer</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">counter</span><span class="o">:</span> <span class="nx">counterReducer</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+<span class="c1">//</span>
+<span class="kr">export</span> <span class="nx">type</span> <span class="nx">RootState</span> <span class="o">=</span> <span class="nx">ReturnType</span><span class="o">&lt;</span><span class="k">typeof</span> <span class="nx">store</span><span class="p">.</span><span class="nx">getState</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="c1">//</span>
+<span class="kr">export</span> <span class="nx">type</span> <span class="nx">AppDispatch</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-typed-hooks">定义Typed的Hooks</h3>
+<p>主要是定义useDispatch和useSelector Hook在你的应用中。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">TypedUseSelectorHook</span><span class="p">,</span> <span class="nx">useDispatch</span><span class="p">,</span> <span class="nx">useSelector</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&quot;react-redux&quot;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">type</span> <span class="p">{</span> <span class="nx">RootState</span><span class="p">,</span> <span class="nx">AppDispatch</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./store&#39;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">useAppDispatch</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">useDispatch</span><span class="o">&lt;</span><span class="nx">AppDispatch</span><span class="o">&gt;</span><span class="p">();</span>
+
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">useAppSelector</span><span class="o">:</span> <span class="nx">TypedUseSelectorHook</span><span class="o">&lt;</span><span class="nx">RootState</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nx">useSelector</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<p>useSelector，主要是定义了参数为RootState。</p>
+<p>useDispatch，主要是增加Slice的相关定义。</p>
+<p>定义在一个新的文件中app/hooks.ts，以避免循环依赖的问题。</p>
+<h3 id="-slice-state-action-types">定义Slice State和Action Types</h3>
+<p>每一个切片文件应该定义它的初始状态的类型，这样createSlice可以正确的推断reducer的state类型。</p>
+<p>所有Action生成器应该使用PayloadAction&lt;T&gt;类型来指定payload的类型。</p>
+<p>你可以安全地从store.ts中引入RootState类型，它是循环引入，但是TypeScript的编译器可以很好地处理这种情况。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createSlice</span><span class="p">,</span> <span class="nx">PayloadAction</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span><span class="p">;</span>
+<span class="c1">//</span>
+<span class="kr">import</span> <span class="nx">type</span> <span class="p">{</span> <span class="nx">RootState</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../../store&#39;</span><span class="p">;</span>
+
+<span class="kr">interface</span> <span class="nx">CounterState</span> <span class="p">{</span>
+    <span class="nx">value</span>: <span class="kt">number</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">initialState</span>: <span class="kt">CounterState</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">value</span>: <span class="kt">0</span>
+<span class="p">}</span>
+
+<span class="c1">//createSlice</span>
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">counterSlice</span> <span class="o">=</span> <span class="nx">createSlice</span><span class="p">({</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;counter&#39;</span><span class="p">,</span>
+    <span class="nx">initialState</span><span class="p">,</span>
+    <span class="nx">reducers</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">increment</span><span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">state</span><span class="p">.</span><span class="nx">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">decrement</span><span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">state</span><span class="p">.</span><span class="nx">value</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">incrementByAmount</span><span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span>: <span class="kt">PayloadAction</span><span class="o">&lt;</span><span class="kt">number</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">state</span><span class="p">.</span><span class="nx">value</span> <span class="o">+=</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kr">export</span> <span class="kr">const</span> <span class="p">{</span> <span class="nx">increment</span><span class="p">,</span> <span class="nx">decrement</span><span class="p">,</span> <span class="nx">incrementByAmount</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">counterSlice</span><span class="p">.</span><span class="nx">actions</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">selectCount</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span>: <span class="kt">RootState</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">state</span><span class="p">.</span><span class="nx">counter</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">counterSlice</span><span class="p">.</span><span class="nx">reducer</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-typed-hooks">在组件中使用Typed Hooks</h3>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span> <span class="nx">useState</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">useAppDispatch</span><span class="p">,</span> <span class="nx">useAppSelector</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./../../hooks&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">increment</span><span class="p">,</span> <span class="nx">decrement</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./counter-slice&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">Counter</span>: <span class="kt">React.FC</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+
+    <span class="kr">const</span> <span class="nx">count</span> <span class="o">=</span> <span class="nx">useAppSelector</span><span class="p">((</span><span class="nx">state</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">state</span><span class="p">.</span><span class="nx">counter</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+    <span class="kr">const</span> <span class="nx">dispatch</span> <span class="o">=</span> <span class="nx">useAppDispatch</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">dispatch</span><span class="p">(</span><span class="nx">increment</span><span class="p">())</span>
+            <span class="p">}}</span><span class="o">&gt;</span>
+                <span class="nx">Increment</span>
+            <span class="o">&lt;</span><span class="err">/button&gt;</span>
+            <span class="o">&lt;</span><span class="nx">span</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">count</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/span&gt;</span>
+            <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">dispatch</span><span class="p">(</span><span class="nx">decrement</span><span class="p">())</span>
+            <span class="p">}}</span><span class="o">&gt;</span><span class="nx">Decrement</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">Counter</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
 </body>
 </html>
