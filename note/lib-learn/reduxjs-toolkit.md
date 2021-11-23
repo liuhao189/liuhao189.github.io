@@ -57,3 +57,7 @@ Redux Toolkit的目的是简化一般场景下的Redux的使用，它可以简�
 
 Redux Toolkit导出了若干个单独的函数，同时添加了常用的包（Reselect Redux-Thunk）。
 
+
+## 参考文档
+
+https://redux-toolkit.js.org/usage/usage-guide
