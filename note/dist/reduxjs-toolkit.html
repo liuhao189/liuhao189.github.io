@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>@reduxjs/toolkit</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1637683574872">
+  <link rel="stylesheet" href="/note/note.css?ts=1637770429689">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,13 +13,13 @@
 })();
 </script>
 <h1 id="-reduxjs-toolkit">@reduxjs/toolkit</h1>
-<p>Redux Tooolkit的目的是想成为书写redux逻辑的标准。</p>
+<p>Redux Toolkit的目标要成为书写redux逻辑的标准。</p>
 <p>主要为了解决三个问题：</p>
 <p>1、配置Redux Store太复杂。</p>
 <p>2、必须依赖很多其它包，才能让Redux工作。</p>
 <p>3、Redux需要太多的模板代码。</p>
-<p>Redux Toolkit不能解决所有场景下的问题。但是可以应用于大多数常见的场景。同时也提供一些很有用的工具函数来简化你的应用代码。</p>
-<p>Redux Toolkit同时包括一个数据获取和缓存功能的包RTK Query。它包含在包里，但是是单独的入口点，它是可选的。</p>
+<p>Redux Toolkit可以应用于大多数常见的场景。同时也提供一些很有用的工具函数来简化你的应用代码。</p>
+<p>Redux Toolkit同时包括一个可选的，数据获取和缓存功能的包RTK Query。它包含在包里，但是是单独的入口点。</p>
 <h2 id="-">安装</h2>
 <h3 id="-">已存在的项目</h3>
 <p>npm包的方式：</p>
@@ -38,11 +38,167 @@
 <p>6、createEntiyAdapter：生成一组可重用的reducers和selectors来管理store里面的数据。</p>
 <p>7、createSelector工具函数，为了方便使用，从Reselect类库中导出的。</p>
 <h2 id="usage-guide">Usage Guide</h2>
-<p>Redux核心设计得比较灵活，它让你决定如何处理所有事.eg：store setup，state，reducers。</p>
-<p>在某些场景下，灵活性是好的，但是在一般的场景下，我们只想要最简单的方式来使用Redux（好的默认值）。</p>
+<p>Redux核心设计得比较灵活，你可以决定如何处理所有事.eg：store setup，state，reducers。</p>
+<p>在某些场景下，灵活性是好的，但是在一般的场景下，我们只想要简单便捷的方式来使用Redux（好的默认值）。</p>
 <p>或者你在写一些大型程序，你发现你在写很多模式类似的代码，你可能想要有些方法可以不再让你手动写代码。</p>
 <p>Redux Toolkit的目的是简化一般场景下的Redux的使用，它可以简化很多Redux相关的代码书写。</p>
 <p>Redux Toolkit导出了若干个单独的函数，同时添加了常用的包（Reselect Redux-Thunk）。</p>
+<h2 id="-store">设置Store</h2>
+<p>每一个Redux app需要创建一个Redux Store。这通常包含若干个步骤：</p>
+<p>1、创建root reducer方法。</p>
+<p>2、设置中间件，一般至少需要包含一个处理异步逻辑的中间件。</p>
+<p>3、配置Redux DevTools扩展。</p>
+<p>4、根据当前运行环境(development or production)来更改一些代码逻辑。</p>
+<h3 id="-store">手动设置Store</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">applyMiddleware</span><span class="p">,</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">composeWithDevTools</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux-devtools-extension&#39;</span>
+<span class="kr">import</span> <span class="nx">thunkMiddleware</span> <span class="nx">from</span> <span class="s1">&#39;redux-thunk&#39;</span>
+
+<span class="kr">import</span> <span class="nx">monitorReducersEnhancer</span> <span class="nx">from</span> <span class="s1">&#39;./enhancers/monitorReducers&#39;</span>
+<span class="kr">import</span> <span class="nx">loggerMiddleware</span> <span class="nx">from</span> <span class="s1">&#39;./middleware/logger&#39;</span>
+<span class="kr">import</span> <span class="nx">rootReducer</span> <span class="nx">from</span> <span class="s1">&#39;./reducers&#39;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">configureStore</span><span class="p">(</span><span class="nx">preloadedState</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">middlewares</span> <span class="o">=</span> <span class="p">[</span><span class="nx">loggerMiddleware</span><span class="p">,</span> <span class="nx">thunkMiddleware</span><span class="p">]</span>
+  <span class="kr">const</span> <span class="nx">middlewareEnhancer</span> <span class="o">=</span> <span class="nx">applyMiddleware</span><span class="p">(...</span><span class="nx">middlewares</span><span class="p">)</span>
+
+  <span class="kr">const</span> <span class="nx">enhancers</span> <span class="o">=</span> <span class="p">[</span><span class="nx">middlewareEnhancer</span><span class="p">,</span> <span class="nx">monitorReducersEnhancer</span><span class="p">]</span>
+  <span class="kr">const</span> <span class="nx">composedEnhancers</span> <span class="o">=</span> <span class="nx">composeWithDevTools</span><span class="p">(...</span><span class="nx">enhancers</span><span class="p">)</span>
+
+  <span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">,</span> <span class="nx">preloadedState</span><span class="p">,</span> <span class="nx">composedEnhancers</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">module</span><span class="p">.</span><span class="nx">hot</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">module</span><span class="p">.</span><span class="nx">hot</span><span class="p">.</span><span class="nx">accept</span><span class="p">(</span><span class="s1">&#39;./reducers&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">replaceReducer</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">))</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">store</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>createStore需要基于位置的参数(rootReducer,preloadedState,enhancer)，某些情况下会忘记哪些参数是哪个。</p>
+<p>设置middleware和enhancers的代码比较难理解。Redux DevTools插件文档建议你使用手写代码来检测全局命名空间来判断插件是否被启用。</p>
+<h3 id="configurestore-store-">configureStore简化Store的设置</h3>
+<p>configureStore的优点：</p>
+<p>1、有一个命名的参数，更加易读。</p>
+<p>2、让你提供数组来存放中间件和增强。</p>
+<p>3、自动启用Redux DevTools。</p>
+<p>4、内置了一些插件。redux-thunk是最常用的用来处理同步和异步的场景。在开发阶段，中间件检查场景的错误。eg：使state发生变化，使用非序列化数据。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">configureStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span>
+<span class="kr">import</span> <span class="nx">rootReducer</span> <span class="nx">from</span> <span class="s1">&#39;./reducers&#39;</span>
+
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">configureStore</span><span class="p">({</span>
+  <span class="nx">reducer</span><span class="o">:</span> <span class="nx">rootReducer</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">store</span>
+</pre></div>
+
+</code></pre>
+<p>你可以传递一个Object来包括若干个slice reducers。configureStore会调用combineReducers来合并slice reducers。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">configureStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span>
+<span class="kr">import</span> <span class="nx">usersReducer</span> <span class="nx">from</span> <span class="s1">&#39;./usersReducer&#39;</span>
+<span class="kr">import</span> <span class="nx">postsReducer</span> <span class="nx">from</span> <span class="s1">&#39;./postsReducer&#39;</span>
+
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">configureStore</span><span class="p">({</span>
+  <span class="nx">reducer</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">users</span><span class="o">:</span> <span class="nx">usersReducer</span><span class="p">,</span>
+    <span class="nx">posts</span><span class="o">:</span> <span class="nx">postsReducer</span><span class="p">,</span>
+  <span class="p">},</span>
+<span class="p">})</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">store</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">configureAppStore</span><span class="p">(</span><span class="nx">preloadedState</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">configureStore</span><span class="p">({</span>
+    <span class="nx">reducer</span><span class="o">:</span> <span class="nx">rootReducer</span><span class="p">,</span>
+    <span class="nx">middleware</span><span class="o">:</span> <span class="p">(</span><span class="nx">getDefaultMiddleware</span><span class="p">)</span> <span class="o">=&gt;</span>
+      <span class="nx">getDefaultMiddleware</span><span class="p">().</span><span class="nx">concat</span><span class="p">(</span><span class="nx">loggerMiddleware</span><span class="p">),</span>
+    <span class="nx">preloadedState</span><span class="p">,</span>
+    <span class="nx">enhancers</span><span class="o">:</span> <span class="p">[</span><span class="nx">monitorReducersEnhancer</span><span class="p">],</span>
+  <span class="p">})</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">&#39;production&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">module</span><span class="p">.</span><span class="nx">hot</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">module</span><span class="p">.</span><span class="nx">hot</span><span class="p">.</span><span class="nx">accept</span><span class="p">(</span><span class="s1">&#39;./reducers&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">replaceReducer</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">))</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">store</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>如果你想要你的自定义中间件加预设的中间件，可以传递给middleware一个函数。</p>
+<h2 id="-reducer">书写Reducer</h2>
+<p>Reducer是redux中最重要的概念。一个典型的Reducer需要：</p>
+<p>1、根据action的type字段来做出相应的操作。</p>
+<p>2、只修改state中自己需要修改的部分的副本，然后更新state。</p>
+<p>常见的手段是使用switch语句，当type多时，代码很复杂，可读性很差。另外一个痛点是，reducers为了保持state的不变性，需要自己拷贝state，更新嵌套的内容很难且很容易出错。</p>
+<h3 id="-createreducer-reducers">通过createReducer来简化创建Reducers</h3>
+<p>随着查找表的流行，Redux Toolkit包含了一个createReducer来方便根据查找表来创建reducer。</p>
+<p>除此以外，还使用了Immer库来使你可以原地更新。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">todosReducer</span><span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s1">&#39;ADD_TODO&#39;</span><span class="o">:</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">state</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">case</span> <span class="s1">&#39;TOGGLE_TODO&#39;</span><span class="o">:</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="p">{</span> <span class="nx">index</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span>
+      <span class="k">return</span> <span class="nx">state</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">todo</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">i</span> <span class="o">!==</span> <span class="nx">index</span><span class="p">)</span> <span class="k">return</span> <span class="nx">todo</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+          <span class="p">...</span><span class="nx">todo</span><span class="p">,</span>
+          <span class="nx">completed</span><span class="o">:</span> <span class="o">!</span><span class="nx">todo</span><span class="p">.</span><span class="nx">completed</span><span class="p">,</span>
+        <span class="p">}</span>
+      <span class="p">})</span>
+    <span class="p">}</span>
+    <span class="k">case</span> <span class="s1">&#39;REMOVE_TODO&#39;</span><span class="o">:</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">state</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">todo</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">i</span> <span class="o">!==</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">.</span><span class="nx">index</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">default</span><span class="o">:</span>
+      <span class="k">return</span> <span class="nx">state</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>使用createReducer的代码。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">todosReducer</span> <span class="o">=</span> <span class="nx">createReducer</span><span class="p">([],</span> <span class="p">(</span><span class="nx">builder</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">builder</span>
+    <span class="p">.</span><span class="nx">addCase</span><span class="p">(</span><span class="s1">&#39;ADD_TODO&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// &quot;mutate&quot; the array by calling push()</span>
+      <span class="nx">state</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">)</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="nx">addCase</span><span class="p">(</span><span class="s1">&#39;TOGGLE_TODO&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">todo</span> <span class="o">=</span> <span class="nx">state</span><span class="p">[</span><span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">.</span><span class="nx">index</span><span class="p">]</span>
+      <span class="c1">// &quot;mutate&quot; the object by overwriting a field</span>
+      <span class="nx">todo</span><span class="p">.</span><span class="nx">completed</span> <span class="o">=</span> <span class="o">!</span><span class="nx">todo</span><span class="p">.</span><span class="nx">completed</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="nx">addCase</span><span class="p">(</span><span class="s1">&#39;REMOVE_TODO&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// Can still return an immutably-updated value if we want to</span>
+      <span class="k">return</span> <span class="nx">state</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">todo</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">i</span> <span class="o">!==</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">.</span><span class="nx">index</span><span class="p">)</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>使用createReducer的注意事项：</p>
+<p>1、突变的代码只能在createReducer方法内使用。</p>
+<p>2、Immer不允许你既返回一个新的state，又突变了状态。</p>
+<h2 id="action-">Action生成器</h2>
+<p>Redux鼓励你书写Action生成器来简化创建action对象的过程。</p>
+<p>一个典型的action生成器。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">addTodo</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;ADD_TODO&#39;</span><span class="p">,</span>
+    <span class="nx">payload</span><span class="o">:</span> <span class="p">{</span> <span class="nx">text</span> <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="https://redux-toolkit.js.org/usage/usage-guide">https://redux-toolkit.js.org/usage/usage-guide</a></p>
 </body>
