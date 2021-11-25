@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>@reduxjs/toolkit</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1637770429689">
+  <link rel="stylesheet" href="/note/note.css?ts=1637857119379">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -189,7 +189,7 @@
 <p>2、Immer不允许你既返回一个新的state，又突变了状态。</p>
 <h2 id="action-">Action生成器</h2>
 <p>Redux鼓励你书写Action生成器来简化创建action对象的过程。</p>
-<p>一个典型的action生成器。</p>
+<p>一个典型的action生成器，传入一些参数，然后返回一个包含type和payload的对象。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">addTodo</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="p">{</span>
     <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;ADD_TODO&#39;</span><span class="p">,</span>
@@ -199,6 +199,198 @@
 </pre></div>
 
 </code></pre>
+<h3 id="-createaction-action-">使用createAction来定义Action生成器</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">addTodo</span> <span class="o">=</span> <span class="nx">createAction</span><span class="p">(</span><span class="s1">&#39;ADD_TODO&#39;</span><span class="p">)</span>
+<span class="nx">addTodo</span><span class="p">({</span> <span class="nx">text</span><span class="o">:</span> <span class="s1">&#39;Buy milk&#39;</span> <span class="p">})</span>
+<span class="c1">// {type : &quot;ADD_TODO&quot;, payload : {text : &quot;Buy milk&quot;}})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-action-creators-action-types">使用Action Creators作为Action Types</h3>
+<p>Redux的reducers需要根据action type来决定如何更新状态。</p>
+<p>CreateAction重写了被创建的Action生成器的toString方法，同时定义了type属性，两者均返回action type的字符串。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">actionCreator</span> <span class="o">=</span> <span class="nx">createAction</span><span class="p">(</span><span class="s1">&#39;SOME_ACTION_TYPE&#39;</span><span class="p">)</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">actionCreator</span><span class="p">.</span><span class="nx">toString</span><span class="p">())</span>
+<span class="c1">// &quot;SOME_ACTION_TYPE&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">actionCreator</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span>
+<span class="c1">// &quot;SOME_ACTION_TYPE&quot;</span>
+
+<span class="kr">const</span> <span class="nx">reducer</span> <span class="o">=</span> <span class="nx">createReducer</span><span class="p">({},</span> <span class="p">(</span><span class="nx">builder</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// actionCreator.toString() will automatically be called here</span>
+  <span class="c1">// also, if you use TypeScript, the action type will be correctly inferred</span>
+  <span class="nx">builder</span><span class="p">.</span><span class="nx">addCase</span><span class="p">(</span><span class="nx">actionCreator</span><span class="p">,</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{})</span>
+
+  <span class="c1">// Or, you can reference the .type field:</span>
+  <span class="c1">// if using TypeScript, the action type cannot be inferred that way</span>
+  <span class="nx">builder</span><span class="p">.</span><span class="nx">addCase</span><span class="p">(</span><span class="nx">actionCreator</span><span class="p">.</span><span class="nx">type</span><span class="p">,</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{})</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>TypeScript中，TypeScript的编译器当function作为Object的key时，不支持隐式调用toString。你需要手动转型 actionCreator as string或使用actionCreator.type。</p>
+<h2 id="-slice-state">创建slice state</h2>
+<p>Redux state可以按切片组织，然后使用combineReducers来合并切片。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">combineReducers</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span>
+<span class="kr">import</span> <span class="nx">usersReducer</span> <span class="nx">from</span> <span class="s1">&#39;./usersReducer&#39;</span>
+<span class="kr">import</span> <span class="nx">postsReducer</span> <span class="nx">from</span> <span class="s1">&#39;./postsReducer&#39;</span>
+
+<span class="kr">const</span> <span class="nx">rootReducer</span> <span class="o">=</span> <span class="nx">combineReducers</span><span class="p">({</span>
+  <span class="nx">users</span><span class="o">:</span> <span class="nx">usersReducer</span><span class="p">,</span>
+  <span class="nx">posts</span><span class="o">:</span> <span class="nx">postsReducer</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>Slice Reducers：</p>
+<p>1、管理一部分状态，包括初始化状态。</p>
+<p>2、定义状态如何更新。</p>
+<p>3、定义哪些类型可以更新状态。</p>
+<p>通常的做法是将切片的reducer方法定义在一个文件中。action creator定义在第二个文件。因为这两个文件都需要引入Action types(通常在第三个文件定义)。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// postsConstants.js</span>
+<span class="kr">const</span> <span class="nx">CREATE_POST</span> <span class="o">=</span> <span class="s1">&#39;CREATE_POST&#39;</span>
+<span class="kr">const</span> <span class="nx">UPDATE_POST</span> <span class="o">=</span> <span class="s1">&#39;UPDATE_POST&#39;</span>
+<span class="kr">const</span> <span class="nx">DELETE_POST</span> <span class="o">=</span> <span class="s1">&#39;DELETE_POST&#39;</span>
+
+<span class="c1">// postsActions.js</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">CREATE_POST</span><span class="p">,</span> <span class="nx">UPDATE_POST</span><span class="p">,</span> <span class="nx">DELETE_POST</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./postConstants&#39;</span>
+
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">addPost</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">title</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="nx">CREATE_POST</span><span class="p">,</span>
+    <span class="nx">payload</span><span class="o">:</span> <span class="p">{</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">title</span> <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// postsReducer.js</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">CREATE_POST</span><span class="p">,</span> <span class="nx">UPDATE_POST</span><span class="p">,</span> <span class="nx">DELETE_POST</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./postConstants&#39;</span>
+
+<span class="kr">const</span> <span class="nx">initialState</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">postsReducer</span><span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="nx">initialState</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nx">CREATE_POST</span><span class="o">:</span> <span class="p">{</span>
+      <span class="c1">// omit implementation</span>
+    <span class="p">}</span>
+    <span class="k">default</span><span class="o">:</span>
+      <span class="k">return</span> <span class="nx">state</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>思考：</p>
+<p>1、真正需要的是reducer函数。</p>
+<p>2、我们需要在两个地方写action type。</p>
+<p>3、action creator是好的，但不是必须的。</p>
+<p>4、我们把这些东西写入多个文件的唯一原因是我们按照代码的内容来做代码分离。</p>
+<p>也可以采用单文件模块，将所有相关的代码写入一个文件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// postsDuck.js</span>
+<span class="kr">const</span> <span class="nx">CREATE_POST</span> <span class="o">=</span> <span class="s1">&#39;CREATE_POST&#39;</span>
+<span class="kr">const</span> <span class="nx">UPDATE_POST</span> <span class="o">=</span> <span class="s1">&#39;UPDATE_POST&#39;</span>
+<span class="kr">const</span> <span class="nx">DELETE_POST</span> <span class="o">=</span> <span class="s1">&#39;DELETE_POST&#39;</span>
+
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">addPost</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">title</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="nx">CREATE_POST</span><span class="p">,</span>
+    <span class="nx">payload</span><span class="o">:</span> <span class="p">{</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">title</span> <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">initialState</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">postsReducer</span><span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="nx">initialState</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nx">CREATE_POST</span><span class="o">:</span> <span class="p">{</span>
+      <span class="c1">// Omit actual code</span>
+      <span class="k">break</span>
+    <span class="p">}</span>
+    <span class="k">default</span><span class="o">:</span>
+      <span class="k">return</span> <span class="nx">state</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>思考：避免了Action types常量的引入。但是我们依然需要手写action types和action creators。</p>
+<h3 id="-object-">在Object中定义函数</h3>
+<p>JS中有多种方式可以在Object中定义函数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">keyName</span> <span class="o">=</span> <span class="s2">&quot;ADD_TODO4&quot;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">reducerObject</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1">// Explicit quotes for the key name, arrow function for the reducer</span>
+    <span class="s2">&quot;ADD_TODO1&quot;</span> <span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="p">}</span>
+
+    <span class="c1">// Bare key with no quotes, function keyword</span>
+    <span class="nx">ADD_TODO2</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">){</span>  <span class="p">}</span>
+
+    <span class="c1">// Object literal function shorthand</span>
+    <span class="nx">ADD_TODO3</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+    <span class="c1">// Computed property</span>
+    <span class="p">[</span><span class="nx">keyName</span><span class="p">]</span> <span class="o">:</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="createslice">createSlice</h3>
+<p>为了简化上述过程，redux toolkit包含了一个叫createSlice的函数来自动生成Action types和Action creators。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">postsSlice</span> <span class="o">=</span> <span class="nx">createSlice</span><span class="p">({</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;posts&#39;</span><span class="p">,</span>
+  <span class="nx">initialState</span><span class="o">:</span> <span class="p">[],</span>
+  <span class="nx">reducers</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">createPost</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{},</span>
+    <span class="nx">updatePost</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{},</span>
+    <span class="nx">deletePost</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{},</span>
+  <span class="p">},</span>
+<span class="p">})</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">postsSlice</span><span class="p">)</span>
+<span class="cm">/*</span>
+<span class="cm">{</span>
+<span class="cm">    name: &#39;posts&#39;,</span>
+<span class="cm">    actions : {</span>
+<span class="cm">        createPost,</span>
+<span class="cm">        updatePost,</span>
+<span class="cm">        deletePost,</span>
+<span class="cm">    },</span>
+<span class="cm">    reducer</span>
+<span class="cm">}</span>
+<span class="cm">*/</span>
+
+<span class="kr">const</span> <span class="p">{</span> <span class="nx">createPost</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">postsSlice</span><span class="p">.</span><span class="nx">actions</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">createPost</span><span class="p">({</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">123</span><span class="p">,</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;Hello World&#39;</span> <span class="p">}))</span>
+<span class="c1">// {type : &quot;posts/createPost&quot;, payload : {id : 123, title : &quot;Hello World&quot;}}</span>
+</pre></div>
+
+</code></pre>
+<p>createSlice会遍历reducers字段中的所有key，然后将按<code>${name}/${key}</code>的格式生成action creator。</p>
+<h3 id="-slices">导出和使用Slices</h3>
+<p>你定义slice，大多数情况下，你需要导出它的action creators和reducers。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">postsSlice</span> <span class="o">=</span> <span class="nx">createSlice</span><span class="p">({</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;posts&#39;</span><span class="p">,</span>
+  <span class="nx">initialState</span><span class="o">:</span> <span class="p">[],</span>
+  <span class="nx">reducers</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">createPost</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{},</span>
+    <span class="nx">updatePost</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{},</span>
+    <span class="nx">deletePost</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{},</span>
+  <span class="p">},</span>
+<span class="p">})</span>
+
+<span class="c1">// Extract the action creators object and the reducer</span>
+<span class="kr">const</span> <span class="p">{</span> <span class="nx">actions</span><span class="p">,</span> <span class="nx">reducer</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">postsSlice</span>
+<span class="c1">// Extract and export each action creator by name</span>
+<span class="kr">export</span> <span class="kr">const</span> <span class="p">{</span> <span class="nx">createPost</span><span class="p">,</span> <span class="nx">updatePost</span><span class="p">,</span> <span class="nx">deletePost</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">actions</span>
+<span class="c1">// Export the reducer, either as a default or named export</span>
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">reducer</span>
+</pre></div>
+
+</code></pre>
+<p>Redux的Action type并不是某个切片单独享有的。概念上，每个切片的reducer拥有自己的一部分数据，但是它应该监听任何action type然后更新自己的状态。eg：用户退出登录事件，多个slice都需要清空数据。</p>
+<p>JS模块有循环引用的问题，这会导致import的结果为undefined。这种可能在定义在两个文件中的Slices都想要响应在另一个文件中定义的Action。</p>
+<p>循环依赖的情况下，我们需要重构代码来避免循环依赖。一般会抽离共同的代码到一个单独的文件。在那一个文件中，你可以定义通用的action types。然后使用extraReducers参数。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://redux-toolkit.js.org/usage/usage-guide">https://redux-toolkit.js.org/usage/usage-guide</a></p>
 </body>

@@ -235,7 +235,7 @@ const todosReducer = createReducer([], (builder) => {
 
 Redux鼓励你书写Action生成器来简化创建action对象的过程。
 
-一个典型的action生成器。
+一个典型的action生成器，传入一些参数，然后返回一个包含type和payload的对象。
 
 ```js
 function addTodo(text) {
@@ -245,6 +245,227 @@ function addTodo(text) {
   }
 }
 ```
+
+### 使用createAction来定义Action生成器
+
+```js
+const addTodo = createAction('ADD_TODO')
+addTodo({ text: 'Buy milk' })
+// {type : "ADD_TODO", payload : {text : "Buy milk"}})
+```
+
+### 使用Action Creators作为Action Types
+
+Redux的reducers需要根据action type来决定如何更新状态。
+
+CreateAction重写了被创建的Action生成器的toString方法，同时定义了type属性，两者均返回action type的字符串。
+
+```js
+const actionCreator = createAction('SOME_ACTION_TYPE')
+
+console.log(actionCreator.toString())
+// "SOME_ACTION_TYPE"
+
+console.log(actionCreator.type)
+// "SOME_ACTION_TYPE"
+
+const reducer = createReducer({}, (builder) => {
+  // actionCreator.toString() will automatically be called here
+  // also, if you use TypeScript, the action type will be correctly inferred
+  builder.addCase(actionCreator, (state, action) => {})
+
+  // Or, you can reference the .type field:
+  // if using TypeScript, the action type cannot be inferred that way
+  builder.addCase(actionCreator.type, (state, action) => {})
+})
+```
+
+TypeScript中，TypeScript的编译器当function作为Object的key时，不支持隐式调用toString。你需要手动转型 actionCreator as string或使用actionCreator.type。
+
+## 创建slice state
+
+Redux state可以按切片组织，然后使用combineReducers来合并切片。
+
+```js
+import { combineReducers } from 'redux'
+import usersReducer from './usersReducer'
+import postsReducer from './postsReducer'
+
+const rootReducer = combineReducers({
+  users: usersReducer,
+  posts: postsReducer,
+})
+```
+
+Slice Reducers：
+
+1、管理一部分状态，包括初始化状态。
+
+2、定义状态如何更新。
+
+3、定义哪些类型可以更新状态。
+
+通常的做法是将切片的reducer方法定义在一个文件中。action creator定义在第二个文件。因为这两个文件都需要引入Action types(通常在第三个文件定义)。
+
+```js
+// postsConstants.js
+const CREATE_POST = 'CREATE_POST'
+const UPDATE_POST = 'UPDATE_POST'
+const DELETE_POST = 'DELETE_POST'
+
+// postsActions.js
+import { CREATE_POST, UPDATE_POST, DELETE_POST } from './postConstants'
+
+export function addPost(id, title) {
+  return {
+    type: CREATE_POST,
+    payload: { id, title },
+  }
+}
+
+// postsReducer.js
+import { CREATE_POST, UPDATE_POST, DELETE_POST } from './postConstants'
+
+const initialState = []
+
+export default function postsReducer(state = initialState, action) {
+  switch (action.type) {
+    case CREATE_POST: {
+      // omit implementation
+    }
+    default:
+      return state
+  }
+}
+```
+思考：
+
+1、真正需要的是reducer函数。
+
+2、我们需要在两个地方写action type。
+
+3、action creator是好的，但不是必须的。
+
+4、我们把这些东西写入多个文件的唯一原因是我们按照代码的内容来做代码分离。
+
+也可以采用单文件模块，将所有相关的代码写入一个文件。
+
+```js
+// postsDuck.js
+const CREATE_POST = 'CREATE_POST'
+const UPDATE_POST = 'UPDATE_POST'
+const DELETE_POST = 'DELETE_POST'
+
+export function addPost(id, title) {
+  return {
+    type: CREATE_POST,
+    payload: { id, title },
+  }
+}
+
+const initialState = []
+
+export default function postsReducer(state = initialState, action) {
+  switch (action.type) {
+    case CREATE_POST: {
+      // Omit actual code
+      break
+    }
+    default:
+      return state
+  }
+}
+```
+
+思考：避免了Action types常量的引入。但是我们依然需要手写action types和action creators。
+
+### 在Object中定义函数
+
+JS中有多种方式可以在Object中定义函数。
+
+```js
+const keyName = "ADD_TODO4";
+
+const reducerObject = {
+    // Explicit quotes for the key name, arrow function for the reducer
+    "ADD_TODO1" : (state, action) => { }
+
+    // Bare key with no quotes, function keyword
+    ADD_TODO2 : function(state, action){  }
+
+    // Object literal function shorthand
+    ADD_TODO3(state, action) { }
+
+    // Computed property
+    [keyName] : (state, action) => { }
+}
+```
+
+### createSlice
+
+为了简化上述过程，redux toolkit包含了一个叫createSlice的函数来自动生成Action types和Action creators。
+
+```js
+const postsSlice = createSlice({
+  name: 'posts',
+  initialState: [],
+  reducers: {
+    createPost(state, action) {},
+    updatePost(state, action) {},
+    deletePost(state, action) {},
+  },
+})
+
+console.log(postsSlice)
+/*
+{
+    name: 'posts',
+    actions : {
+        createPost,
+        updatePost,
+        deletePost,
+    },
+    reducer
+}
+*/
+
+const { createPost } = postsSlice.actions
+
+console.log(createPost({ id: 123, title: 'Hello World' }))
+// {type : "posts/createPost", payload : {id : 123, title : "Hello World"}}
+```
+
+createSlice会遍历reducers字段中的所有key，然后将按`${name}/${key}`的格式生成action creator。
+
+
+### 导出和使用Slices
+
+你定义slice，大多数情况下，你需要导出它的action creators和reducers。
+
+```js
+const postsSlice = createSlice({
+  name: 'posts',
+  initialState: [],
+  reducers: {
+    createPost(state, action) {},
+    updatePost(state, action) {},
+    deletePost(state, action) {},
+  },
+})
+
+// Extract the action creators object and the reducer
+const { actions, reducer } = postsSlice
+// Extract and export each action creator by name
+export const { createPost, updatePost, deletePost } = actions
+// Export the reducer, either as a default or named export
+export default reducer
+```
+
+Redux的Action type并不是某个切片单独享有的。概念上，每个切片的reducer拥有自己的一部分数据，但是它应该监听任何action type然后更新自己的状态。eg：用户退出登录事件，多个slice都需要清空数据。
+
+JS模块有循环引用的问题，这会导致import的结果为undefined。这种可能在定义在两个文件中的Slices都想要响应在另一个文件中定义的Action。
+
+循环依赖的情况下，我们需要重构代码来避免循环依赖。一般会抽离共同的代码到一个单独的文件。在那一个文件中，你可以定义通用的action types。然后使用extraReducers参数。
 
 
 ## 参考文档
