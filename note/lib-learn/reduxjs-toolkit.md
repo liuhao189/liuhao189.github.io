@@ -468,6 +468,139 @@ JS模块有循环引用的问题，这会导致import的结果为undefined。这
 循环依赖的情况下，我们需要重构代码来避免循环依赖。一般会抽离共同的代码到一个单独的文件。在那一个文件中，你可以定义通用的action types。然后使用extraReducers参数。
 
 
+### 异步逻辑和数据获取
+
+#### 使用中间件来启用异步逻辑
+
+Redux本身不知道任何异步逻辑，它只知道怎么样同步dispatch actions，更新state，当数据变化时通知UI。
+
+但是中间件可以做这些事：
+
+1、执行额外的逻辑，当action dispatch时。
+
+2、暂停、修改，延迟，替换或者停止dispatch。
+
+3、写能访问dispatch和getState的额外代码。
+
+4、让dispatch可以接受更多类型的数据。eg：function，promise等。
+
+最常见的使用中间件的原因是允许异步的数据逻辑和store进行交互。
+
+有三个常见的中间件可以使用：1、redux-thunk；2、redux-sage；3、redux-observable。
+
+#### 在slice中定义异步逻辑
+
+createSlice中并不能直接定义thunk方法。
+
+```js
+const usersSlice = createSlice({
+  name:'users',
+  initialState: {
+    loading: 'idle',
+    users: []
+  },
+  reducers: {
+    usersLoading(state, action){
+      if(state.loading==='idle') {
+        state.loading ='pending';
+      }
+    },
+    userReceived(state, action) {
+      if(state.loading ==='pending') {
+        state.loading = 'idle';
+        state.users = action.payload;
+      }
+    }
+  }
+});
+
+export const { usersLoading, userReceived } = usersSlice.actions;
+
+const fetchUsers = async ()=> {
+   dispatch(usersLoading());
+   const response = await usersAPI.fetchAll();
+   dispatch(usersReceived(response.data));
+}
+```
+
+#### Redux数据获取模式
+
+1、首先，第一个action来指出正在处理中的状态。
+
+2、然后，异步取数逻辑开始执行。
+
+3、依赖于返回的请求结果，来dispatch成功的action或是失败的action，并清除处理中的状态。
+
+```js
+const getRepoDetailsStarted = () => ({
+  type: "repoDetails/fetchStarted"
+})
+const getRepoDetailsSuccess = (repoDetails) => ({
+  type: "repoDetails/fetchSucceeded",
+  payload: repoDetails
+})
+const getRepoDetailsFailed = (error) => ({
+  type: "repoDetails/fetchFailed",
+  error
+})
+const fetchIssuesCount = (org, repo) => async dispatch => {
+  dispatch(getRepoDetailsStarted())
+  try {
+    const repoDetails = await getRepoDetails(org, repo)
+    dispatch(getRepoDetailsSuccess(repoDetails))
+  } catch (err) {
+    dispatch(getRepoDetailsFailed(err.toString()))
+  }
+}
+```
+
+然而，写这段代码比较冗余，每一个请求都需要类似的代码。
+
+createAsyncThunk对这段逻辑进行了抽象。
+
+#### 使用createAsyncThunk来发起异步请求
+
+createAsyncThunk简化了上述的步骤，你只需提供一个作为action前缀的字符串和一个payload creator回调来处理异步逻辑，并返回一个promise即可。
+
+```js
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { userAPI } from './usersAPI';
+
+const fetchUserById = createAsyncThunk('users/fetchByIdStatus', async (userId, thunkAPI) => {
+  const response = await userAPI.fetchById(userId);
+  return response.data;
+})
+
+const userSlice = createSlice({
+  name: 'users',
+  initialState: { entities: [], loading: 'idle'},
+  reducers: {
+    //...
+  },
+  extraReducers:(builder) => {
+    builder.addCase(fetchUserById.fulfilled, (state,action)=>{
+      state.entities.push(action.payload);
+    })
+  }
+});
+
+dispatch(fetchUserById(123));
+```
+
+thunk的Action creator接受的第一个参数，会传递给你的定义的Action Creator回调函数。
+
+第二个参数为thunkAPI。
+
+```js
+interface ThunkAPI {
+  dispatch: Function
+  getState: Function
+  extra?: any
+  requestId: string // 请求id
+  signal: AbortSignal 
+}
+```
+
 ## 参考文档
 
 https://redux-toolkit.js.org/usage/usage-guide
