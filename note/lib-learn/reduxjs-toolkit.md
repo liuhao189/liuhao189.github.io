@@ -476,7 +476,7 @@ Redux本身不知道任何异步逻辑，它只知道怎么样同步dispatch act
 
 但是中间件可以做这些事：
 
-1、执行额外的逻辑，当action dispatch时。
+1、当action dispatch时，执行额外的逻辑。
 
 2、暂停、修改，延迟，替换或者停止dispatch。
 
@@ -525,11 +525,11 @@ const fetchUsers = async ()=> {
 
 #### Redux数据获取模式
 
-1、首先，第一个action来指出正在处理中的状态。
+1、首先，第一个action指出正在处理中的状态。
 
 2、然后，异步取数逻辑开始执行。
 
-3、依赖于返回的请求结果，来dispatch成功的action或是失败的action，并清除处理中的状态。
+3、根据的返回的请求结果，来dispatch成功的action或是失败的action，并重置处理中的状态。
 
 ```js
 const getRepoDetailsStarted = () => ({
@@ -600,6 +600,138 @@ interface ThunkAPI {
   signal: AbortSignal 
 }
 ```
+
+### 管理标准化数据
+
+大多数应用一般会处理嵌套的或相关联的数据。标准化数据的目的是高效得在你的state中组织数据。这通常是通过把数据集合存储为object来实现的。
+
+#### 手动标准化
+
+```js
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import userAPI from './userAPI'
+
+export const fetchUsers = createAsyncThunk('users/fetchAll', async () => {
+  const response = await userAPI.fetchAll()
+  return response.data
+})
+
+export const slice = createSlice({
+  name: 'users',
+  initialState: {
+    ids: [],
+    entities: {},
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(fetchUsers.fulfilled, (state, action) => {
+      // reduce the collection by the id property into a shape of { 1: { ...user }}
+      const byId = action.payload.users.reduce((byId, user) => {
+        byId[user.id] = user
+        return byId
+      }, {})
+      state.entities = byId
+      state.ids = Object.keys(byId)
+    })
+  },
+})
+```
+
+虽然我们有能力写这样的代码，但是在大中型应用中，这样的代码比较重复和麻烦。
+
+#### 使用normalizr库来标准化
+
+normalizr是一个流行的库来规范化数据。
+
+```js
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { normalize, schema } from 'normalizr'
+
+import userAPI from './userAPI'
+
+const userEntity = new schema.Entity('users')
+
+export const fetchUsers = createAsyncThunk('users/fetchAll', async () => {
+  const response = await userAPI.fetchAll()
+  // Normalize the data before passing it to our reducer
+  const normalized = normalize(response.data, [userEntity])
+  return normalized.entities
+})
+
+export const slice = createSlice({
+  name: 'users',
+  initialState: {
+    ids: [],
+    entities: {},
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(fetchUsers.fulfilled, (state, action) => {
+      state.entities = action.payload.users
+      state.ids = Object.keys(action.payload.users)
+    })
+  },
+})
+```
+
+#### 通过createEntityAdapter来规范化
+
+createEntityAdapter提供了标准的方式来将你的data存储到{ids:[],entrities:{}}的state结构里。
+
+同时，它还生成一组reducer function和selectors来处理生成的数据。
+
+```js
+import {
+  createSlice,
+  createAsyncThunk,
+  createEntityAdapter,
+} from '@reduxjs/toolkit'
+import userAPI from './userAPI'
+
+export const fetchUsers = createAsyncThunk('users/fetchAll', async () => {
+  const response = await userAPI.fetchAll()
+  // In this case, `response.data` would be:
+  // [{id: 1, first_name: 'Example', last_name: 'User'}]
+  return response.data
+})
+
+export const updateUser = createAsyncThunk('users/updateOne', async (arg) => {
+  const response = await userAPI.updateUser(arg)
+  // In this case, `response.data` would be:
+  // { id: 1, first_name: 'Example', last_name: 'UpdatedLastName'}
+  return response.data
+})
+
+export const usersAdapter = createEntityAdapter()
+
+// By default, `createEntityAdapter` gives you `{ ids: [], entities: {} }`.
+// If you want to track 'loading' or other keys, you would initialize them here:
+// `getInitialState({ loading: false, activeRequestId: null })`
+const initialState = usersAdapter.getInitialState()
+
+export const slice = createSlice({
+  name: 'users',
+  initialState,
+  reducers: {
+    removeUser: usersAdapter.removeOne,
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchUsers.fulfilled, usersAdapter.upsertMany)
+    builder.addCase(updateUser.fulfilled, (state, { payload }) => {
+      const { id, ...changes } = payload
+      usersAdapter.updateOne(state, { id, changes })
+    })
+  },
+})
+
+const reducer = slice.reducer
+export default reducer
+
+export const { removeUser } = slice.actions
+```
+
+
+
 
 ## 参考文档
 
