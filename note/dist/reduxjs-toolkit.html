@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>@reduxjs/toolkit</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1638202232794">
+  <link rel="stylesheet" href="/note/note.css?ts=1638288660921">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -503,7 +503,7 @@
 
 </code></pre>
 <h3 id="-">管理标准化数据</h3>
-<p>大多数应用一般会处理嵌套的或相关联的数据。标准化数据的目的是高效得在你的state中组织数据。这通常是通过把数据集合存储为object来实现的。</p>
+<p>大多数应用一般会处理嵌套的或相关联的数据。规范化数据的目的是高效得处理state中的数据。这一般通过把数据数组存储为object来实现的。</p>
 <h4 id="-">手动标准化</h4>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createSlice</span><span class="p">,</span> <span class="nx">createAsyncThunk</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span>
 <span class="kr">import</span> <span class="nx">userAPI</span> <span class="nx">from</span> <span class="s1">&#39;./userAPI&#39;</span>
@@ -535,7 +535,7 @@
 </pre></div>
 
 </code></pre>
-<p>虽然我们有能力写这样的代码，但是在大中型应用中，这样的代码比较重复和麻烦。</p>
+<p>在大中型应用中，这样的代码比较繁琐且类似的代码会存在多份。</p>
 <h4 id="-normalizr-">使用normalizr库来标准化</h4>
 <p>normalizr是一个流行的库来规范化数据。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createSlice</span><span class="p">,</span> <span class="nx">createAsyncThunk</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;@reduxjs/toolkit&#39;</span>
