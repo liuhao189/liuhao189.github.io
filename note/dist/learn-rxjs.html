@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>RxJS学习笔记</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1638288660921">
+  <link rel="stylesheet" href="/note/note.css?ts=1638375256317">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,7 +13,7 @@
 })();
 </script>
 <h1 id="rxjs-">RxJS学习笔记</h1>
-<p>rxjs是一个使用可观察序列来处理异步和基于事件的程序的一个类库。它提供一个核心的类型Observabele，辅助类型(Observer，Schedulers，Subjects)和运算符(map, filter, reduce, every等)。</p>
+<p>rxjs是一个使用可观察序列来处理异步和基于事件的程序的一个类库。它提供一个核心的类型Observable，辅助类型(Observer，Schedulers，Subjects)和运算符(map, filter, reduce, every等)。</p>
 <h2 id="-">基本概念</h2>
 <p>1、Observable，代表未来的值或事件的调用集合。</p>
 <p>2、Observer，是一个知道如何处理Observable投递的值的回调函数的列表。</p>
@@ -97,6 +97,104 @@
 
 </code></pre>
 <p>其它的值生运算符，pluck，pairwise，sample等。</p>
+<h2 id="observable">Observable</h2>
+<p>Observable是懒推送多个数据的方式。</p>
+<p>1、Pull，单个数据使用Function，多个数据使用Iterator。</p>
+<p>2、Push，单个数据使用Promise，多个数据使用Observable。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="nx">subscriber</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+    <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">complete</span><span class="p">();</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+<span class="p">})</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Just before subscribe&#39;</span><span class="p">);</span>
+
+<span class="nx">observable</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">({</span>
+    <span class="nx">next</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Get</span> <span class="nx">value</span> <span class="nx">$</span><span class="p">{</span><span class="nx">x</span><span class="p">}</span><span class="err">`</span><span class="p">);</span> <span class="p">},</span>
+
+    <span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">something</span> <span class="nx">wrong</span> <span class="nx">occurred</span><span class="o">:</span> <span class="err">`</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="nx">complete</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;done&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h3 id="pull-vs-push">pull VS push</h3>
+<p>Pull和Push是两种不同的协议来描述数据生产者和数据消费者如何沟通。</p>
+<p>什么是Pull？Pull是数据消费者决定什么时间来获取数据。JS方法的调用是Pull的方式来获取数据。ES2015引入了生成器函数和迭代器，另外一种pull的方式。调用iterator.next的代码是消费者。</p>
+<p>1、Pull，数据生产者是被动的，在请求时才生产数据；数据消费者是主动的，决定何时调用数据。</p>
+<p>2、Push，数据生产者按自己的节奏产生数据；数据消费者是被动的，准备接受数据。</p>
+<p>什么是Push? 数据生产者决定何时发送数据到数据消费者。消费者不知道它什么时候收到数据。Promise是最常见的实现Push的方式。RxJS引进了Observable，一种新的Push的方式。一个Observable可以产生多个值，然后push这些值到Observers。</p>
+<h3 id="observables-">Observables的概念</h3>
+<p>与主流说法不同，Observables既不像EventEmitters，也不像多个值的Promise。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">foo</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">);</span>
+  <span class="k">return</span> <span class="mi">42</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">foo</span><span class="p">.</span><span class="nx">call</span><span class="p">();</span> <span class="c1">// same as foo()</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">y</span> <span class="o">=</span> <span class="nx">foo</span><span class="p">.</span><span class="nx">call</span><span class="p">();</span> <span class="c1">// same as foo()</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">y</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>使用RxJS来写，会写成下面的代码。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">Observable</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">foo</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="nx">subscriber</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">);</span>
+  <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">foo</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="nx">foo</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">y</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">y</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>函数和Observables都是懒惰计算的。如果你不调用subscribe，它就不会计算。函数调用和Observable的订阅都是独立的操作。</p>
+<p>EventEmitters会共享副作用，并且不管有没有订阅者，都会执行。</p>
+<p>订阅Observable类似于调用函数。</p>
+<p>Observables可以以同步或异步的方式来发送数据。</p>
+<p>Observables和函数的最大区别是，Observables可以随着时间的推移发送多个数据。</p>
+<h3 id="observable-">Observable的解剖</h3>
+<p>Observables可使用new Observable或生成器运算符来创建，被Observer订阅，使用next/error/complete来通知Observer。</p>
+<p>Observables的核心概念：</p>
+<p>1、创建Observables；2、订阅Observables；3、执行Observable；4、清理Observables的执行。</p>
+<h4 id="-observable">创建Observable</h4>
+<p>Observable的构造函数接受一个参数，subscribe方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">Observable</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="kd">function</span> <span class="nx">subscribe</span><span class="p">(</span><span class="nx">subscriber</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
+  <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>通常，observables是被创建类方法创建的，eg：of，from，interval等。</p>
+<h4 id="-observable">订阅Observable</h4>
+<p>observable.subscribe和observable的构造函数的参数名subscribe有相同的名字，并不是巧合。在库中，它们是不同的，但是你可以将它们认为在概念上相等。</p>
+<p>每一次observable.subscribe的调用，构造函数中subscribe的参数方法会重新执行，来设置单独的执行环境。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">observable</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<p>这个addEventListener和removeEventListener有很大不同。</p>
+<p>订阅动作可以开始Observable的执行，然后发送数据或事件到那次执行的Observer。</p>
 <h2 id="-">参考文档</h2>
 <p>1、<a href="https://rxjs.dev/guide/overview">https://rxjs.dev/guide/overview</a></p>
 </body>
