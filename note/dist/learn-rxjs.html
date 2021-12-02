@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>RxJS学习笔记</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1638375256317">
+  <link rel="stylesheet" href="/note/note.css?ts=1638461352416">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -98,7 +98,7 @@
 </code></pre>
 <p>其它的值生运算符，pluck，pairwise，sample等。</p>
 <h2 id="observable">Observable</h2>
-<p>Observable是懒推送多个数据的方式。</p>
+<p>Observable是惰性推送多个数据的方式。</p>
 <p>1、Pull，单个数据使用Function，多个数据使用Iterator。</p>
 <p>2、Push，单个数据使用Promise，多个数据使用Observable。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="nx">subscriber</span> <span class="o">=&gt;</span> <span class="p">{</span>
@@ -128,10 +128,10 @@
 
 </code></pre>
 <h3 id="pull-vs-push">pull VS push</h3>
-<p>Pull和Push是两种不同的协议来描述数据生产者和数据消费者如何沟通。</p>
+<p>Pull和Push是两种不同的方式来描述数据生产者和数据消费者如何沟通。</p>
 <p>什么是Pull？Pull是数据消费者决定什么时间来获取数据。JS方法的调用是Pull的方式来获取数据。ES2015引入了生成器函数和迭代器，另外一种pull的方式。调用iterator.next的代码是消费者。</p>
 <p>1、Pull，数据生产者是被动的，在请求时才生产数据；数据消费者是主动的，决定何时调用数据。</p>
-<p>2、Push，数据生产者按自己的节奏产生数据；数据消费者是被动的，准备接受数据。</p>
+<p>2、Push，数据生产者按自己的节奏产生数据；数据消费者是被动的，随时准备接收数据。</p>
 <p>什么是Push? 数据生产者决定何时发送数据到数据消费者。消费者不知道它什么时候收到数据。Promise是最常见的实现Push的方式。RxJS引进了Observable，一种新的Push的方式。一个Observable可以产生多个值，然后push这些值到Observers。</p>
 <h3 id="observables-">Observables的概念</h3>
 <p>与主流说法不同，Observables既不像EventEmitters，也不像多个值的Promise。</p>
@@ -165,9 +165,7 @@
 
 </code></pre>
 <p>函数和Observables都是懒惰计算的。如果你不调用subscribe，它就不会计算。函数调用和Observable的订阅都是独立的操作。</p>
-<p>EventEmitters会共享副作用，并且不管有没有订阅者，都会执行。</p>
-<p>订阅Observable类似于调用函数。</p>
-<p>Observables可以以同步或异步的方式来发送数据。</p>
+<p>EventEmitters会共享副作用，并且不管有没有订阅者，都会执行。订阅Observable类似于调用函数。Observables可以以同步或异步的方式来发送数据。</p>
 <p>Observables和函数的最大区别是，Observables可以随着时间的推移发送多个数据。</p>
 <h3 id="observable-">Observable的解剖</h3>
 <p>Observables可使用new Observable或生成器运算符来创建，被Observer订阅，使用next/error/complete来通知Observer。</p>
@@ -195,6 +193,82 @@
 </code></pre>
 <p>这个addEventListener和removeEventListener有很大不同。</p>
 <p>订阅动作可以开始Observable的执行，然后发送数据或事件到那次执行的Observer。</p>
+<h4 id="-observables">运行Observables</h4>
+<p>new Observable(function subscribe(subscriber){...})里面的代码代表Observable的执行。</p>
+<p>每一个订阅的观察者都会触发一次执行，没有观察者订阅则不执行。代码的执行会可以随着时间的以异步或同步的方式产生多个值。</p>
+<p>执行中可以发送三种类型的值：</p>
+<p>1、Next，发送Number，String，Object等。</p>
+<p>2、Error，发送Error对象。</p>
+<p>3、Complete，不发送任何值。</p>
+<p>如果已经发送过Error或Complete通知，其它的任何东西都不会再发送。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">Observable</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="kd">function</span> <span class="nx">subscribe</span><span class="p">(</span><span class="nx">subscriber</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">complete</span><span class="p">();</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="c1">// delivers an error if it caught one</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">清理资源</h4>
+<p>因为Observavle的数据可能会有无限次，某些情况下，可能在接收到足够的数据后就终止Observable的执行。我们需要一个API来取消执行。</p>
+<p>subscribe的方法会返回一个Subscription对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">subscription</span> <span class="o">=</span> <span class="nx">observable</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<p>你可以使用subscription.unsubscribe来取消进行的执行。</p>
+<p>每一个Observable需要定义怎么清理那次执行的资源。你可以通过subscribe参数的返回值来指定一个自定义的unsubscribe方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="kd">function</span> <span class="nx">subscribe</span><span class="p">(</span><span class="nx">subscriber</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Keep track of the interval resource</span>
+  <span class="kr">const</span> <span class="nx">intervalId</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">);</span>
+  <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+
+  <span class="c1">// Provide a way of canceling and disposing the interval resource</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="nx">unsubscribe</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">clearInterval</span><span class="p">(</span><span class="nx">intervalId</span><span class="p">);</span>
+  <span class="p">};</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h2 id="observer">Observer</h2>
+<p>一个Observer是一个Observable发送数据的消费者。Observer只是一些回调函数集合(next，error，complete)。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observer</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">next</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a next value: &#39;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">),</span>
+  <span class="nx">error</span><span class="o">:</span> <span class="nx">err</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Observer got an error: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">),</span>
+  <span class="nx">complete</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a complete notification&#39;</span><span class="p">),</span>
+<span class="p">};</span>
+
+<span class="nx">observable</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">observer</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>也可以只提供部分回调，如果只提供了部分回调，Observable的执行是正常的，只是一些通知的数据会被忽略。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observer</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">next</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a next value: &#39;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">),</span>
+  <span class="nx">error</span><span class="o">:</span> <span class="nx">err</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Observer got an error: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">),</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>调subscribe函数时，如果你只提供一个函数参数，subscribe会创建一个Observer对象，并将参数提供的函数作为新创建的Observer对象的next属性。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">observable</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a next value: &#39;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<h2 id="rxjs-operators">RxJS Operators</h2>
+<p>尽管Observable是基础，但是RxJS的操作符是最重要的。操作符是允许以声明方式轻松组合复杂异步代码的关键部分。</p>
+<h3 id="-">什么是操作符</h3>
+<p>操作符是方法。有两种类型的操作符：</p>
+<p>1、</p>
 <h2 id="-">参考文档</h2>
 <p>1、<a href="https://rxjs.dev/guide/overview">https://rxjs.dev/guide/overview</a></p>
 </body>

@@ -108,7 +108,7 @@ fromEvent(document, 'click').pipe(
 
 ## Observable
 
-Observable是懒推送多个数据的方式。
+Observable是惰性推送多个数据的方式。
 
 1、Pull，单个数据使用Function，多个数据使用Iterator。
 
@@ -142,13 +142,13 @@ observable.subscribe({
 
 ### pull VS push
 
-Pull和Push是两种不同的协议来描述数据生产者和数据消费者如何沟通。
+Pull和Push是两种不同的方式来描述数据生产者和数据消费者如何沟通。
 
 什么是Pull？Pull是数据消费者决定什么时间来获取数据。JS方法的调用是Pull的方式来获取数据。ES2015引入了生成器函数和迭代器，另外一种pull的方式。调用iterator.next的代码是消费者。
 
 1、Pull，数据生产者是被动的，在请求时才生产数据；数据消费者是主动的，决定何时调用数据。
 
-2、Push，数据生产者按自己的节奏产生数据；数据消费者是被动的，准备接受数据。
+2、Push，数据生产者按自己的节奏产生数据；数据消费者是被动的，随时准备接收数据。
 
 什么是Push? 数据生产者决定何时发送数据到数据消费者。消费者不知道它什么时候收到数据。Promise是最常见的实现Push的方式。RxJS引进了Observable，一种新的Push的方式。一个Observable可以产生多个值，然后push这些值到Observers。
 
@@ -188,14 +188,9 @@ foo.subscribe(y => {
 
 函数和Observables都是懒惰计算的。如果你不调用subscribe，它就不会计算。函数调用和Observable的订阅都是独立的操作。
 
-EventEmitters会共享副作用，并且不管有没有订阅者，都会执行。
-
-订阅Observable类似于调用函数。
-
-Observables可以以同步或异步的方式来发送数据。
+EventEmitters会共享副作用，并且不管有没有订阅者，都会执行。订阅Observable类似于调用函数。Observables可以以同步或异步的方式来发送数据。
 
 Observables和函数的最大区别是，Observables可以随着时间的推移发送多个数据。
-
 
 ### Observable的解剖
 
@@ -236,7 +231,103 @@ observable.subscribe(x => console.log(x));
 
 订阅动作可以开始Observable的执行，然后发送数据或事件到那次执行的Observer。
 
+#### 运行Observables
 
+new Observable(function subscribe(subscriber){...})里面的代码代表Observable的执行。
+
+每一个订阅的观察者都会触发一次执行，没有观察者订阅则不执行。代码的执行会可以随着时间的以异步或同步的方式产生多个值。
+
+执行中可以发送三种类型的值：
+
+1、Next，发送Number，String，Object等。
+
+2、Error，发送Error对象。
+
+3、Complete，不发送任何值。
+
+如果已经发送过Error或Complete通知，其它的任何东西都不会再发送。
+
+```js
+import { Observable } from 'rxjs';
+
+const observable = new Observable(function subscribe(subscriber) {
+  try {
+    subscriber.next(1);
+    subscriber.next(2);
+    subscriber.next(3);
+    subscriber.complete();
+  } catch (err) {
+    subscriber.error(err); // delivers an error if it caught one
+  }
+});
+```
+
+#### 清理资源
+
+因为Observavle的数据可能会有无限次，某些情况下，可能在接收到足够的数据后就终止Observable的执行。我们需要一个API来取消执行。
+
+subscribe的方法会返回一个Subscription对象。
+
+```js
+const subscription = observable.subscribe(x => console.log(x));
+```
+
+你可以使用subscription.unsubscribe来取消进行的执行。
+
+每一个Observable需要定义怎么清理那次执行的资源。你可以通过subscribe参数的返回值来指定一个自定义的unsubscribe方法。
+
+```js
+const observable = new Observable(function subscribe(subscriber) {
+  // Keep track of the interval resource
+  const intervalId = setInterval(() => {
+    subscriber.next('hi');
+  }, 1000);
+
+  // Provide a way of canceling and disposing the interval resource
+  return function unsubscribe() {
+    clearInterval(intervalId);
+  };
+});
+```
+
+## Observer
+
+一个Observer是一个Observable发送数据的消费者。Observer只是一些回调函数集合(next，error，complete)。
+
+```js
+const observer = {
+  next: x => console.log('Observer got a next value: ' + x),
+  error: err => console.error('Observer got an error: ' + err),
+  complete: () => console.log('Observer got a complete notification'),
+};
+
+observable.subscribe(observer);
+```
+
+也可以只提供部分回调，如果只提供了部分回调，Observable的执行是正常的，只是一些通知的数据会被忽略。
+
+```js
+const observer = {
+  next: x => console.log('Observer got a next value: ' + x),
+  error: err => console.error('Observer got an error: ' + err),
+};
+```
+
+调subscribe函数时，如果你只提供一个函数参数，subscribe会创建一个Observer对象，并将参数提供的函数作为新创建的Observer对象的next属性。
+
+```js
+observable.subscribe(x => console.log('Observer got a next value: ' + x));
+```
+
+## RxJS Operators
+
+尽管Observable是基础，但是RxJS的操作符是最重要的。操作符是允许以声明方式轻松组合复杂异步代码的关键部分。
+
+### 什么是操作符
+
+操作符是方法。有两种类型的操作符：
+
+1、
 
 ## 参考文档
 
