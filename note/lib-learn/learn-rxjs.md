@@ -235,7 +235,7 @@ observable.subscribe(x => console.log(x));
 
 new Observable(function subscribe(subscriber){...})里面的代码代表Observable的执行。
 
-每一个订阅的观察者都会触发一次执行，没有观察者订阅则不执行。代码的执行会可以随着时间的以异步或同步的方式产生多个值。
+每一个订阅的观察者都会触发一次执行，没有观察者订阅则不执行。代码的执行可以随着时间的流逝以异步或同步的方式产生多个值。
 
 执行中可以发送三种类型的值：
 
@@ -264,7 +264,7 @@ const observable = new Observable(function subscribe(subscriber) {
 
 #### 清理资源
 
-因为Observavle的数据可能会有无限次，某些情况下，可能在接收到足够的数据后就终止Observable的执行。我们需要一个API来取消执行。
+因为Observavle的数据可能会有无限次，某些情况下，可能在接收到足够的数据后就需要终止Observable的执行。我们需要一个API来取消执行。
 
 subscribe的方法会返回一个Subscription对象。
 
@@ -304,7 +304,7 @@ const observer = {
 observable.subscribe(observer);
 ```
 
-也可以只提供部分回调，如果只提供了部分回调，Observable的执行是正常的，只是一些通知的数据会被忽略。
+也可以只提供部分回调，如果只提供了部分回调，Observable的执行是正常的，只是一些类型的通知会被忽略。
 
 ```js
 const observer = {
@@ -327,7 +327,261 @@ observable.subscribe(x => console.log('Observer got a next value: ' + x));
 
 操作符是方法。有两种类型的操作符：
 
-1、
+####  Pipeable运算符
+
+pipeable运算符是可以用observableInstance.pipe(operator())的方式调用的运算符。eg：filter，mergeMap等。
+
+当调用时，它们不改变已经存在的Observable实例，而是返回一个 订阅逻辑基于已存在的Observable的实例的新的Observable。
+
+总结：一个Pipeable运算符是一个纯函数，输入参数为一个Observable实例，返回另一个Observable。订阅输出的Observable也会订阅输入的Observable。
+
+#### 创建类运算符
+
+可以独立调用来创建新的Observable实例的函数。eg：of(1，2，3)。
+
+```js
+import { of } from 'rxjs';
+import { map,first } from 'rxjs/operators';
+
+of(1, 2, 3)
+  .pipe(map((x) => x * x), first())
+  .subscribe((v) => console.log(`value: ${v}`));
+// map返回新的Observable  
+```
+
+### Piping
+
+Pipeable运算符是函数，因此它们可能会嵌套使用。eg：op1(op2(op3(op4())))，会变得不容易阅读和理解。
+
+为了解决这个问题，Observable有一个pipe方法来完成相同的事情，但是更容易阅读和理解。
+
+```js
+obs.pipe(op1(),op2(),op3(),op4());
+//从左到右的顺序去执行。
+```
+
+### 创建运算符
+
+创建运算符是一些用来创建Observable的函数。所Observable有一些常见的逻辑，或和其它Observable联合。
+
+```js
+import { interval } from 'rxjs';
+
+const observable = interval(1000 /* number of milliseconds */);
+```
+
+### 高阶Observables
+
+Observable发送数据的常见类型为numbers或string，但也有一些情况需要返回Observable对象。
+
+```js
+const fileObservable = urlObservable.pipe(map((url) => http.get(url)));
+```
+
+conctaAll可以把Observable数组转换为普通的Observable。
+
+```js
+const fileObservable = urlObservable.pipe(
+  map((url) => http.get(url)),
+  concatAll()
+);
+```
+
+concatAll运算符可以订阅所有的Observable，然后拷贝所有Observable发送的值直到Observable完成。
+
+其它的可以打平Observable的运算符有：
+
+1、mergeAll，订阅所有的Observable，当任何一个订阅的Observable发送值的时候，将值发送出去。
+
+2、switchAll，订阅第一个Observable，当数据到来时，把数据发送出去。但是当下一个Observerable到来时，取消第一个Observerable的订阅。依次类推。
+
+3、exhaust，订阅第一个Observable，当数据到来时，将数据发送出去。直到第一个Observable完成时，忽略掉所有新进的Observable。第一个Observable完成后，再订阅后面的Observable。
+
+flat和map结合的运算符：1、flatMap；2、concatMap；3、mergeMap；4、switchMap；5、exhaustMap。
+
+
+### 图解
+
+要解释运算符如何工作，文字描述有时候不太好解释。好多运算符和时间有关，它们可能是实例延迟，取样，节流或防抖。
+
+
+### 运算符种类
+
+有多种用途的操作符，可以被分类为：创建，转换，过滤，joining，多播，错误处理，工具类等。
+
+#### 创建类
+
+1、ajax，创建一个http请求。
+
+2、bindCallback，将callback转换为Observable。
+
+3、bindNodeCallback，将node类的callback方法转换为Observable。
+
+4、defer。
+
+5、empty，创建一个不发送任何数据，并且立刻发送complete通知的Observable。
+
+```js
+//新版本中empty已弃用，只要用of即可。
+of().pipe(startWith(7)).subscribe((x) => { console.log(x) });
+```
+
+6、from，从数组，类数组，Promise实例，迭代器对象，或类Observable的对象创建。
+
+```js
+from([1, 2, 3]).pipe(map(x => { return x * x })).subscribe(x => { console.log(x) });
+```
+
+7、fromEvent，监听给定的target上的制定event类型，然后发送这个事件。可以支持DOM，NodeJS EventEmitter，JQuery-like event，NodeJS List 或HTMLCollection。
+
+```js
+fromEvent(document, 'click')
+```
+
+8、fromEventPattern，参数为addHandler，和removeHandler。
+
+9、generate，需要传入迭代器方法，输出判断方法，初始状态等数据。
+
+```js
+//参数数量过多，不如使用options方便。
+generate<number>({
+    initialState: 0,
+    condition: x => x < 3,
+    iterate: x => x + 1,
+}).subscribe(x => {
+    console.log(x);
+})
+```
+
+10、interval，每隔多少毫秒发出一个数据。
+
+11、of，依次发送参数列表的数据。
+
+```js
+of(1,2,3)
+```
+
+12、range，(start,count?,scheduler)，主要是生成数字。
+
+```js
+range(1, 10).subscribe(x => {
+    console.log(x)
+});
+```
+
+13、throwError，返回一个直接创建错误的Observable的实例。
+
+```js
+throwError(() => {
+    return new Error(`This is error!`)
+}).subscribe({
+    error: (err) => {
+        console.error(err);
+    }
+})
+```
+
+14、timer，创建一个等待一段时间然后complete的Observable。
+
+```js
+timer(1000)
+```
+
+15、iif，在订阅时检查一个boolean值，然后再两个Observable中选择。
+
+```js
+let isFirst = true;
+
+iif(() => { return isFirst }, of(1), of(2)).subscribe(x => {
+    console.log(x);
+});
+```
+
+#### 合并创建类
+
+主要是合并多个来源的的Observeable发送的数据。
+
+1、combineLatest，合并多个Observable的数据。
+
+```js
+const firstTimer = timer(0, 1000);
+const secondTimer = timer(500, 1000);
+
+const subscription = combineLatest([firstTimer, secondTimer]).subscribe(val => {
+    console.log(val)
+})
+```
+
+2、concat，监听第一个Observable，第一个Observable完成后，向下一个移动。
+
+```js
+const timerOne = interval(1000).pipe(take(4));
+const seqOne = range(0, 10);
+const result = concat(timerOne, seqOne);
+result.subscribe(x => {
+    console.log(x);
+});
+// 0 -1000ms-> 1 -1000ms-> 2 -1000ms-> 3 -immediate-> 1 ... 10
+```
+
+3、fromJoin，接受一个数组或对象，返回一个Observable，发送的值格式是数组或对象，内容是参数Observable发送的数据。
+
+```js
+forkJoin({
+    foo: of(1, 2, 3, 4),
+    bar: Promise.resolve(8),
+    baz: timer(4000)
+}).subscribe({
+    next(x) {
+        console.log(x)
+    },
+    complete() {
+        console.log(`Complete now!`)
+    }
+});
+// after 4 seconds:
+// {foo: 4, bar: 8, baz: 0}
+// Complete now!
+```
+
+4、merge，创建一个Observable，发送所有输入的Observable发出的所有值。
+
+```js
+const clicks = fromEvent(document, 'click');
+const timer = interval(1000);
+const clicksOrTimer = merge(clicks, timer);
+clicksOrTimer.subscribe(x => console.log(x));
+```
+
+5、partition，把输入的Observable分为两个，一个发送符合条件的值，一个发送不符合条件的值。
+
+```js
+const [evens$, odds$] = partition(of(1, 2, 3, 4, 5, 6), val => val % 2 === 0)
+
+evens$.subscribe(x => {
+    console.log(`evens: ${x}`);
+});
+
+odds$.subscribe(x => {
+    console.log(`odds: ${x}`)
+})
+```
+
+6、race，创建一个新的Observable来反映第一个发送数据的Observable。
+
+```js
+race(interval(1000).pipe(mapTo('fast one')), interval(2000).pipe(mapTo('medium one')), interval(3000).pipe(mapTo('slow one'))).subscribe(winner => {
+    console.log(winner)
+})
+```
+
+7、zip，多个Observable的值打包到一起。
+
+```js
+zip(of(27, 25), of('Foo', 'Bar', 'Beer'), of(true, true, false)).subscribe(x => {
+    console.log(x);
+})
+```
 
 ## 参考文档
 
