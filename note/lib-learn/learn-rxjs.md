@@ -321,7 +321,7 @@ observable.subscribe(x => console.log('Observer got a next value: ' + x));
 
 ## RxJS Operators
 
-尽管Observable是基础，但是RxJS的操作符是最重要的。操作符是允许以声明方式轻松组合复杂异步代码的关键部分。
+尽管Observable是基础，但是RxJS的操作符是最重要的。操作符是以声明方式轻松组合复杂异步代码的关键部分。
 
 ### 什么是操作符
 
@@ -331,9 +331,11 @@ observable.subscribe(x => console.log('Observer got a next value: ' + x));
 
 pipeable运算符是可以用observableInstance.pipe(operator())的方式调用的运算符。eg：filter，mergeMap等。
 
-当调用时，它们不改变已经存在的Observable实例，而是返回一个 订阅逻辑基于已存在的Observable的实例的新的Observable。
+当调用时，它们不改变已经存在的Observable实例，而是返回一个订阅逻辑基于已存在的Observable的实例的新的Observable。
 
-总结：一个Pipeable运算符是一个纯函数，输入参数为一个Observable实例，返回另一个Observable。订阅输出的Observable也会订阅输入的Observable。
+一个Pipeable运算符是一个纯函数，输入参数为一个Observable实例，返回另一个Observable。订阅输出的Observable也会订阅输入的Observable。
+
+总结：只是一个转换，根据旧的Observable来生成新的Observeable。
 
 #### 创建类运算符
 
@@ -349,6 +351,8 @@ of(1, 2, 3)
 // map返回新的Observable  
 ```
 
+总结：根据一些常见的数据结构或场景来创建Observable。
+
 ### Piping
 
 Pipeable运算符是函数，因此它们可能会嵌套使用。eg：op1(op2(op3(op4())))，会变得不容易阅读和理解。
@@ -360,9 +364,11 @@ obs.pipe(op1(),op2(),op3(),op4());
 //从左到右的顺序去执行。
 ```
 
+总结：pipe方法只是方便理解和调用，按从左到右的顺序去调用。
+
 ### 创建运算符
 
-创建运算符是一些用来创建Observable的函数。所Observable有一些常见的逻辑，或和其它Observable联合。
+创建运算符是一些用来创建Observable的函数。Observable有一些常见的逻辑，或和其它Observable联合。
 
 ```js
 import { interval } from 'rxjs';
@@ -417,9 +423,10 @@ flat和map结合的运算符：1、flatMap；2、concatMap；3、mergeMap；4、
 
 3、bindNodeCallback，将node类的callback方法转换为Observable。
 
-4、defer。
+4、defer。懒创建Observable，只有订阅时才创建。
 
-5、empty，创建一个不发送任何数据，并且立刻发送complete通知的Observable。
+5、empty，创建一个不发送任何数据，并且立刻发送complete通知的Observable。已经弃用，使用of()即可。
+
 
 ```js
 //新版本中empty已弃用，只要用of即可。
@@ -432,7 +439,7 @@ of().pipe(startWith(7)).subscribe((x) => { console.log(x) });
 from([1, 2, 3]).pipe(map(x => { return x * x })).subscribe(x => { console.log(x) });
 ```
 
-7、fromEvent，监听给定的target上的制定event类型，然后发送这个事件。可以支持DOM，NodeJS EventEmitter，JQuery-like event，NodeJS List 或HTMLCollection。
+7、fromEvent，监听给定的target上的指定的event类型，然后发送这个事件。可以支持DOM，NodeJS EventEmitter，JQuery-like event，NodeJS List 或HTMLCollection。
 
 ```js
 fromEvent(document, 'click')
@@ -512,6 +519,8 @@ const subscription = combineLatest([firstTimer, secondTimer]).subscribe(val => {
 })
 ```
 
+发送数据时机：当任何一个Observable发送一个数据时，它就会取监听的所有Observable的最新值组成一个数组来发送数据。
+
 2、concat，监听第一个Observable，第一个Observable完成后，向下一个移动。
 
 ```js
@@ -524,7 +533,11 @@ result.subscribe(x => {
 // 0 -1000ms-> 1 -1000ms-> 2 -1000ms-> 3 -immediate-> 1 ... 10
 ```
 
-3、fromJoin，接受一个数组或对象，返回一个Observable，发送的值格式是数组或对象，内容是参数Observable发送的数据。
+总结：合并多个Observable的输出。
+
+3、frokJoin，接受一个数组或对象，返回一个Observable，发送的值格式是数组或对象，内容是参数Observable发送的数据。
+
+等待所有的Observable完成，然后混合Observable发送的最后的值。如果参数是空数组，则立刻完成。
 
 ```js
 forkJoin({
@@ -553,7 +566,7 @@ const clicksOrTimer = merge(clicks, timer);
 clicksOrTimer.subscribe(x => console.log(x));
 ```
 
-5、partition，把输入的Observable分为两个，一个发送符合条件的值，一个发送不符合条件的值。
+5、partition，把输入的Observable分为两个，一个发送符合条件的值的Observable，一个发送不符合条件的值Observable。
 
 ```js
 const [evens$, odds$] = partition(of(1, 2, 3, 4, 5, 6), val => val % 2 === 0)
@@ -582,6 +595,71 @@ zip(of(27, 25), of('Foo', 'Bar', 'Beer'), of(true, true, false)).subscribe(x => 
     console.log(x);
 })
 ```
+
+#### 转变类运算符
+
+1、buffer，缓存输入的Observable的值，直到输入的Observable关闭或另一个Observable发送数据。
+
+```js
+import { fromEvent, interval } from 'rxjs';
+import { buffer } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const intervalEvents = interval(1000);
+const buffered = intervalEvents.pipe(buffer(clicks));
+buffered.subscribe(x => console.log(x));
+//只在click时，才发送interval的值。[0,1,2,3,4,5,6,...]
+```
+
+2、bufferCount，缓存输入的Observable的值，直到缓存大小达到bufferSize。
+
+```js
+import { fromEvent } from 'rxjs';
+import { bufferCount } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const buffered = clicks.pipe(bufferCount(2));
+buffered.subscribe(x => console.log(x));
+```
+
+3、bufferTime，缓存输入的Observable的值，直到达到缓存时间。
+
+```js
+import { fromEvent } from 'rxjs';
+import { bufferTime } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const buffered = clicks.pipe(bufferTime(1000));
+buffered.subscribe(x => console.log(x));
+```
+
+4、bufferToggle，输入参数两个Observable，一个open，一个close。缓存时间从open的Observable发送数据直到close的Observable发送数据为止。
+
+```js
+import { fromEvent, interval, EMPTY } from 'rxjs';
+import { bufferToggle } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const openings = interval(1000);
+const buffered = clicks.pipe(bufferToggle(openings, i =>
+  i % 2 ? interval(500) : EMPTY
+));
+buffered.subscribe(x => console.log(x));
+```
+
+5、bufferWhen，缓存输入的Observable的值，直到Close的Observable发送数据为止。
+
+```js
+import { fromEvent, interval } from 'rxjs';
+import { bufferWhen } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const buffered = clicks.pipe(bufferWhen(() =>
+  interval(1000 + Math.random() * 4000)
+));
+buffered.subscribe(x => console.log(x));
+```
+
 
 ## 参考文档
 
