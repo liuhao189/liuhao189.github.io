@@ -660,6 +660,116 @@ const buffered = clicks.pipe(bufferWhen(() =>
 buffered.subscribe(x => console.log(x));
 ```
 
+6、concatMap，将输入Observable的每个值，传递给输出的Observable，直到完成后，才去处理输入Observable发送的下一个数据。
+
+```js
+const clicks = fromEvent(document, 'click');
+const result = clicks.pipe(
+  concatMap(ev => interval(1000).pipe(take(4)))
+);
+result.subscribe(x => console.log(x));
+```
+
+7、concatMapTo，和concatMap相似，但是map的每个值都到同一个Observable。
+
+```js
+const clicks = fromEvent(document, 'click');
+const result = clicks.pipe(
+    concatMapTo(interval(1000).pipe(take(4))),
+);
+result.subscribe(x => console.log(x));
+```
+
+8、groupBy，接受一个函数来对数据进行分组，然后产生数个Observable。
+
+```js
+of({ id: 1, name: "JS" },
+    { id: 2, name: "Parcel" },
+    { id: 3, name: "Webpack" },
+    { id: 1, name: 'TS' },
+    { id: 3, name: 'TSLint' }).pipe(groupBy(p => p.id), mergeMap(group$ => {
+        return group$.pipe(reduce((acc, curr) => {
+            //@ts-ignore
+            acc.push(curr);
+            return acc;
+        }, []))
+    })).subscribe(x => {
+        console.log(x);
+    });
+```
+
+9、map，和Array.prototype.map比较相似。
+
+```js
+fromEvent(document, 'click').pipe(map((ev: any) => ev.clientX)).subscribe(x => {
+    console.log(x);
+});
+```
+
+10、mapTo，map到一个特定的值。
+
+```js
+const clicks = fromEvent(document, 'click');
+const greetings = clicks.pipe(mapTo('Hi'));
+greetings.subscribe(x => console.log(x));
+```
+
+11、mergeMap，Map Observable的每一个值，然后使用mergeAll打平内部的Observable。
+
+```js
+of('a', 'b', 'c').pipe(mergeMap(x => {
+    return interval(1000).pipe(map(i => x + i))
+})).subscribe(x => {
+    console.log(x);
+})
+```
+
+12、mergeMapTo，和mergeMap类似，只是总是map到同一个内部Observable。
+
+```js
+const clicks = fromEvent(document, 'click');
+const result = clicks.pipe(mergeMapTo(interval(1000)));
+result.subscribe(x => console.log(x));
+```
+
+13、mergeScan，和scan很像，但是返回的Observable和外层Observable。
+
+```js
+const click$ = fromEvent(document, 'click');
+const one$ = click$.pipe(mapTo(1));
+const seed = 0;
+const count$ = one$.pipe(
+    mergeScan((acc, one) => of(acc + one), seed),
+);
+count$.subscribe(x => console.log(x));
+```
+
+14、pairwise，把当前的值和上一个的值放到一个数组里，然后发送出去。
+
+```js
+fromEvent(document, 'click').pipe(pairwise()).pipe(map((pair: any) => {
+    const x0 = pair[0].clientX;
+    const y0 = pair[1].clientY;
+
+    const x1 = pair[1].clientX;
+    const y1 = pair[1].clientY;
+    return Math.sqrt(Math.pow(x0 - x1, 2) + Math.pow(y0 - y1, 2));
+})).subscribe(x => {
+    console.log(x);
+})
+```
+
+15、partition，將Observable根据分组条件分成两个Observable。该操作符已经弃用。
+
+16、pluck，将每个值map到该值得属性上。
+
+```js
+fromEvent(document, 'click').pipe(pluck('target', 'tagName')).subscribe(x => {
+    console.log(x);
+});
+```
+
+
 
 ## 参考文档
 
