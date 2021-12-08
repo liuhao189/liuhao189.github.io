@@ -57,10 +57,10 @@ let count = 0;
 let rate = 1000;
 let lastClick = Date.now() - rate;
 document.addEventListener('click', () => {
-  if (Date.now() - lastClick >= rate) {
-    console.log(`Clicked ${++count} times`);
-    lastClick = Date.now();
-  }
+    if (Date.now() - lastClick >= rate) {
+        console.log(`Clicked ${++count} times`);
+        lastClick = Date.now();
+    }
 });
 ```
 
@@ -84,11 +84,11 @@ let count = 0;
 const rate = 1000;
 let lastClick = Date.now() - rate;
 document.addEventListener('click', event => {
-  if (Date.now() - lastClick >= rate) {
-    count += event.clientX;
-    console.log(count);
-    lastClick = Date.now();
-  }
+    if (Date.now() - lastClick >= rate) {
+        count += event.clientX;
+        console.log(count);
+        lastClick = Date.now();
+    }
 });
 ```
 
@@ -129,7 +129,9 @@ const observable = new Observable(subscriber => {
 console.log('Just before subscribe');
 
 observable.subscribe({
-    next(x) { console.log(`Get value ${x}`); },
+    next(x) {
+        console.log(`Get value ${x}`);
+    },
 
     error(err) {
         console.log(`something wrong occurred: `, err)
@@ -158,8 +160,8 @@ Pull和Push是两种不同的方式来描述数据生产者和数据消费者如
 
 ```js
 function foo() {
-  console.log('Hello');
-  return 42;
+    console.log('Hello');
+    return 42;
 }
 
 const x = foo.call(); // same as foo()
@@ -171,18 +173,20 @@ console.log(y);
 使用RxJS来写，会写成下面的代码。
 
 ```js
-import { Observable } from 'rxjs';
- 
+import {
+    Observable
+} from 'rxjs';
+
 const foo = new Observable(subscriber => {
-  console.log('Hello');
-  subscriber.next(42);
+    console.log('Hello');
+    subscriber.next(42);
 });
- 
+
 foo.subscribe(x => {
-  console.log(x);
+    console.log(x);
 });
 foo.subscribe(y => {
-  console.log(y);
+    console.log(y);
 });
 ```
 
@@ -205,12 +209,14 @@ Observables的核心概念：
 Observable的构造函数接受一个参数，subscribe方法。
 
 ```js
-import { Observable } from 'rxjs';
+import {
+    Observable
+} from 'rxjs';
 
 const observable = new Observable(function subscribe(subscriber) {
-  const id = setInterval(() => {
-    subscriber.next('hi')
-  }, 1000);
+    const id = setInterval(() => {
+        subscriber.next('hi')
+    }, 1000);
 });
 ```
 
@@ -221,7 +227,6 @@ const observable = new Observable(function subscribe(subscriber) {
 observable.subscribe和observable的构造函数的参数名subscribe有相同的名字，并不是巧合。在库中，它们是不同的，但是你可以将它们认为在概念上相等。
 
 每一次observable.subscribe的调用，构造函数中subscribe的参数方法会重新执行，来设置单独的执行环境。
-
 
 ```js
 observable.subscribe(x => console.log(x));
@@ -248,17 +253,19 @@ new Observable(function subscribe(subscriber){...})里面的代码代表Observab
 如果已经发送过Error或Complete通知，其它的任何东西都不会再发送。
 
 ```js
-import { Observable } from 'rxjs';
+import {
+    Observable
+} from 'rxjs';
 
 const observable = new Observable(function subscribe(subscriber) {
-  try {
-    subscriber.next(1);
-    subscriber.next(2);
-    subscriber.next(3);
-    subscriber.complete();
-  } catch (err) {
-    subscriber.error(err); // delivers an error if it caught one
-  }
+    try {
+        subscriber.next(1);
+        subscriber.next(2);
+        subscriber.next(3);
+        subscriber.complete();
+    } catch (err) {
+        subscriber.error(err); // delivers an error if it caught one
+    }
 });
 ```
 
@@ -278,15 +285,15 @@ const subscription = observable.subscribe(x => console.log(x));
 
 ```js
 const observable = new Observable(function subscribe(subscriber) {
-  // Keep track of the interval resource
-  const intervalId = setInterval(() => {
-    subscriber.next('hi');
-  }, 1000);
+    // Keep track of the interval resource
+    const intervalId = setInterval(() => {
+        subscriber.next('hi');
+    }, 1000);
 
-  // Provide a way of canceling and disposing the interval resource
-  return function unsubscribe() {
-    clearInterval(intervalId);
-  };
+    // Provide a way of canceling and disposing the interval resource
+    return function unsubscribe() {
+        clearInterval(intervalId);
+    };
 });
 ```
 
@@ -296,9 +303,9 @@ const observable = new Observable(function subscribe(subscriber) {
 
 ```js
 const observer = {
-  next: x => console.log('Observer got a next value: ' + x),
-  error: err => console.error('Observer got an error: ' + err),
-  complete: () => console.log('Observer got a complete notification'),
+    next: x => console.log('Observer got a next value: ' + x),
+    error: err => console.error('Observer got an error: ' + err),
+    complete: () => console.log('Observer got a complete notification'),
 };
 
 observable.subscribe(observer);
@@ -308,8 +315,8 @@ observable.subscribe(observer);
 
 ```js
 const observer = {
-  next: x => console.log('Observer got a next value: ' + x),
-  error: err => console.error('Observer got an error: ' + err),
+    next: x => console.log('Observer got a next value: ' + x),
+    error: err => console.error('Observer got an error: ' + err),
 };
 ```
 
@@ -342,12 +349,17 @@ pipeable运算符是可以用observableInstance.pipe(operator())的方式调用�
 可以独立调用来创建新的Observable实例的函数。eg：of(1，2，3)。
 
 ```js
-import { of } from 'rxjs';
-import { map,first } from 'rxjs/operators';
+import {
+    of
+} from 'rxjs';
+import {
+    map,
+    first
+} from 'rxjs/operators';
 
-of(1, 2, 3)
-  .pipe(map((x) => x * x), first())
-  .subscribe((v) => console.log(`value: ${v}`));
+of (1, 2, 3)
+.pipe(map((x) => x * x), first())
+    .subscribe((v) => console.log(`value: ${v}`));
 // map返回新的Observable  
 ```
 
@@ -360,7 +372,7 @@ Pipeable运算符是函数，因此它们可能会嵌套使用。eg：op1(op2(op
 为了解决这个问题，Observable有一个pipe方法来完成相同的事情，但是更容易阅读和理解。
 
 ```js
-obs.pipe(op1(),op2(),op3(),op4());
+obs.pipe(op1(), op2(), op3(), op4());
 //从左到右的顺序去执行。
 ```
 
@@ -371,9 +383,11 @@ obs.pipe(op1(),op2(),op3(),op4());
 创建运算符是一些用来创建Observable的函数。Observable有一些常见的逻辑，或和其它Observable联合。
 
 ```js
-import { interval } from 'rxjs';
+import {
+    interval
+} from 'rxjs';
 
-const observable = interval(1000 /* number of milliseconds */);
+const observable = interval(1000 /* number of milliseconds */ );
 ```
 
 ### 高阶Observables
@@ -388,8 +402,8 @@ conctaAll可以把Observable数组转换为普通的Observable。
 
 ```js
 const fileObservable = urlObservable.pipe(
-  map((url) => http.get(url)),
-  concatAll()
+    map((url) => http.get(url)),
+    concatAll()
 );
 ```
 
@@ -405,11 +419,9 @@ concatAll运算符可以订阅所有的Observable，然后拷贝所有Observable
 
 flat和map结合的运算符：1、flatMap；2、concatMap；3、mergeMap；4、switchMap；5、exhaustMap。
 
-
 ### 图解
 
 要解释运算符如何工作，文字描述有时候不太好解释。好多运算符和时间有关，它们可能是实例延迟，取样，节流或防抖。
-
 
 ### 运算符种类
 
@@ -427,16 +439,21 @@ flat和map结合的运算符：1、flatMap；2、concatMap；3、mergeMap；4、
 
 5、empty，创建一个不发送任何数据，并且立刻发送complete通知的Observable。已经弃用，使用of()即可。
 
-
 ```js
 //新版本中empty已弃用，只要用of即可。
-of().pipe(startWith(7)).subscribe((x) => { console.log(x) });
+of ().pipe(startWith(7)).subscribe((x) => {
+    console.log(x)
+});
 ```
 
 6、from，从数组，类数组，Promise实例，迭代器对象，或类Observable的对象创建。
 
 ```js
-from([1, 2, 3]).pipe(map(x => { return x * x })).subscribe(x => { console.log(x) });
+from([1, 2, 3]).pipe(map(x => {
+    return x * x
+})).subscribe(x => {
+    console.log(x)
+});
 ```
 
 7、fromEvent，监听给定的target上的指定的event类型，然后发送这个事件。可以支持DOM，NodeJS EventEmitter，JQuery-like event，NodeJS List 或HTMLCollection。
@@ -451,7 +468,7 @@ fromEvent(document, 'click')
 
 ```js
 //参数数量过多，不如使用options方便。
-generate<number>({
+generate < number > ({
     initialState: 0,
     condition: x => x < 3,
     iterate: x => x + 1,
@@ -465,10 +482,10 @@ generate<number>({
 11、of，依次发送参数列表的数据。
 
 ```js
-of(1,2,3)
+of (1, 2, 3)
 ```
 
-12、range，(start,count?,scheduler)，主要是生成数字。
+12、range，(start, count?, scheduler)，主要是生成数字。
 
 ```js
 range(1, 10).subscribe(x => {
@@ -499,7 +516,9 @@ timer(1000)
 ```js
 let isFirst = true;
 
-iif(() => { return isFirst }, of(1), of(2)).subscribe(x => {
+iif(() => {
+    return isFirst
+}, of (1), of (2)).subscribe(x => {
     console.log(x);
 });
 ```
@@ -541,7 +560,7 @@ result.subscribe(x => {
 
 ```js
 forkJoin({
-    foo: of(1, 2, 3, 4),
+    foo: of (1, 2, 3, 4),
     bar: Promise.resolve(8),
     baz: timer(4000)
 }).subscribe({
@@ -569,7 +588,7 @@ clicksOrTimer.subscribe(x => console.log(x));
 5、partition，把输入的Observable分为两个，一个发送符合条件的值的Observable，一个发送不符合条件的值Observable。
 
 ```js
-const [evens$, odds$] = partition(of(1, 2, 3, 4, 5, 6), val => val % 2 === 0)
+const [evens$, odds$] = partition( of (1, 2, 3, 4, 5, 6), val => val % 2 === 0)
 
 evens$.subscribe(x => {
     console.log(`evens: ${x}`);
@@ -591,7 +610,7 @@ race(interval(1000).pipe(mapTo('fast one')), interval(2000).pipe(mapTo('medium o
 7、zip，多个Observable的值打包到一起。
 
 ```js
-zip(of(27, 25), of('Foo', 'Bar', 'Beer'), of(true, true, false)).subscribe(x => {
+zip( of (27, 25), of ('Foo', 'Bar', 'Beer'), of (true, true, false)).subscribe(x => {
     console.log(x);
 })
 ```
@@ -601,8 +620,13 @@ zip(of(27, 25), of('Foo', 'Bar', 'Beer'), of(true, true, false)).subscribe(x => 
 1、buffer，缓存输入的Observable的值，直到输入的Observable关闭或另一个Observable发送数据。
 
 ```js
-import { fromEvent, interval } from 'rxjs';
-import { buffer } from 'rxjs/operators';
+import {
+    fromEvent,
+    interval
+} from 'rxjs';
+import {
+    buffer
+} from 'rxjs/operators';
 
 const clicks = fromEvent(document, 'click');
 const intervalEvents = interval(1000);
@@ -614,8 +638,12 @@ buffered.subscribe(x => console.log(x));
 2、bufferCount，缓存输入的Observable的值，直到缓存大小达到bufferSize。
 
 ```js
-import { fromEvent } from 'rxjs';
-import { bufferCount } from 'rxjs/operators';
+import {
+    fromEvent
+} from 'rxjs';
+import {
+    bufferCount
+} from 'rxjs/operators';
 
 const clicks = fromEvent(document, 'click');
 const buffered = clicks.pipe(bufferCount(2));
@@ -625,8 +653,12 @@ buffered.subscribe(x => console.log(x));
 3、bufferTime，缓存输入的Observable的值，直到达到缓存时间。
 
 ```js
-import { fromEvent } from 'rxjs';
-import { bufferTime } from 'rxjs/operators';
+import {
+    fromEvent
+} from 'rxjs';
+import {
+    bufferTime
+} from 'rxjs/operators';
 
 const clicks = fromEvent(document, 'click');
 const buffered = clicks.pipe(bufferTime(1000));
@@ -636,13 +668,19 @@ buffered.subscribe(x => console.log(x));
 4、bufferToggle，输入参数两个Observable，一个open，一个close。缓存时间从open的Observable发送数据直到close的Observable发送数据为止。
 
 ```js
-import { fromEvent, interval, EMPTY } from 'rxjs';
-import { bufferToggle } from 'rxjs/operators';
+import {
+    fromEvent,
+    interval,
+    EMPTY
+} from 'rxjs';
+import {
+    bufferToggle
+} from 'rxjs/operators';
 
 const clicks = fromEvent(document, 'click');
 const openings = interval(1000);
 const buffered = clicks.pipe(bufferToggle(openings, i =>
-  i % 2 ? interval(500) : EMPTY
+    i % 2 ? interval(500) : EMPTY
 ));
 buffered.subscribe(x => console.log(x));
 ```
@@ -650,12 +688,17 @@ buffered.subscribe(x => console.log(x));
 5、bufferWhen，缓存输入的Observable的值，直到Close的Observable发送数据为止。
 
 ```js
-import { fromEvent, interval } from 'rxjs';
-import { bufferWhen } from 'rxjs/operators';
+import {
+    fromEvent,
+    interval
+} from 'rxjs';
+import {
+    bufferWhen
+} from 'rxjs/operators';
 
 const clicks = fromEvent(document, 'click');
 const buffered = clicks.pipe(bufferWhen(() =>
-  interval(1000 + Math.random() * 4000)
+    interval(1000 + Math.random() * 4000)
 ));
 buffered.subscribe(x => console.log(x));
 ```
@@ -665,7 +708,7 @@ buffered.subscribe(x => console.log(x));
 ```js
 const clicks = fromEvent(document, 'click');
 const result = clicks.pipe(
-  concatMap(ev => interval(1000).pipe(take(4)))
+    concatMap(ev => interval(1000).pipe(take(4)))
 );
 result.subscribe(x => console.log(x));
 ```
@@ -683,19 +726,30 @@ result.subscribe(x => console.log(x));
 8、groupBy，接受一个函数来对数据进行分组，然后产生数个Observable。
 
 ```js
-of({ id: 1, name: "JS" },
-    { id: 2, name: "Parcel" },
-    { id: 3, name: "Webpack" },
-    { id: 1, name: 'TS' },
-    { id: 3, name: 'TSLint' }).pipe(groupBy(p => p.id), mergeMap(group$ => {
-        return group$.pipe(reduce((acc, curr) => {
-            //@ts-ignore
-            acc.push(curr);
-            return acc;
-        }, []))
-    })).subscribe(x => {
-        console.log(x);
-    });
+of ({
+    id: 1,
+    name: "JS"
+}, {
+    id: 2,
+    name: "Parcel"
+}, {
+    id: 3,
+    name: "Webpack"
+}, {
+    id: 1,
+    name: 'TS'
+}, {
+    id: 3,
+    name: 'TSLint'
+}).pipe(groupBy(p => p.id), mergeMap(group$ => {
+    return group$.pipe(reduce((acc, curr) => {
+        //@ts-ignore
+        acc.push(curr);
+        return acc;
+    }, []))
+})).subscribe(x => {
+    console.log(x);
+});
 ```
 
 9、map，和Array.prototype.map比较相似。
@@ -717,7 +771,7 @@ greetings.subscribe(x => console.log(x));
 11、mergeMap，Map Observable的每一个值，然后使用mergeAll打平内部的Observable。
 
 ```js
-of('a', 'b', 'c').pipe(mergeMap(x => {
+of ('a', 'b', 'c').pipe(mergeMap(x => {
     return interval(1000).pipe(map(i => x + i))
 })).subscribe(x => {
     console.log(x);
@@ -739,7 +793,7 @@ const click$ = fromEvent(document, 'click');
 const one$ = click$.pipe(mapTo(1));
 const seed = 0;
 const count$ = one$.pipe(
-    mergeScan((acc, one) => of(acc + one), seed),
+    mergeScan((acc, one) => of (acc + one), seed),
 );
 count$.subscribe(x => console.log(x));
 ```
@@ -769,6 +823,59 @@ fromEvent(document, 'click').pipe(pluck('target', 'tagName')).subscribe(x => {
 });
 ```
 
+17、scan，用于封装和管理状态，很像reduce，但是在每次更新后发送出去当前的累积值。
+
+```js
+of (1, 2, 3).pipe(scan((total, n) => {
+    return total + n;
+}, 1), map((sum, index) => {
+    return sum / (index + 1)
+})).subscribe(x => {
+    console.log(x);
+})
+```
+
+18、switchMap，map每一个值到一个Observable，然后将所有的内部Observable打平。
+
+```js
+of(1, 2, 3).pipe(switchMap((x: number) => {
+    return of(x, x ** 2, x ** 3);
+})).subscribe(x => {
+    console.log(x);
+});
+```
+
+19、switchMapTo，map每一个值到同一个Observable，然后输出。
+
+```js
+fromEvent(document, 'click').pipe(switchMapTo(of(1, 2, 3))).subscribe(x => {
+    console.log(x);
+})
+```
+
+20、window，很像buffer，但是发射一个嵌套的Observable而不是一个数组。
+
+```js
+fromEvent(document, 'click').pipe(
+    window(interval(1000)),
+    map(win => win.pipe(take(2))),
+    mergeAll()
+).subscribe(x => {
+    console.log(x);
+});
+```
+
+21、windowCount，很像bufferCount。
+
+```js
+fromEvent(document, 'click').pipe(
+    windowCount(3),
+    map(win => win.pipe(skip(1))),
+    mergeAll()
+).subscribe(x => {
+    console.log(x);
+});
+```
 
 
 ## 参考文档

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RxJS学习笔记-2</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1638980382882">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="rxjs-2">RxJS学习笔记-2</h1>
+<h2 id="filter-">Filter运算符</h2>
+<h3 id="audit">audit</h3>
+<p>在另一个Observable确定的持续时间内忽略源Observable发送的值，然后发送最近的数据。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span>
+    <span class="nx">audit</span><span class="p">(</span><span class="nx">ev</span> <span class="o">=&gt;</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span><span class="p">)))</span>
+    <span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+    <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="audittime">auditTime</h3>
+<p>在指定的时间内忽略源Observable发送的值，然后发送源Observable最近的值。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span>
+    <span class="nx">auditTime</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+    <span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+    <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="debounce">debounce</h3>
+<p>和debounceTime很像，但是发送数据的沉默时间由另一个Observable决定。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span>
+    <span class="nx">scan</span><span class="p">(</span><span class="nx">i</span> <span class="o">=&gt;</span> <span class="o">++</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="nx">debounce</span><span class="p">(</span><span class="nx">i</span> <span class="o">=&gt;</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">200</span> <span class="o">*</span> <span class="nx">i</span><span class="p">)))</span>
+    <span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+    <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="debouncetime">debounceTime</h3>
+<p>根据特定的时间来做防抖。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span>
+    <span class="nx">scan</span><span class="p">(</span><span class="nx">i</span> <span class="o">=&gt;</span> <span class="o">++</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="nx">debounceTime</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+    <span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+    <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="distinct">distinct</h3>
+<p>对源Observable发送的值做去重。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">from</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">]).</span><span class="nx">pipe</span><span class="p">(</span>
+    <span class="nx">distinct</span><span class="p">()</span>
+<span class="p">).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="elementat">elementAt</h3>
+<p>只发送特定的Index的数据。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">from</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">elementAt</span><span class="p">(</span><span class="mi">2</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>

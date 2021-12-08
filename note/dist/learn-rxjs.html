@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>RxJS学习笔记</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1638893604191">
+  <link rel="stylesheet" href="/note/note.css?ts=1638980382882">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -53,10 +53,10 @@
 <span class="kd">let</span> <span class="nx">rate</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
 <span class="kd">let</span> <span class="nx">lastClick</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">rate</span><span class="p">;</span>
 <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">lastClick</span> <span class="o">&gt;=</span> <span class="nx">rate</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Clicked</span> <span class="nx">$</span><span class="p">{</span><span class="o">++</span><span class="nx">count</span><span class="p">}</span> <span class="nx">times</span><span class="err">`</span><span class="p">);</span>
-    <span class="nx">lastClick</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
-  <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">lastClick</span> <span class="o">&gt;=</span> <span class="nx">rate</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Clicked</span> <span class="nx">$</span><span class="p">{</span><span class="o">++</span><span class="nx">count</span><span class="p">}</span> <span class="nx">times</span><span class="err">`</span><span class="p">);</span>
+        <span class="nx">lastClick</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+    <span class="p">}</span>
 <span class="p">});</span>
 </pre></div>
 
@@ -76,11 +76,11 @@
 <span class="kr">const</span> <span class="nx">rate</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
 <span class="kd">let</span> <span class="nx">lastClick</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">rate</span><span class="p">;</span>
 <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="nx">event</span> <span class="o">=&gt;</span> <span class="p">{</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">lastClick</span> <span class="o">&gt;=</span> <span class="nx">rate</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">count</span> <span class="o">+=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">clientX</span><span class="p">;</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">count</span><span class="p">);</span>
-    <span class="nx">lastClick</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
-  <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">lastClick</span> <span class="o">&gt;=</span> <span class="nx">rate</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">count</span> <span class="o">+=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">clientX</span><span class="p">;</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">count</span><span class="p">);</span>
+        <span class="nx">lastClick</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+    <span class="p">}</span>
 <span class="p">});</span>
 </pre></div>
 
@@ -115,7 +115,9 @@
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Just before subscribe&#39;</span><span class="p">);</span>
 
 <span class="nx">observable</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">({</span>
-    <span class="nx">next</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Get</span> <span class="nx">value</span> <span class="nx">$</span><span class="p">{</span><span class="nx">x</span><span class="p">}</span><span class="err">`</span><span class="p">);</span> <span class="p">},</span>
+    <span class="nx">next</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Get</span> <span class="nx">value</span> <span class="nx">$</span><span class="p">{</span><span class="nx">x</span><span class="p">}</span><span class="err">`</span><span class="p">);</span>
+    <span class="p">},</span>
 
     <span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">something</span> <span class="nx">wrong</span> <span class="nx">occurred</span><span class="o">:</span> <span class="err">`</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
@@ -136,8 +138,8 @@
 <h3 id="observables-">Observables的概念</h3>
 <p>与主流说法不同，Observables既不像EventEmitters，也不像多个值的Promise。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">foo</span><span class="p">()</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">);</span>
-  <span class="k">return</span> <span class="mi">42</span><span class="p">;</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">42</span><span class="p">;</span>
 <span class="p">}</span>
 
 <span class="kr">const</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">foo</span><span class="p">.</span><span class="nx">call</span><span class="p">();</span> <span class="c1">// same as foo()</span>
@@ -148,18 +150,20 @@
 
 </code></pre>
 <p>使用RxJS来写，会写成下面的代码。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">Observable</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">Observable</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">foo</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="nx">subscriber</span> <span class="o">=&gt;</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">);</span>
-  <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">);</span>
+    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
 <span class="p">});</span>
 
 <span class="nx">foo</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
 <span class="p">});</span>
 <span class="nx">foo</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">y</span> <span class="o">=&gt;</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">y</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">y</span><span class="p">);</span>
 <span class="p">});</span>
 </pre></div>
 
@@ -173,12 +177,14 @@
 <p>1、创建Observables；2、订阅Observables；3、执行Observable；4、清理Observables的执行。</p>
 <h4 id="-observable">创建Observable</h4>
 <p>Observable的构造函数接受一个参数，subscribe方法。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">Observable</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">Observable</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="kd">function</span> <span class="nx">subscribe</span><span class="p">(</span><span class="nx">subscriber</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
-    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
-  <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+    <span class="kr">const</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
 <span class="p">});</span>
 </pre></div>
 
@@ -201,17 +207,19 @@
 <p>2、Error，发送Error对象。</p>
 <p>3、Complete，不发送任何值。</p>
 <p>如果已经发送过Error或Complete通知，其它的任何东西都不会再发送。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">Observable</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">Observable</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="kd">function</span> <span class="nx">subscribe</span><span class="p">(</span><span class="nx">subscriber</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">try</span> <span class="p">{</span>
-    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
-    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">complete</span><span class="p">();</span>
-  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="c1">// delivers an error if it caught one</span>
-  <span class="p">}</span>
+    <span class="k">try</span> <span class="p">{</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">complete</span><span class="p">();</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="c1">// delivers an error if it caught one</span>
+    <span class="p">}</span>
 <span class="p">});</span>
 </pre></div>
 
@@ -226,15 +234,15 @@
 <p>你可以使用subscription.unsubscribe来取消进行的执行。</p>
 <p>每一个Observable需要定义怎么清理那次执行的资源。你可以通过subscribe参数的返回值来指定一个自定义的unsubscribe方法。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Observable</span><span class="p">(</span><span class="kd">function</span> <span class="nx">subscribe</span><span class="p">(</span><span class="nx">subscriber</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">// Keep track of the interval resource</span>
-  <span class="kr">const</span> <span class="nx">intervalId</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
-    <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">);</span>
-  <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+    <span class="c1">// Keep track of the interval resource</span>
+    <span class="kr">const</span> <span class="nx">intervalId</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">subscriber</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">);</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
 
-  <span class="c1">// Provide a way of canceling and disposing the interval resource</span>
-  <span class="k">return</span> <span class="kd">function</span> <span class="nx">unsubscribe</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">clearInterval</span><span class="p">(</span><span class="nx">intervalId</span><span class="p">);</span>
-  <span class="p">};</span>
+    <span class="c1">// Provide a way of canceling and disposing the interval resource</span>
+    <span class="k">return</span> <span class="kd">function</span> <span class="nx">unsubscribe</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">clearInterval</span><span class="p">(</span><span class="nx">intervalId</span><span class="p">);</span>
+    <span class="p">};</span>
 <span class="p">});</span>
 </pre></div>
 
@@ -242,9 +250,9 @@
 <h2 id="observer">Observer</h2>
 <p>一个Observer是一个Observable发送数据的消费者。Observer只是一些回调函数集合(next，error，complete)。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observer</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="nx">next</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a next value: &#39;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">),</span>
-  <span class="nx">error</span><span class="o">:</span> <span class="nx">err</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Observer got an error: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">),</span>
-  <span class="nx">complete</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a complete notification&#39;</span><span class="p">),</span>
+    <span class="nx">next</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a next value: &#39;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">),</span>
+    <span class="nx">error</span><span class="o">:</span> <span class="nx">err</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Observer got an error: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">),</span>
+    <span class="nx">complete</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a complete notification&#39;</span><span class="p">),</span>
 <span class="p">};</span>
 
 <span class="nx">observable</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">observer</span><span class="p">);</span>
@@ -253,8 +261,8 @@
 </code></pre>
 <p>也可以只提供部分回调，如果只提供了部分回调，Observable的执行是正常的，只是一些类型的通知会被忽略。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">observer</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="nx">next</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a next value: &#39;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">),</span>
-  <span class="nx">error</span><span class="o">:</span> <span class="nx">err</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Observer got an error: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">),</span>
+    <span class="nx">next</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Observer got a next value: &#39;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">),</span>
+    <span class="nx">error</span><span class="o">:</span> <span class="nx">err</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Observer got an error: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">),</span>
 <span class="p">};</span>
 </pre></div>
 
@@ -275,12 +283,17 @@
 <p>总结：只是一个转换，根据旧的Observable来生成新的Observeable。</p>
 <h4 id="-">创建类运算符</h4>
 <p>可以独立调用来创建新的Observable实例的函数。eg：of(1，2，3)。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">of</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">map</span><span class="p">,</span><span class="nx">first</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">of</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">map</span><span class="p">,</span>
+    <span class="nx">first</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
 
-<span class="nx">of</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-  <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">map</span><span class="p">((</span><span class="nx">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">x</span> <span class="o">*</span> <span class="nx">x</span><span class="p">),</span> <span class="nx">first</span><span class="p">())</span>
-  <span class="p">.</span><span class="nx">subscribe</span><span class="p">((</span><span class="nx">v</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">value</span><span class="o">:</span> <span class="nx">$</span><span class="p">{</span><span class="nx">v</span><span class="p">}</span><span class="err">`</span><span class="p">));</span>
+<span class="nx">of</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">map</span><span class="p">((</span><span class="nx">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">x</span> <span class="o">*</span> <span class="nx">x</span><span class="p">),</span> <span class="nx">first</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">subscribe</span><span class="p">((</span><span class="nx">v</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">value</span><span class="o">:</span> <span class="nx">$</span><span class="p">{</span><span class="nx">v</span><span class="p">}</span><span class="err">`</span><span class="p">));</span>
 <span class="c1">// map返回新的Observable  </span>
 </pre></div>
 
@@ -289,7 +302,7 @@
 <h3 id="piping">Piping</h3>
 <p>Pipeable运算符是函数，因此它们可能会嵌套使用。eg：op1(op2(op3(op4())))，会变得不容易阅读和理解。</p>
 <p>为了解决这个问题，Observable有一个pipe方法来完成相同的事情，但是更容易阅读和理解。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">obs</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">op1</span><span class="p">(),</span><span class="nx">op2</span><span class="p">(),</span><span class="nx">op3</span><span class="p">(),</span><span class="nx">op4</span><span class="p">());</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">obs</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">op1</span><span class="p">(),</span> <span class="nx">op2</span><span class="p">(),</span> <span class="nx">op3</span><span class="p">(),</span> <span class="nx">op4</span><span class="p">());</span>
 <span class="c1">//从左到右的顺序去执行。</span>
 </pre></div>
 
@@ -297,9 +310,11 @@
 <p>总结：pipe方法只是方便理解和调用，按从左到右的顺序去调用。</p>
 <h3 id="-">创建运算符</h3>
 <p>创建运算符是一些用来创建Observable的函数。Observable有一些常见的逻辑，或和其它Observable联合。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">interval</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">interval</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
 
-<span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span> <span class="cm">/* number of milliseconds */</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">observable</span> <span class="o">=</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span> <span class="cm">/* number of milliseconds */</span> <span class="p">);</span>
 </pre></div>
 
 </code></pre>
@@ -311,8 +326,8 @@
 </code></pre>
 <p>conctaAll可以把Observable数组转换为普通的Observable。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">fileObservable</span> <span class="o">=</span> <span class="nx">urlObservable</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span>
-  <span class="nx">map</span><span class="p">((</span><span class="nx">url</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">http</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">url</span><span class="p">)),</span>
-  <span class="nx">concatAll</span><span class="p">()</span>
+    <span class="nx">map</span><span class="p">((</span><span class="nx">url</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">http</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">url</span><span class="p">)),</span>
+    <span class="nx">concatAll</span><span class="p">()</span>
 <span class="p">);</span>
 </pre></div>
 
@@ -334,12 +349,18 @@
 <p>4、defer。懒创建Observable，只有订阅时才创建。</p>
 <p>5、empty，创建一个不发送任何数据，并且立刻发送complete通知的Observable。已经弃用，使用of()即可。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//新版本中empty已弃用，只要用of即可。</span>
-<span class="nx">of</span><span class="p">().</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">startWith</span><span class="p">(</span><span class="mi">7</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">((</span><span class="nx">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">});</span>
+<span class="nx">of</span> <span class="p">().</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">startWith</span><span class="p">(</span><span class="mi">7</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">((</span><span class="nx">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span>
+<span class="p">});</span>
 </pre></div>
 
 </code></pre>
 <p>6、from，从数组，类数组，Promise实例，迭代器对象，或类Observable的对象创建。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">from</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">map</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">x</span> <span class="o">*</span> <span class="nx">x</span> <span class="p">})).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">});</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">from</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">map</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">x</span> <span class="o">*</span> <span class="nx">x</span>
+<span class="p">})).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span>
+<span class="p">});</span>
 </pre></div>
 
 </code></pre>
@@ -351,7 +372,7 @@
 <p>8、fromEventPattern，参数为addHandler，和removeHandler。</p>
 <p>9、generate，需要传入迭代器方法，输出判断方法，初始状态等数据。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//参数数量过多，不如使用options方便。</span>
-<span class="nx">generate</span><span class="o">&lt;</span><span class="nx">number</span><span class="o">&gt;</span><span class="p">({</span>
+<span class="nx">generate</span> <span class="o">&lt;</span> <span class="nx">number</span> <span class="o">&gt;</span> <span class="p">({</span>
     <span class="nx">initialState</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
     <span class="nx">condition</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">x</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">,</span>
     <span class="nx">iterate</span><span class="o">:</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
@@ -363,11 +384,11 @@
 </code></pre>
 <p>10、interval，每隔多少毫秒发出一个数据。</p>
 <p>11、of，依次发送参数列表的数据。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
 
 </code></pre>
-<p>12、range，(start,count?,scheduler)，主要是生成数字。</p>
+<p>12、range，(start, count?, scheduler)，主要是生成数字。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span>
 <span class="p">});</span>
@@ -393,7 +414,9 @@
 <p>15、iif，在订阅时检查一个boolean值，然后再两个Observable中选择。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">isFirst</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
 
-<span class="nx">iif</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">isFirst</span> <span class="p">},</span> <span class="nx">of</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="nx">of</span><span class="p">(</span><span class="mi">2</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+<span class="nx">iif</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">isFirst</span>
+<span class="p">},</span> <span class="nx">of</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="nx">of</span> <span class="p">(</span><span class="mi">2</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
 <span class="p">});</span>
 </pre></div>
@@ -427,7 +450,7 @@
 <p>3、frokJoin，接受一个数组或对象，返回一个Observable，发送的值格式是数组或对象，内容是参数Observable发送的数据。</p>
 <p>等待所有的Observable完成，然后混合Observable发送的最后的值。如果参数是空数组，则立刻完成。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">forkJoin</span><span class="p">({</span>
-    <span class="nx">foo</span><span class="o">:</span> <span class="nx">of</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="nx">foo</span><span class="o">:</span> <span class="nx">of</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
     <span class="nx">bar</span><span class="o">:</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span>
     <span class="nx">baz</span><span class="o">:</span> <span class="nx">timer</span><span class="p">(</span><span class="mi">4000</span><span class="p">)</span>
 <span class="p">}).</span><span class="nx">subscribe</span><span class="p">({</span>
@@ -453,7 +476,7 @@
 
 </code></pre>
 <p>5、partition，把输入的Observable分为两个，一个发送符合条件的值的Observable，一个发送不符合条件的值Observable。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">evens$</span><span class="p">,</span> <span class="nx">odds$</span><span class="p">]</span> <span class="o">=</span> <span class="nx">partition</span><span class="p">(</span><span class="nx">of</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="nx">val</span> <span class="o">=&gt;</span> <span class="nx">val</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">evens$</span><span class="p">,</span> <span class="nx">odds$</span><span class="p">]</span> <span class="o">=</span> <span class="nx">partition</span><span class="p">(</span> <span class="nx">of</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="nx">val</span> <span class="o">=&gt;</span> <span class="nx">val</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
 
 <span class="nx">evens$</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">evens</span><span class="o">:</span> <span class="nx">$</span><span class="p">{</span><span class="nx">x</span><span class="p">}</span><span class="err">`</span><span class="p">);</span>
@@ -473,7 +496,7 @@
 
 </code></pre>
 <p>7、zip，多个Observable的值打包到一起。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">zip</span><span class="p">(</span><span class="nx">of</span><span class="p">(</span><span class="mi">27</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="nx">of</span><span class="p">(</span><span class="s1">&#39;Foo&#39;</span><span class="p">,</span> <span class="s1">&#39;Bar&#39;</span><span class="p">,</span> <span class="s1">&#39;Beer&#39;</span><span class="p">),</span> <span class="nx">of</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="kc">true</span><span class="p">,</span> <span class="kc">false</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">zip</span><span class="p">(</span> <span class="nx">of</span> <span class="p">(</span><span class="mi">27</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="nx">of</span> <span class="p">(</span><span class="s1">&#39;Foo&#39;</span><span class="p">,</span> <span class="s1">&#39;Bar&#39;</span><span class="p">,</span> <span class="s1">&#39;Beer&#39;</span><span class="p">),</span> <span class="nx">of</span> <span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="kc">true</span><span class="p">,</span> <span class="kc">false</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
 <span class="p">})</span>
 </pre></div>
@@ -481,8 +504,13 @@
 </code></pre>
 <h4 id="-">转变类运算符</h4>
 <p>1、buffer，缓存输入的Observable的值，直到输入的Observable关闭或另一个Observable发送数据。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">fromEvent</span><span class="p">,</span> <span class="nx">interval</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">buffer</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">fromEvent</span><span class="p">,</span>
+    <span class="nx">interval</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">buffer</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">clicks</span> <span class="o">=</span> <span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">intervalEvents</span> <span class="o">=</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
@@ -493,8 +521,12 @@
 
 </code></pre>
 <p>2、bufferCount，缓存输入的Observable的值，直到缓存大小达到bufferSize。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">fromEvent</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">bufferCount</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">fromEvent</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">bufferCount</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">clicks</span> <span class="o">=</span> <span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">buffered</span> <span class="o">=</span> <span class="nx">clicks</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">bufferCount</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
@@ -503,8 +535,12 @@
 
 </code></pre>
 <p>3、bufferTime，缓存输入的Observable的值，直到达到缓存时间。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">fromEvent</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">bufferTime</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">fromEvent</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">bufferTime</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">clicks</span> <span class="o">=</span> <span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">buffered</span> <span class="o">=</span> <span class="nx">clicks</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">bufferTime</span><span class="p">(</span><span class="mi">1000</span><span class="p">));</span>
@@ -513,25 +549,36 @@
 
 </code></pre>
 <p>4、bufferToggle，输入参数两个Observable，一个open，一个close。缓存时间从open的Observable发送数据直到close的Observable发送数据为止。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">fromEvent</span><span class="p">,</span> <span class="nx">interval</span><span class="p">,</span> <span class="nx">EMPTY</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">bufferToggle</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">fromEvent</span><span class="p">,</span>
+    <span class="nx">interval</span><span class="p">,</span>
+    <span class="nx">EMPTY</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">bufferToggle</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">clicks</span> <span class="o">=</span> <span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">openings</span> <span class="o">=</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">buffered</span> <span class="o">=</span> <span class="nx">clicks</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">bufferToggle</span><span class="p">(</span><span class="nx">openings</span><span class="p">,</span> <span class="nx">i</span> <span class="o">=&gt;</span>
-  <span class="nx">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">?</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span> <span class="o">:</span> <span class="nx">EMPTY</span>
+    <span class="nx">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">?</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span> <span class="o">:</span> <span class="nx">EMPTY</span>
 <span class="p">));</span>
 <span class="nx">buffered</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
 </pre></div>
 
 </code></pre>
 <p>5、bufferWhen，缓存输入的Observable的值，直到Close的Observable发送数据为止。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">fromEvent</span><span class="p">,</span> <span class="nx">interval</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">bufferWhen</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">fromEvent</span><span class="p">,</span>
+    <span class="nx">interval</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">bufferWhen</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;rxjs/operators&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">clicks</span> <span class="o">=</span> <span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">buffered</span> <span class="o">=</span> <span class="nx">clicks</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">bufferWhen</span><span class="p">(()</span> <span class="o">=&gt;</span>
-  <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">4000</span><span class="p">)</span>
+    <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">4000</span><span class="p">)</span>
 <span class="p">));</span>
 <span class="nx">buffered</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
 </pre></div>
@@ -540,7 +587,7 @@
 <p>6、concatMap，将输入Observable的每个值，传递给输出的Observable，直到完成后，才去处理输入Observable发送的下一个数据。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">clicks</span> <span class="o">=</span> <span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">clicks</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span>
-  <span class="nx">concatMap</span><span class="p">(</span><span class="nx">ev</span> <span class="o">=&gt;</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">take</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span>
+    <span class="nx">concatMap</span><span class="p">(</span><span class="nx">ev</span> <span class="o">=&gt;</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">take</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span>
 <span class="p">);</span>
 <span class="nx">result</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
 </pre></div>
@@ -556,19 +603,30 @@
 
 </code></pre>
 <p>8、groupBy，接受一个函数来对数据进行分组，然后产生数个Observable。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span><span class="p">({</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;JS&quot;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Parcel&quot;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Webpack&quot;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;TS&#39;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;TSLint&#39;</span> <span class="p">}).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">groupBy</span><span class="p">(</span><span class="nx">p</span> <span class="o">=&gt;</span> <span class="nx">p</span><span class="p">.</span><span class="nx">id</span><span class="p">),</span> <span class="nx">mergeMap</span><span class="p">(</span><span class="nx">group$</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nx">group$</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">acc</span><span class="p">,</span> <span class="nx">curr</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-            <span class="c1">//@ts-ignore</span>
-            <span class="nx">acc</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">curr</span><span class="p">);</span>
-            <span class="k">return</span> <span class="nx">acc</span><span class="p">;</span>
-        <span class="p">},</span> <span class="p">[]))</span>
-    <span class="p">})).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-    <span class="p">});</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span> <span class="p">({</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;JS&quot;</span>
+<span class="p">},</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Parcel&quot;</span>
+<span class="p">},</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Webpack&quot;</span>
+<span class="p">},</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;TS&#39;</span>
+<span class="p">},</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;TSLint&#39;</span>
+<span class="p">}).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">groupBy</span><span class="p">(</span><span class="nx">p</span> <span class="o">=&gt;</span> <span class="nx">p</span><span class="p">.</span><span class="nx">id</span><span class="p">),</span> <span class="nx">mergeMap</span><span class="p">(</span><span class="nx">group$</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">group$</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">acc</span><span class="p">,</span> <span class="nx">curr</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="c1">//@ts-ignore</span>
+        <span class="nx">acc</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">curr</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">acc</span><span class="p">;</span>
+    <span class="p">},</span> <span class="p">[]))</span>
+<span class="p">})).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">});</span>
 </pre></div>
 
 </code></pre>
@@ -587,7 +645,7 @@
 
 </code></pre>
 <p>11、mergeMap，Map Observable的每一个值，然后使用mergeAll打平内部的Observable。</p>
-<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">mergeMap</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">mergeMap</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">map</span><span class="p">(</span><span class="nx">i</span> <span class="o">=&gt;</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">i</span><span class="p">))</span>
 <span class="p">})).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
@@ -607,7 +665,7 @@
 <span class="kr">const</span> <span class="nx">one$</span> <span class="o">=</span> <span class="nx">click$</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">mapTo</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
 <span class="kr">const</span> <span class="nx">seed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="kr">const</span> <span class="nx">count$</span> <span class="o">=</span> <span class="nx">one$</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span>
-    <span class="nx">mergeScan</span><span class="p">((</span><span class="nx">acc</span><span class="p">,</span> <span class="nx">one</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">of</span><span class="p">(</span><span class="nx">acc</span> <span class="o">+</span> <span class="nx">one</span><span class="p">),</span> <span class="nx">seed</span><span class="p">),</span>
+    <span class="nx">mergeScan</span><span class="p">((</span><span class="nx">acc</span><span class="p">,</span> <span class="nx">one</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">of</span> <span class="p">(</span><span class="nx">acc</span> <span class="o">+</span> <span class="nx">one</span><span class="p">),</span> <span class="nx">seed</span><span class="p">),</span>
 <span class="p">);</span>
 <span class="nx">count$</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
 </pre></div>
@@ -630,6 +688,55 @@
 <p>15、partition，將Observable根据分组条件分成两个Observable。该操作符已经弃用。</p>
 <p>16、pluck，将每个值map到该值得属性上。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">pluck</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">)).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>17、scan，用于封装和管理状态，很像reduce，但是在每次更新后发送出去当前的累积值。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">scan</span><span class="p">((</span><span class="nx">total</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">total</span> <span class="o">+</span> <span class="nx">n</span><span class="p">;</span>
+<span class="p">},</span> <span class="mi">1</span><span class="p">),</span> <span class="nx">map</span><span class="p">((</span><span class="nx">sum</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">sum</span> <span class="o">/</span> <span class="p">(</span><span class="nx">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">})).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>18、switchMap，map每一个值到一个Observable，然后将所有的内部Observable打平。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">of</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">switchMap</span><span class="p">((</span><span class="nx">x</span><span class="o">:</span> <span class="nx">number</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">of</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">x</span> <span class="o">**</span> <span class="mi">3</span><span class="p">);</span>
+<span class="p">})).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>19、switchMapTo，map每一个值到同一个Observable，然后输出。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">switchMapTo</span><span class="p">(</span><span class="nx">of</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>20、window，很像buffer，但是发射一个嵌套的Observable而不是一个数组。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span>
+    <span class="nb">window</span><span class="p">(</span><span class="nx">interval</span><span class="p">(</span><span class="mi">1000</span><span class="p">)),</span>
+    <span class="nx">map</span><span class="p">(</span><span class="nx">win</span> <span class="o">=&gt;</span> <span class="nx">win</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">take</span><span class="p">(</span><span class="mi">2</span><span class="p">))),</span>
+    <span class="nx">mergeAll</span><span class="p">()</span>
+<span class="p">).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>21、windowCount，很像bufferCount。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">fromEvent</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span>
+    <span class="nx">windowCount</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+    <span class="nx">map</span><span class="p">(</span><span class="nx">win</span> <span class="o">=&gt;</span> <span class="nx">win</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">skip</span><span class="p">(</span><span class="mi">1</span><span class="p">))),</span>
+    <span class="nx">mergeAll</span><span class="p">()</span>
+<span class="p">).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
 <span class="p">});</span>
 </pre></div>
