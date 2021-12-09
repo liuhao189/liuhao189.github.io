@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IndexedDB 学习笔记</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1639066292716">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="indexeddb-">IndexedDB 学习笔记</h1>
+<p>随着浏览器的功能不断增强，越来越多的网站开始考虑，将大量数据存储到客户端，以降低服务器压力和提高响应速度。</p>
+<p>现有的浏览器的存储方案，都不适合存储大量数据。</p>
+<p>1、Cookie的大小不超过4KB，且每次请求都发送会服务器。</p>
+<p>2、LocalStorage在2.5MB到10MB之间，而且不提供搜索功能，不能建立自定义索引。</p>
+<p>IndexedDB是浏览器提供的本地数据库，可以被网页创建和操作。IndexedDB允许存储大量数据，提供查找接口，还能创建索引。</p>
+<p>就数据库类型而言，IndexedDB不属于关系型数据库，不支持SQL查询，更接近NoSQL数据库。</p>
+<h2 id="indexeddb-">IndexedDB特点</h2>
+<p>1、键值对存储。IndexedDB内部采用对象仓库存放数据。所有类型的数据都可以直接存入，包括JS对象。数据以键值对的形式保存，每一个数据记录都有对应的主键。</p>
+<p>2、异步。IndexedDB操作时不会锁死浏览器，用户依然可以进行其它操作。这与LocalStorage形成对比。异步设计是为了防止大量数据的读写，拖慢网页的表现。</p>
+<p>3、支持事务，IndexedDB支持事务，一系列操作中，只要有一步失败，整个事务就都被取消，数据库回滚到事务发生之前的状态。</p>
+<p>4、同源限制，IndexedDB受到同源限制。</p>
+<p>5、存储空间大，IndexedDB的存储空间比LocalStorage大得多，一般来说不少于250MB，甚至没有上限。</p>
+<p>6、支持二进制存储。IndexedDB不仅可以存储字符串，还可以存储二进制数据(ArrayBuffer对象和Blob对象)。</p>
+<h2 id="-">基本概念</h2>
+<h3 id="-">数据库</h3>
+<p>数据库是一系列相关数据的容器，每个域名可以新建任意多个数据库。IndexedDB数据库有版本的概念，同一时刻，只能有一个版本的数据库存在。如果要修改数据库结构，新增或删除表，索引或主键，只能通过升级数据库版本完成。</p>
+<h3 id="-">对象仓库</h3>
+<p>每个数据库包含若干个对象仓库，它类似于关系型数据库的表格。</p>
+<h3 id="-">数据记录</h3>
+<p>对象仓库保存的是数据记录，每条记录类似于关系型数据库的行，但是只有主键和数据体两部分。主键用来建立默认的索引，必须是不同的，否则会报错。主键可以是数据记录里的一个属性，也可以指定为一个递增的整数编号。</p>
+<p>数据体可以是任意数据类型，不限于对象。</p>
+<h3 id="-">索引</h3>
+<p>为了加速数据的检索，可以在对象仓库里面，为不同的属性建立索引。</p>
+<h3 id="-">事务</h3>
+<p>数据记录的读写和删改，都要通过事务完成。事务对象提供error，abort和complete三个事件，用来监听操作结果。</p>
+<h2 id="-">操作流程</h2>
+<h3 id="-">打开数据库</h3>
+<p>使用IndexedDB的第一步是打开数据库，使用indexedDB.open方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">request</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">indexedDB</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="nx">databaseName</span><span class="p">,</span><span class="nx">version</span><span class="p">)</span>
+<span class="c1">// 如果指定的数据库不存在，则创建，默认版本号为1</span>
+</pre></div>
+
+</code></pre>
+<p>返回一个IDBRequest对象，这个对象通过三种事件error，success，upgradeneeed，处理打开数据库的操作结果。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">request</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;数据库打开报错&#39;</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">db</span><span class="p">;</span>
+<span class="nx">request</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;数据库打开成功&#39;</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">db</span><span class="p">;</span>
+<span class="nx">request</span><span class="p">.</span><span class="nx">onupgradeneeded</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">新建数据库</h3>
+<p>新建数据库和打开数据库是同一个操作。如果指定的数据库不存在，就会新建。不同之处在于，后续的操作主要在upgradeneeded事件的监听函数里面完成。</p>
+<p>新建数据库以后，第一件事就是新建对象仓库。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">request</span><span class="p">.</span><span class="nx">onupgradeneeded</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">objectStore</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">db</span><span class="p">.</span><span class="nx">objectStoreNames</span><span class="p">.</span><span class="nx">contains</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">objectStore</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">createObjectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">keyPath</span><span class="o">:</span> <span class="s1">&#39;id&#39;</span> <span class="p">});</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>主键key是默认索引的属性。主键也可以指定诶下一层对象的属性。eg：{foo:{bar:&#39;baz&#39;}}，foo.bar也可以指定为主键。</p>
+<p>如果数据记录里面没有合适的作为主键的属性。可以让IndexedDB自动生成主键。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">objectStore</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">createObjectStore</span><span class="p">(</span>
+  <span class="s1">&#39;person&#39;</span><span class="p">,</span>
+  <span class="p">{</span> <span class="nx">autoIncrement</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+<span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>新建对象仓库以后，下一步可以新建索引。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">request</span><span class="p">.</span><span class="nx">onupgradeneeded</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">objectStore</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">createObjectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">keyPath</span><span class="o">:</span> <span class="s1">&#39;id&#39;</span> <span class="p">});</span>
+  <span class="nx">objectStore</span><span class="p">.</span><span class="nx">createIndex</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">unique</span><span class="o">:</span> <span class="kc">false</span> <span class="p">});</span>
+  <span class="nx">objectStore</span><span class="p">.</span><span class="nx">createIndex</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">unique</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">新增数据</h3>
+<p>新增数据指的是向数据库对象仓库写入数据记录，这需要通过事务完成。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">add</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">([</span><span class="s1">&#39;person&#39;</span><span class="p">],</span> <span class="s1">&#39;readwrite&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">objectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">add</span><span class="p">({</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;张三&#39;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">24</span><span class="p">,</span> <span class="nx">email</span><span class="o">:</span> <span class="s1">&#39;zhangsan@example.com&#39;</span> <span class="p">});</span>
+
+  <span class="nx">request</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;数据写入成功&#39;</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="nx">request</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;数据写入失败&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">add</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<p>写入数据需要一个事务，新建时必须指定表格名称和操作模式(&#39;只读&#39;或&#39;读写&#39;)。新建事务后，通过IDBTransaction.objectStore(name)，拿到IDBObjectStore对象，再通过表格对象的add方法，向表格中写入一条记录。</p>
+<p>写入是一个异步事件，通过监听连接对象的success事件和error事件，了解是否写入成功。</p>
+<h3 id="-">读取数据</h3>
+<p>读取数据也是通过事务完成。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">read</span><span class="p">()</span> <span class="p">{</span>
+   <span class="kd">var</span> <span class="nx">transaction</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">([</span><span class="s1">&#39;person&#39;</span><span class="p">]);</span>
+   <span class="kd">var</span> <span class="nx">objectStore</span> <span class="o">=</span> <span class="nx">transaction</span><span class="p">.</span><span class="nx">objectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">);</span>
+   <span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">objectStore</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+   <span class="nx">request</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;事务失败&#39;</span><span class="p">);</span>
+   <span class="p">};</span>
+
+   <span class="nx">request</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Name: &#39;</span> <span class="o">+</span> <span class="nx">request</span><span class="p">.</span><span class="nx">result</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Age: &#39;</span> <span class="o">+</span> <span class="nx">request</span><span class="p">.</span><span class="nx">result</span><span class="p">.</span><span class="nx">age</span><span class="p">);</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Email: &#39;</span> <span class="o">+</span> <span class="nx">request</span><span class="p">.</span><span class="nx">result</span><span class="p">.</span><span class="nx">email</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;未获得数据记录&#39;</span><span class="p">);</span>
+      <span class="p">}</span>
+   <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nx">read</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<p>objectStore.get方法用于读取数据，参数是主键的值。</p>
+<h3 id="-">遍历数据</h3>
+<h2 id="-">参考文档</h2>
+<p><a href="http://www.ruanyifeng.com/blog/2018/07/indexeddb.html">http://www.ruanyifeng.com/blog/2018/07/indexeddb.html</a></p>
+</body>
+</html>
