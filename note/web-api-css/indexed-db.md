@@ -100,7 +100,7 @@ request.onupgradeneeded = function (event) {
 }
 ```
 
-主键key是默认索引的属性。主键也可以指定诶下一层对象的属性。eg：{foo:{bar:'baz'}}，foo.bar也可以指定为主键。
+主键key是默认索引的属性。主键也可以指定为下一层对象的属性。eg：{foo:{bar:'baz'}}，foo.bar也可以指定为主键。
 
 如果数据记录里面没有合适的作为主键的属性。可以让IndexedDB自动生成主键。
 
@@ -180,7 +180,95 @@ objectStore.get方法用于读取数据，参数是主键的值。
 
 ### 遍历数据
 
+遍历数据表格中的所有记录，要使用指针对象IDBCursor。
 
+```js
+function readAll() {
+  var objectStore = db.transaction('person').objectStore('person');
+
+   objectStore.openCursor().onsuccess = function (event) {
+     var cursor = event.target.result;
+
+     if (cursor) {
+       console.log('Id: ' + cursor.key);
+       console.log('Name: ' + cursor.value.name);
+       console.log('Age: ' + cursor.value.age);
+       console.log('Email: ' + cursor.value.email);
+       cursor.continue();
+    } else {
+      console.log('没有更多数据了！');
+    }
+  };
+}
+
+readAll();
+```
+
+openCursor方法是一个异步操作，所以需要监听success事件。
+
+### 更新数据
+
+更新数据使用IDBObject.put方法。
+
+```js
+function update() {
+  var request = db.transaction(['person'], 'readwrite')
+    .objectStore('person')
+    .put({ id: 1, name: '李四', age: 35, email: 'lisi@example.com' });
+
+  request.onsuccess = function (event) {
+    console.log('数据更新成功');
+  };
+
+  request.onerror = function (event) {
+    console.log('数据更新失败');
+  }
+}
+
+update();
+```
+
+### 删除数据
+
+删除数据使用IDBObejctStore.delete方法用于删除记录。
+
+```js
+function remove() {
+  var request = db.transaction(['person'], 'readwrite')
+    .objectStore('person')
+    .delete(1);
+
+  request.onsuccess = function (event) {
+    console.log('数据删除成功');
+  };
+}
+
+remove();
+```
+
+### 使用索引
+
+索引的意义在于，可以让你搜索任意字段，也就是说从任意字段拿到数据记录。如果不建立索引，默认只能搜索主键。
+
+如果，新建表格的时候，对name字段建立了索引，就可以从name中找到对应的数据记录了。
+
+```js
+objectStore.createIndex('name', 'name', { unique: false });
+
+var transaction = db.transaction(['person'], 'readonly');
+var store = transaction.objectStore('person');
+var index = store.index('name');
+var request = index.get('李四');
+
+request.onsuccess = function (e) {
+  var result = e.target.result;
+  if (result) {
+    // ...
+  } else {
+    // ...
+  }
+}
+```
 
 
 ## 参考文档

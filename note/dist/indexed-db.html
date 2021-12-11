@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>IndexedDB 学习笔记</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1639066292716">
+  <link rel="stylesheet" href="/note/note.css?ts=1639241091345">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -81,7 +81,7 @@
 </pre></div>
 
 </code></pre>
-<p>主键key是默认索引的属性。主键也可以指定诶下一层对象的属性。eg：{foo:{bar:&#39;baz&#39;}}，foo.bar也可以指定为主键。</p>
+<p>主键key是默认索引的属性。主键也可以指定为下一层对象的属性。eg：{foo:{bar:&#39;baz&#39;}}，foo.bar也可以指定为主键。</p>
 <p>如果数据记录里面没有合适的作为主键的属性。可以让IndexedDB自动生成主键。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">objectStore</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">createObjectStore</span><span class="p">(</span>
   <span class="s1">&#39;person&#39;</span><span class="p">,</span>
@@ -150,6 +150,87 @@
 </code></pre>
 <p>objectStore.get方法用于读取数据，参数是主键的值。</p>
 <h3 id="-">遍历数据</h3>
+<p>遍历数据表格中的所有记录，要使用指针对象IDBCursor。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">readAll</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">objectStore</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">).</span><span class="nx">objectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">);</span>
+
+   <span class="nx">objectStore</span><span class="p">.</span><span class="nx">openCursor</span><span class="p">().</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+     <span class="kd">var</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="nx">cursor</span><span class="p">)</span> <span class="p">{</span>
+       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Id: &#39;</span> <span class="o">+</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">key</span><span class="p">);</span>
+       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Name: &#39;</span> <span class="o">+</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Age: &#39;</span> <span class="o">+</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">age</span><span class="p">);</span>
+       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Email: &#39;</span> <span class="o">+</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">email</span><span class="p">);</span>
+       <span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">();</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;没有更多数据了！&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nx">readAll</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<p>openCursor方法是一个异步操作，所以需要监听success事件。</p>
+<h3 id="-">更新数据</h3>
+<p>更新数据使用IDBObject.put方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">update</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">([</span><span class="s1">&#39;person&#39;</span><span class="p">],</span> <span class="s1">&#39;readwrite&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">objectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">put</span><span class="p">({</span> <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;李四&#39;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">35</span><span class="p">,</span> <span class="nx">email</span><span class="o">:</span> <span class="s1">&#39;lisi@example.com&#39;</span> <span class="p">});</span>
+
+  <span class="nx">request</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;数据更新成功&#39;</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="nx">request</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;数据更新失败&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">update</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">删除数据</h3>
+<p>删除数据使用IDBObejctStore.delete方法用于删除记录。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">remove</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">([</span><span class="s1">&#39;person&#39;</span><span class="p">],</span> <span class="s1">&#39;readwrite&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">objectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="k">delete</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="nx">request</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;数据删除成功&#39;</span><span class="p">);</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nx">remove</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">使用索引</h3>
+<p>索引的意义在于，可以让你搜索任意字段，也就是说从任意字段拿到数据记录。如果不建立索引，默认只能搜索主键。</p>
+<p>如果，新建表格的时候，对name字段建立了索引，就可以从name中找到对应的数据记录了。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">objectStore</span><span class="p">.</span><span class="nx">createIndex</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">unique</span><span class="o">:</span> <span class="kc">false</span> <span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">transaction</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">([</span><span class="s1">&#39;person&#39;</span><span class="p">],</span> <span class="s1">&#39;readonly&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">transaction</span><span class="p">.</span><span class="nx">objectStore</span><span class="p">(</span><span class="s1">&#39;person&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">index</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">index</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;李四&#39;</span><span class="p">);</span>
+
+<span class="nx">request</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="http://www.ruanyifeng.com/blog/2018/07/indexeddb.html">http://www.ruanyifeng.com/blog/2018/07/indexeddb.html</a></p>
 </body>
