@@ -8,11 +8,11 @@
         <meta name="viewport"
             content="width=device-width, initial-scale=1.0">
         <title>Test IndexedDB</title>
-        <script type="module">
+        <script>
 
             const config = {
                 DB_NAME: 'test_db',
-                DB_VERSION: 1
+                DB_VERSION: 2
             };
 
             function getDB(dbName, dbVersion, onUpgrade) {
@@ -35,10 +35,15 @@
 
                     request.onupgradeneeded = function (ev) {
                         let db = ev.target.result;
-                        if (onUpgrade && typeof onUpgrade === 'function') {
-                            onUpgrade(db, { dbVersion, dbName });
+                        let transaction = ev.target.transaction;
+                        transaction.oncomplete = function () {
+                            debugger;
+                            resolve({ db });
                         }
-                        resolve({ db: ev.target.result, needUpgrade: true });
+                        if (onUpgrade && typeof onUpgrade === 'function') {
+                            onUpgrade(db, { dbVersion, dbName })
+                            return;
+                        }
                     }
                 })
             }
@@ -71,45 +76,44 @@
             function initDB() {
                 return new Promise((resolve, reject) => {
                     getDB(config.DB_NAME, config.DB_VERSION, (db, dbInfo) => {
-                        const tableConfigs = [
-                            {
-                                name: 'person',
-                                options: {
-                                    autoIncrement: true,
-                                },
-                                indexConfigs: [
-                                    {
-                                        name: 'email',
-                                        key: 'email',
-                                        options: {
-                                            unique: false,
-                                        }
+                        return new Promise((resolve, reject) => {
+                            const tableConfigs = [
+                                {
+                                    name: 'person',
+                                    options: {
+                                        keyPath: 'id',
                                     },
-                                    {
-                                        name: 'name',
-                                        key: 'name',
-                                        options: {
-                                            unique: false,
+                                    indexConfigs: [
+                                        {
+                                            name: 'email',
+                                            key: 'email',
+                                            options: {
+                                                unique: false,
+                                            }
+                                        },
+                                        {
+                                            name: 'name',
+                                            key: 'name',
+                                            options: {
+                                                unique: false,
+                                            }
                                         }
-                                    }
-                                ]
-                            }
-                        ];
+                                    ]
+                                }
+                            ];
 
-                        createTables(db, tableConfigs).then(res => {
-                            let { errorTables } = res;
-                            if (errorTables && errorTables.length) {
-                                console.error(errorTables);
-                            }
-                            resolve(db);
-                        }).catch(err => {
-                            reject(err);
-                        })
+                            createTables(db, tableConfigs).then(res => {
+                                let { errorTables } = res;
+                                if (errorTables && errorTables.length) {
+                                    console.error(errorTables);
+                                }
+                                resolve(db);
+                            }).catch(err => {
+                                reject(err);
+                            })
+                        });
 
                     }).then(dbInfo => {
-                        if (dbInfo.needUpgrade) {
-                            return;
-                        }
                         resolve(dbInfo.db);
                     }).catch(err => {
                         reject(err);
@@ -131,20 +135,109 @@
             }
 
             initDB().then(async db => {
-                debugger;
-                await insertPersonItem(db, {
-                    name: 'liuhao', email: 'czliuhao@qq.com'
-                })
+                window.testDb = db;
+                // await insertPersonItem(db, {
+                //     id: 1, name: 'XXX', email: 'xxx@qq.com'
+                // })
 
-                await insertPersonItem(db, {
-                    name: 'jinshan', email: 'jinshan@163.com'
-                })
+                // await insertPersonItem(db, {
+                //     id: 2, name: 'YYY', email: 'yyy@163.com'
+                // })
 
-                console.log(`insert liuhao add jinshan success!`);
+                // console.log(`insert xxx add yyy success!`);
 
             }).catch(err => {
                 console.error('initDB error', err);
             })
+
+            function readPerson(id) {
+                return new Promise((resolve, reject) => {
+                    const db = window.testDb;
+                    const transaction = db.transaction(['person']);
+                    const objectStore = transaction.objectStore('person');
+                    const request = objectStore.get(id);
+
+                    request.onerror = (err) => {
+                        reject(err);
+                    }
+
+                    request.onsuccess = function (ev) {
+                        resolve(request.result);
+                    }
+                })
+            }
+
+            function readAllPerson() {
+                return new Promise((resolve, reject) => {
+
+                    const db = window.testDb;
+                    const transaction = db.transaction(['person'], 'readonly');
+                    const objectStore = transaction.objectStore('person');
+
+                    let results = [];
+
+                    const request = objectStore.openCursor();
+
+                    request.onsuccess = (ev) => {
+                        let cursor = event.target.result;
+                        if (cursor) {
+                            results.push(cursor.value);
+                            cursor.continue();
+                        } else {
+                            resolve(results);
+                        }
+                    }
+
+                    request.onerror = (err) => {
+                        reject(err);
+                    }
+
+                });
+            }
+
+            function updatePerson(newPersonInfo) {
+
+                return new Promise((resolve, reject) => {
+                    const db = window.testDb;
+                    const request = db.transaction(['person'], 'readwrite').objectStore('person').put(newPersonInfo);
+                    request.onsuccess = (ev) => {
+                        resolve(true);
+                    };
+                    request.onerror = (err) => {
+                        reject(err);
+                    };
+                });
+            }
+
+            function deletePerson(id) {
+
+                return new Promise((resolve, reject) => {
+                    const db = window.testDb;
+                    const request = db.transaction(['person'], 'readwrite').objectStore('person').delete(id);
+                    request.onsuccess = (ev) => {
+                        resolve(true);
+                    }
+                    request.onerror = (err) => {
+                        reject(err);
+                    }
+                });
+            }
+
+            function searchByName(name) {
+
+                return new Promise((resolve, reject) => {
+                    const db = window.testDb;
+                    const request = db.transaction('person').objectStore('person').index('name').get(name);
+                    request.onerror = (err) => {
+                        reject(err);
+                    }
+
+                    request.onsuccess = (ev) => {
+                        resolve(ev.target.result);
+                    }
+                })
+            }
+
 
         </script>
     </head>
