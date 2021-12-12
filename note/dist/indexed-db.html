@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>IndexedDB 学习笔记</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1639241091345">
+  <link rel="stylesheet" href="/note/note.css?ts=1639325978108">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -231,7 +231,17 @@
 </pre></div>
 
 </code></pre>
+<h1 id="mdn-">MDN的补充</h1>
+<p>IndexedDB是一种让你在用户的浏览器内持久化存储数据的方法。IndexedDB为生成Web Application提供了丰富的查询能力，使得我们的应用在在线和离线时都可以正常工作。</p>
+<p>IndexedDB的API被设计来尽可能地减少多错误处理的需求，所以你可能不会看到很多的错误事件。</p>
+<h2 id="-">错误处理</h2>
+<p>错误处理遵循冒泡机制，错误事件都是针对产生这些错误的请求的，然后事件冒泡到事务，然后最终到达数据库对象。</p>
+<p>如果你希望避免为所有的请求都增加错误处理程序，你可以替代性的仅对数据库对象添加一个错误处理程序。</p>
+<h2 id="-">更新数据库版本</h2>
+<p>数据库会保留之前版本数据库的对象仓库，不必重建这写对象仓库。但是你需要创建新的对象仓库，或删除不再需要的对象仓库。如果你需要修改一个已存在的对象仓库，必须先删除原来的对象仓库，你需要在删除原对象仓库之前保存所有的信息。</p>
+<p>## </p>
 <h2 id="-">参考文档</h2>
 <p><a href="http://www.ruanyifeng.com/blog/2018/07/indexeddb.html">http://www.ruanyifeng.com/blog/2018/07/indexeddb.html</a></p>
+<p><a href="https://liuhao189.github.io/note/dist/indexed-db.html">https://liuhao189.github.io/note/dist/indexed-db.html</a></p>
 </body>
 </html>
