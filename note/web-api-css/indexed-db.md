@@ -341,11 +341,97 @@ IndexedDB使用对象仓库而不是表，并且一个单独的数据库可以�
 
 索引如果使用get，总是会得到键值最小的那个。你可以在索引上打开两个不同类型的游标，一个常规游标(openCursor)映射索引属性到对象存储空间中的对象。一个键索引属性(openKeyCursor)被用来存储对象存储空间中的对象的键。
 
+### 指定游标的范围和方向
 
+如果你想要限定你在游标中看到的值的范围，你可以使用一个key range对象作为参数传给openCursor或openKeyCursor。
+
+你可以构建一个只允许一个单一key的key range，或者一个具有下限或上限，或者一个既有上限又有下限。边界可以是闭合的，也可以是开放的。
+
+```js
+var singleKeyRange = IDBKeyRange.only("Donna");
+// 包括Bill，大于Bill的所有值
+var lowerBoundKeyRange = IDBKeyRange.lowerBound("Bill");
+// 不包括Bill
+var lowerBoundOpenKeyRange = IDBKeyRange.lowerBound("Bill", true);
+// 不包括Donna
+var upperBoundOpenKeyRange = IDBKeyRange.upperBound("Donna", true);
+// 在Bill和Donna之间，不包括Donna
+var boundKeyRange = IDBKeyRange.bound("Bill", "Donna", false, true);
+```
+有时候，你想要以倒序而不是正序来遍历，切换方向是通过传递prev到openCursor方法来实现的。
+
+```js
+objectStore.openCursor(boundKeyRange, "prev")
+```
+
+如果你只想改变遍历的方向，而不想对结果进行筛选，你只需要给第一个参数传入null。
+
+```js
+objectStore.openCursor(null, "prev")
+```
+
+如果你想要在游标在索引过程中过滤除重复的，你可以传入nextunique，或prevunique作为方向参数。
+
+```js
+index.openKeyCursor(null, IDBCursor.nextunique)
+```
+
+## 当一个webApp在另一个标签页中被打开时的版本变更
+
+当你使用更高的版本号调用open方法时，其它所有打开的数据库必须显式地确认请求，你才能对数据库进行修改。
+
+```js
+openReq.onblocked = function(event) {
+  // 如果其他的一些页签加载了该数据库，在我们继续之前需要关闭它们
+  alert("请关闭其他由该站点打开的页签！");
+};
+
+function useDatabase(db) {
+  // 当由其他页签请求了版本变更时，确认添加了一个会被通知的事件处理程序。
+  // 这里允许其他页签来更新数据库，如果不这样做，版本升级将不会发生知道用户关闭了这些页签。
+  db.onversionchange = function(event) {
+    db.close();
+    alert("A new version of this page is ready. Please reload or close this tab!");
+  };
+  // 处理数据库
+}
+```
+
+## 浏览器关闭警告
+
+浏览器关闭，或包含数据库的磁盘被意外移除，或数据库存储的权限丢失，将发生以下问题：
+
+1、受影响的数据库的所有事务会以AbortError错误中断。该影响和在每个事务中调用IDBTransaction.abort相同。
+
+2、所有的事务完成后，数据库连接就会关闭。
+
+3、最终，表示数据库连接的IDBDatabse对象收到一个close事件，你可以使用IDBDatabase.onclose事件句柄俩监听这些事件。
+
+在firefox50，google chrome 31发行版之前的浏览器，事务会静默中断，并且close事件不会触发。
+
+你应该始终使数据库在事务结束时处于一个稳定的状态。eg：你执行一个清空数据，然后写入数据的操作。为了避免数据丢失，应该在同一个事务中执行清空数据和写入数据。
+
+不应该把数据库事务绑定到卸载事件上。如果卸载事务由浏览器关闭所触发，卸载事件处理函数中的任何事务都不会完成。由于数据库事务是异步的，可能在它们执行之前就会被中断。
+
+# IndexedDB的关键特性
+
+1、IndexedDB存储key-value键值对。value可以是复杂的结构化对象，key可以是这个对象的属性。
+
+2、IndexedDB基于事务数据库模型构建。所有在IndexedDB中的操作都发生在事务的上下文中。
+
+3、IndexedDB的API主要是异步的。
+
+4、IndexedDB使用了大量的Request。Request是接收成功或失败的DOM事件的对象。Request的result的值类型取决于Request的类型。可能是Cursor，可能是DB，可能是普通的对象。
+
+5、IndexedDB使用DOM事件来通知你，结果已经可用。success事件不会冒泡，也不能取消。error事件是冒泡的，可被取消。
+
+6、
 
 
 ## 参考文档
 
 http://www.ruanyifeng.com/blog/2018/07/indexeddb.html
 
-https://liuhao189.github.io/note/dist/indexed-db.html
+https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Using_IndexedDB
+
+https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Terminology
