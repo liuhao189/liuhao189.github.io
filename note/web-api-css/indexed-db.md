@@ -425,7 +425,100 @@ function useDatabase(db) {
 
 5、IndexedDB使用DOM事件来通知你，结果已经可用。success事件不会冒泡，也不能取消。error事件是冒泡的，可被取消。
 
-6、
+6、IndexedDB是面向对象的。IndexedDB不是有很多表的关系型数据库。IndexedDB创建对象仓库，然后持久化JS对象到对象仓库中。每一个对象仓库有一系列的索引让查询和遍历更有效率。
+
+7、IndexedDB不使用SQL。
+
+8、IndexedDB使用上遵循同源策略。
+
+## 限制
+
+IndexedDB不能覆盖的一些场景。
+
+1、国际化地排序。并不是所有语言都遵循相同的排序规则。新版本的浏览器开始部分支持该功能。
+
+2、同步调用。API没有为服务器端的数据库使用场景设计同步API。
+
+3、全文搜索。API并没有提供like类的操作符。
+
+## 浏览器清空数据的场景
+
+1、用户请求清空特定网站的数据。
+
+2、无痕模式，在会话结束后会被清空。
+
+3、存储空间配额不够。
+
+4、数据格式不正确。
+
+5、浏览器的破坏性更新。
+
+## 关键术语
+
+### databse
+
+包括多个Object Stores，每一个Database包含name和version。
+
+databse连接，open database创建的，一个给定的database可以同时有多个连接。
+
+### index
+
+一个索引是一个为查找另一个对象仓库中的记录专用的对象仓库。索引是一个持久化的key-value存储。value的值是另一个对象仓库的key值。
+
+当引用的对象仓库的数据被插入，更新或删除时候，浏览器去自动去维护索引对象仓库。
+
+### object store
+
+保存键值对记录，以key值升序存储。在database内name必须唯一，可以指定一个键生成器或keyPath。
+
+### request
+
+读写数据库操作返回的请求。
+
+### transaction
+
+在一个数据库上原子性的数据读取和数据修改操作。
+
+一个database连接可以同时有多个活动中的事务，只要这些写事务没有重合的scope。
+
+事务的生命应该是短暂的，浏览器为了释放存储资源，会停止耗时长的事务。
+
+你可以调用事务的abort方法来手动放弃事务，这样数据会回滚。
+
+### version
+
+每一个数据库在某一时刻只能有一个版本，数据库不能多版本共存。
+
+## key and value
+
+### in-line key
+
+keypath方式指定的key。也可以使用key生成器来生成，然后设置到对象的keypath属性上。
+
+### key
+
+用来组织和检索数据，key在object store中必须唯一。
+
+key的类型可以是string，date，float，二进制blob，数组。
+
+### key generator & key path
+
+key generator：一种按顺序生成新值的机制。
+
+key path：从哪个属性提取key。
+
+### value
+
+可以包括JS里面的几乎所有对象。包括boolean，number，string，date，object，array，regexp，undefined和null。Blobs和files也可以存储。
+
+## Range & scope
+
+### cursor
+
+一种根据key界限遍历多条记录的机制。Cursor有数据源记录遍历的Index或Store，记录当前Range中的位置，记录移动方向的属性。
+
+### key range
+
 
 
 ## 参考文档

@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>IndexedDB 学习笔记</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1639499152584">
+  <link rel="stylesheet" href="/note/note.css?ts=1639584984717">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -329,7 +329,53 @@
 <p>3、IndexedDB的API主要是异步的。</p>
 <p>4、IndexedDB使用了大量的Request。Request是接收成功或失败的DOM事件的对象。Request的result的值类型取决于Request的类型。可能是Cursor，可能是DB，可能是普通的对象。</p>
 <p>5、IndexedDB使用DOM事件来通知你，结果已经可用。success事件不会冒泡，也不能取消。error事件是冒泡的，可被取消。</p>
-<p>6、</p>
+<p>6、IndexedDB是面向对象的。IndexedDB不是有很多表的关系型数据库。IndexedDB创建对象仓库，然后持久化JS对象到对象仓库中。每一个对象仓库有一系列的索引让查询和遍历更有效率。</p>
+<p>7、IndexedDB不使用SQL。</p>
+<p>8、IndexedDB使用上遵循同源策略。</p>
+<h2 id="-">限制</h2>
+<p>IndexedDB不能覆盖的一些场景。</p>
+<p>1、国际化地排序。并不是所有语言都遵循相同的排序规则。新版本的浏览器开始部分支持该功能。</p>
+<p>2、同步调用。API没有为服务器端的数据库使用场景设计同步API。</p>
+<p>3、全文搜索。API并没有提供like类的操作符。</p>
+<h2 id="-">浏览器清空数据的场景</h2>
+<p>1、用户请求清空特定网站的数据。</p>
+<p>2、无痕模式，在会话结束后会被清空。</p>
+<p>3、存储空间配额不够。</p>
+<p>4、数据格式不正确。</p>
+<p>5、浏览器的破坏性更新。</p>
+<h2 id="-">关键术语</h2>
+<h3 id="databse">databse</h3>
+<p>包括多个Object Stores，每一个Database包含name和version。</p>
+<p>databse连接，open database创建的，一个给定的database可以同时有多个连接。</p>
+<h3 id="index">index</h3>
+<p>一个索引是一个为查找另一个对象仓库中的记录专用的对象仓库。索引是一个持久化的key-value存储。value的值是另一个对象仓库的key值。</p>
+<p>当引用的对象仓库的数据被插入，更新或删除时候，浏览器去自动去维护索引对象仓库。</p>
+<h3 id="object-store">object store</h3>
+<p>保存键值对记录，以key值升序存储。在database内name必须唯一，可以指定一个键生成器或keyPath。</p>
+<h3 id="request">request</h3>
+<p>读写数据库操作返回的请求。</p>
+<h3 id="transaction">transaction</h3>
+<p>在一个数据库上原子性的数据读取和数据修改操作。</p>
+<p>一个database连接可以同时有多个活动中的事务，只要这些写事务没有重合的scope。</p>
+<p>事务的生命应该是短暂的，浏览器为了释放存储资源，会停止耗时长的事务。</p>
+<p>你可以调用事务的abort方法来手动放弃事务，这样数据会回滚。</p>
+<h3 id="version">version</h3>
+<p>每一个数据库在某一时刻只能有一个版本，数据库不能多版本共存。</p>
+<h2 id="key-and-value">key and value</h2>
+<h3 id="in-line-key">in-line key</h3>
+<p>keypath方式指定的key。也可以使用key生成器来生成，然后设置到对象的keypath属性上。</p>
+<h3 id="key">key</h3>
+<p>用来组织和检索数据，key在object store中必须唯一。</p>
+<p>key的类型可以是string，date，float，二进制blob，数组。</p>
+<h3 id="key-generator-key-path">key generator &amp; key path</h3>
+<p>key generator：一种按顺序生成新值的机制。</p>
+<p>key path：从哪个属性提取key。</p>
+<h3 id="value">value</h3>
+<p>可以包括JS里面的几乎所有对象。包括boolean，number，string，date，object，array，regexp，undefined和null。Blobs和files也可以存储。</p>
+<h2 id="range-scope">Range &amp; scope</h2>
+<h3 id="cursor">cursor</h3>
+<p>一种根据key界限遍历多条记录的机制。Cursor有数据源记录遍历的Index或Store，记录当前Range中的位置，记录移动方向的属性。</p>
+<h3 id="key-range">key range</h3>
 <h2 id="-">参考文档</h2>
 <p><a href="http://www.ruanyifeng.com/blog/2018/07/indexeddb.html">http://www.ruanyifeng.com/blog/2018/07/indexeddb.html</a></p>
 <p><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Using_IndexedDB">https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Using_IndexedDB</a></p>
