@@ -519,6 +519,13 @@ key path：从哪个属性提取key。
 
 ### key range
 
+key的区间表示，包含上限和下限。
+
+### scope
+
+事务作用于的object store或index。如果是readwrtie事务，且有重叠的作用域，它们会按次序依次执行。
+
+
 
 
 ## 参考文档

@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>IndexedDB 学习笔记</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1639584984717">
+  <link rel="stylesheet" href="/note/note.css?ts=1639930572852">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -376,6 +376,9 @@
 <h3 id="cursor">cursor</h3>
 <p>一种根据key界限遍历多条记录的机制。Cursor有数据源记录遍历的Index或Store，记录当前Range中的位置，记录移动方向的属性。</p>
 <h3 id="key-range">key range</h3>
+<p>key的区间表示，包含上限和下限。</p>
+<h3 id="scope">scope</h3>
+<p>事务作用于的object store或index。如果是readwrtie事务，且有重叠的作用域，它们会按次序依次执行。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="http://www.ruanyifeng.com/blog/2018/07/indexeddb.html">http://www.ruanyifeng.com/blog/2018/07/indexeddb.html</a></p>
 <p><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Using_IndexedDB">https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Using_IndexedDB</a></p>
