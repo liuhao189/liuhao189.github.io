@@ -31,6 +31,10 @@ function openDBAsync(dbName: string, dbVersion: number, onUpgrade: (db: IDBDatab
             resolve(openRequest.result);
         }
 
+        openRequest.onblocked = function (ev) {
+            alert(`请关闭其它由该站点打开的标签。`)
+        }
+
         openRequest.onupgradeneeded = (ev: IDBVersionChangeEvent) => {
             //@ts-ignore
             const db = ev.target!.result as IDBDatabase;
@@ -157,12 +161,16 @@ async function main() {
     }
 
     const DB_NAME = 'testDB';
-    const DB_VERSION = 6;
+    const DB_VERSION = 7;
 
     try {
         const db = await openDBAsync(DB_NAME, DB_VERSION, createTableAndIndexs);
         await addCustomersAsync(db);
         window.myDB = db;
+
+        window.myDB.onversionchange = function (ev) {
+            alert(`A new version of this page is ready.Please reload or close this tab!`)
+        }
 
     } catch (ex) {
         console.error(`main error `, ex);

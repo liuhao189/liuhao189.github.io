@@ -525,8 +525,25 @@ key的区间表示，包含上限和下限。
 
 事务作用于的object store或index。如果是readwrtie事务，且有重叠的作用域，它们会按次序依次执行。
 
+## 扩展阅读
 
+### 结构化克隆算法
 
+结构化克隆算法主要是拷贝复杂的JS对象。当你调用structuredClone，在线程之间postMessage，使用IndexedDB存储对象时，被JS引擎隐式调用。
+
+它通过遍历输入对象，同时维护之前访问的属性值来避免循环引用错误。
+
+#### 不能克隆的数据类型
+
+1、Function对象不能克隆，会报DataCloneError的异常。
+
+2、DOM节点也不能克隆，会报DataCloneError的异常。
+
+3、不会保留的节点：RegExp的lastIndex节点，属性描述符，setters & getters和其它类似的原描述功能，原型链不会被克隆。
+
+#### 可以支持的数据类型
+
+基本类型，Boolean对象，String对象，Date，RegExp，Blob，File，FileList，ArrayBuffer，ArrayBufferView，ImageBiteMap，ImageData，Array，Object，Map，Set。
 
 ## 参考文档
 
