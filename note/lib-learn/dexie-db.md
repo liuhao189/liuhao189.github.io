@@ -1,4 +1,4 @@
-# Dexie学习
+# DexieDB学习
 
 dexie是IndexedDB的包装类库。Dexie主要解决原生IndexedDB存在的三个主要问题：
 
@@ -110,7 +110,7 @@ export const db = new MyDexie();
 
 ### 添加数据
 
-添加数据到DB可以调用Table.add，Table.put，Table.update和Collection.mofify。
+添加数据到DB可以调用Table.add，Table.put，Table.update和Collection.modify。
 
 ```js
 window.addEventListener('load', () => {
@@ -193,7 +193,7 @@ class MyDexieDb extends Dexie {
 
 #### MultiEntry索引
 
-MultiEntry的索引表示的是索引属性的值是数组值。每一个数组中的值会指向那条记录。
+MultiEntry的索引表示的是索引属性的值是数组值。每一个数组中的值会指向自身所在的相同的记录。
 
 ```js
 class MyBookDb extends Dexie {
@@ -252,7 +252,7 @@ class MyPeopleDb extends Dexie {
   persons: Dexie.Table<Person, number>;
   constructor() {
     super('PeopleDB');
-    this.version(1).stores({
+    this.version(2).stores({
       persons: 'id,[firstName+lastName]'
     });
 
@@ -282,10 +282,106 @@ db.addPerson({
 })
 ```
 
-也可以使用db.persons.where({firstName:'fName',lastName:'lName'})来搜索。
+#### 联合索引查询
 
-#### 
+可以使用属性和属性值的对象来查询。
 
+```js
+db.persons.where({ firstName: 'White', lastName: 'Queen' }).toArray().then(res => {
+  console.log(`res is `, res);
+})
+```
+
+也可以直接直接使用索引名称来查询。
+
+```js
+db.persons.where('[firstName+lastName]').equals(['White', 'Queen']).toArray().then(res => {
+  console.log(`res is `, res);
+});
+```
+
+#### 联合索引是如何工作的？
+
+联合索引在IndexedDB中存储为数组。
+
+#### 只查询第一个属性值
+
+可以只查询firstName='xxx'的所有记录。
+
+```js
+db.persons.where('[firstName+lastName]').between(['White', Dexie.minKey], ['White', Dexie.maxKey]).toArray().then((res) => {
+  console.log(`res is `, res);
+})
+```
+
+从Dexie3.x开始，联合索引开始添加虚拟索引，一般是联合索引的第一个字段。
+
+```js
+db.persons.where('firstName').equals("White").toArray().then(res => {
+  console.log(`res is `, res);
+});
+```
+
+注意：只有联合索引的第一个字段可以单独使用。对于任何支持复合索引的BTree数据库，这都是相同的规则。
+
+```js
+db.persons.where('[firstName+lastName]').anyOf([['White', 'King'], ['White', 'Queen']]).toArray().then(res => {
+  console.log(`res is `, res);
+});
+```
+
+#### 联合主键
+
+可以使用联合主键，只是该键不能自加。
+
+```js
+  constructor() {
+      super('PeopleDB');
+      this.version(2).stores({
+          personsNew: '[firstName+lastName]'
+      });
+      this.persons = this.table('personsNew');
+  }
+```
+
+#### 浏览器限制
+
+IE，非Chromium的Edge，和低于10的Safaru不支持联合索引，也不支持联合索引做主键。你可以声明联合索引，但在使用where('[x+y]')时会报错。
+
+但是使用对象查询参数时，该查询可以在所有浏览器上运行。如果浏览器支持联合索引，则使用联合索引，如果浏览器不支持联合索引，则使用简单索引，如果这些都不支持，则使用全表扫描然后过滤即可。
+
+```js
+table.where({
+   prop1: value1,
+   prop2: value2,
+   ...
+})
+```
+
+#### 使用OrderBy
+
+如果联合索引是'[firstName+lastName]'，table.orderBy会先按firstName，再按lastName进行排序。
+
+排序算法不止在调用orderBy时生效，在使用where字句时也会生效。
+
+```js
+db.persons.where('[firstName+lastName]').between(['W', ''], ['Z', '']).toArray().then(res => {
+  console.log(res);
+});
+```
+
+如果某个对象缺少firstName或lastName，则不会出现在结果中。联合索引只包含两个字段均有合法值得对象。
+
+如果你的应用需要按几种方式排序，你可以增加多个联合顺序不同的联合索引。
+
+```js
+db.version(x).stores({
+    people: `
+      ++id,
+      [firstName+lastName],
+      [lastName+firstName]`
+});
+```
 
 
 ## 参考文档

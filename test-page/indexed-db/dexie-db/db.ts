@@ -143,11 +143,11 @@ class MyPeopleDb extends Dexie {
   persons: Dexie.Table<Person, number>;
   constructor() {
     super('PeopleDB');
-    this.version(1).stores({
-      persons: 'id,[firstName+lastName]'
+    this.version(2).stores({
+      personsNew: '[firstName+lastName]'
     });
 
-    this.persons = this.table('persons');
+    this.persons = this.table('personsNew');
   }
 
   addPerson(personItem: Person) {
@@ -172,4 +172,32 @@ db.addPerson({
   lastName: "Queen",
 })
 
+db.addPerson({
+  id: 3,
+  firstName: "Black",
+  lastName: "One"
+})
 
+// db.persons.where({ firstName: 'White', lastName: 'Queen' }).toArray().then(res => {
+//   console.log(`res is `, res);
+// });
+
+// db.persons.where('[firstName+lastName]').equals(['White', 'Queen']).toArray().then(res => {
+//   console.log(`res is `, res);
+// });
+
+// db.persons.where('[firstName+lastName]').between(['White', Dexie.minKey], ['White', Dexie.maxKey]).toArray().then((res) => {
+//   console.log(`res is `, res);
+// })
+
+// db.persons.where('firstName').equals("White").toArray().then(res => {
+//   console.log(`res is `, res);
+// });
+
+// db.persons.where('[firstName+lastName]').anyOf([['White', 'King'], ['White', 'Queen']]).toArray().then(res => {
+//   console.log(`res is `, res);
+// });
+
+db.persons.where('[firstName+lastName]').between(['W', ''], ['Z', '']).toArray().then(res => {
+  console.log(res);
+});

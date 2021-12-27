@@ -50,28 +50,48 @@
 // }
 // import Dexie from 'dexie';
 class MyPeopleDb extends Dexie {
-  constructor() {
-    super('PeopleDB');
-    this.version(1).stores({
-      persons: 'id,[firstName+lastName]'
-    });
-    this.persons = this.table('persons');
-  }
-  addPerson(personItem) {
-    this.persons.put(personItem);
-  }
-  queryPersonByName(nameArr) {
-    return this.persons.where('[firstName+lastName]').equals(nameArr).toArray();
-  }
+    constructor() {
+        super('PeopleDB');
+        this.version(2).stores({
+            personsNew: '[firstName+lastName]'
+        });
+        this.persons = this.table('personsNew');
+    }
+    addPerson(personItem) {
+        this.persons.put(personItem);
+    }
+    queryPersonByName(nameArr) {
+        return this.persons.where('[firstName+lastName]').equals(nameArr).toArray();
+    }
 }
 const db = new MyPeopleDb();
 db.addPerson({
-  id: 1,
-  firstName: "White",
-  lastName: "King",
+    id: 1,
+    firstName: "White",
+    lastName: "King",
 });
 db.addPerson({
-  id: 2,
-  firstName: "White",
-  lastName: "Queen",
+    id: 2,
+    firstName: "White",
+    lastName: "Queen",
 });
+db.addPerson({
+    id: 3,
+    firstName: "Black",
+    lastName: "One"
+});
+// db.persons.where({ firstName: 'White', lastName: 'Queen' }).toArray().then(res => {
+//   console.log(`res is `, res);
+// });
+// db.persons.where('[firstName+lastName]').equals(['White', 'Queen']).toArray().then(res => {
+//   console.log(`res is `, res);
+// });
+// db.persons.where('[firstName+lastName]').between(['White', Dexie.minKey], ['White', Dexie.maxKey]).toArray().then((res) => {
+//   console.log(`res is `, res);
+// })
+// db.persons.where('firstName').equals("White").toArray().then(res => {
+//   console.log(`res is `, res);
+// });
+// db.persons.where('[firstName+lastName]').anyOf([['White', 'King'], ['White', 'Queen']]).toArray().then(res => {
+//   console.log(`res is `, res);
+// });
