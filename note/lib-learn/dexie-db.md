@@ -346,7 +346,7 @@ db.persons.where('[firstName+lastName]').anyOf([['White', 'King'], ['White', 'Qu
 
 #### 浏览器限制
 
-IE，非Chromium的Edge，和低于10的Safaru不支持联合索引，也不支持联合索引做主键。你可以声明联合索引，但在使用where('[x+y]')时会报错。
+IE，非Chromium的Edge，和低于10的Safari不支持联合索引，也不支持联合索引做主键。你可以声明联合索引，但在使用where('[x+y]')时会报错。
 
 但是使用对象查询参数时，该查询可以在所有浏览器上运行。如果浏览器支持联合索引，则使用联合索引，如果浏览器不支持联合索引，则使用简单索引，如果这些都不支持，则使用全表扫描然后过滤即可。
 
@@ -382,6 +382,79 @@ db.version(x).stores({
       [lastName+firstName]`
 });
 ```
+
+### upgrade
+
+```ts
+class MyDB extends Dexie {
+    constructor() {
+        super('MyDB');
+        this.version(1).stores({
+            friends: '++id,name,age',
+            gameSessions: 'id,score'
+        });
+        this.friends = this.table(`friends`);
+        this.gameSessions = this.table(`gameSessions`);
+    }
+}
+const myDB = new MyDB();
+```
+
+注意：只有存入数据后，indexedDB中才会出现表结构。
+
+```js
+class MyDB extends Dexie {
+  friends: Dexie.Table<{ id?: number, name: string, age: number }, number>;
+  gameSessions: Dexie.Table<{ id: number, score: number }, number>;
+
+  constructor() {
+    super('MyDB');
+    this.version(2).stores({
+      friends: '++id,[firstName+lastName],yearOfBirth,*tags',
+      gameSessions: null
+    });
+
+    this.friends = this.table(`friends`);
+    this.gameSessions = this.table(`gameSessions`);
+  }
+}
+
+const myDB = new MyDB();
+```
+
+注意：只有存入新数据后，indexedDB才会变更表结构和索引。
+
+### Class Binding
+
+```js
+class Friend {
+  id!: number;
+  firstName!: string;
+  lastName!: string;
+  yearOfBirth!: number;
+  tags!: Array<string>;
+
+  save() {
+    return myDB.friends.put(this);
+  }
+
+  get age() {
+    return (new Date().getFullYear() - this.yearOfBirth);
+  }
+}
+
+myDB.friends.mapToClass(Friend);
+```
+
+调用该方法会使从friends取出的对象会成为你绑定的类的实例。所以原型链上的方法都可以使用。
+
+在底层，原始的DB对象通过Object.create的方法来浅拷贝到你绑定的类的实例上。
+
+这个功能只适用于Table.get，Table.toArray，Table.each，Collection.toArray()，Collection.each()，Collection.first()，Collection.last()。
+
+不适用于过滤的查询，Collection.filter，Collection.and，Collection.modify，Collection.Raw。
+
+值得注意的是，它不适用于任何钩子函数。Table.hook('creating')，Table.hook('update')，Table.hook(`reading`)，Table.hook(‘deleting’)。
 
 
 ## 参考文档

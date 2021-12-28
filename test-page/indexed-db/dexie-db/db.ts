@@ -63,7 +63,7 @@
 //   }
 // }
 
-import Dexie from 'dexie';
+// import Dexie from 'dexie';
 
 // interface Friend {
 //   name: string;
@@ -133,71 +133,108 @@ import Dexie from 'dexie';
 // })
 
 
-interface Person {
-  id: number;
-  firstName: string;
-  lastName: string;
-}
+// interface Person {
+//   id: number;
+//   firstName: string;
+//   lastName: string;
+// }
 
-class MyPeopleDb extends Dexie {
-  persons: Dexie.Table<Person, number>;
-  constructor() {
-    super('PeopleDB');
-    this.version(2).stores({
-      personsNew: '[firstName+lastName]'
-    });
+// class MyPeopleDb extends Dexie {
+//   persons: Dexie.Table<Person, number>;
+//   constructor() {
+//     super('PeopleDB');
+//     this.version(2).stores({
+//       personsNew: '[firstName+lastName]'
+//     });
 
-    this.persons = this.table('personsNew');
-  }
+//     this.persons = this.table('personsNew');
+//   }
 
-  addPerson(personItem: Person) {
-    this.persons.put(personItem);
-  }
+//   addPerson(personItem: Person) {
+//     this.persons.put(personItem);
+//   }
 
-  queryPersonByName(nameArr: Array<string>) {
-    return this.persons.where('[firstName+lastName]').equals(nameArr).toArray();
-  }
-}
+//   queryPersonByName(nameArr: Array<string>) {
+//     return this.persons.where('[firstName+lastName]').equals(nameArr).toArray();
+//   }
+// }
 
-const db = new MyPeopleDb();
-db.addPerson({
-  id: 1,
-  firstName: "White",
-  lastName: "King",
-});
-
-db.addPerson({
-  id: 2,
-  firstName: "White",
-  lastName: "Queen",
-})
-
-db.addPerson({
-  id: 3,
-  firstName: "Black",
-  lastName: "One"
-})
-
-// db.persons.where({ firstName: 'White', lastName: 'Queen' }).toArray().then(res => {
-//   console.log(`res is `, res);
+// const db = new MyPeopleDb();
+// db.addPerson({
+//   id: 1,
+//   firstName: "White",
+//   lastName: "King",
 // });
 
-// db.persons.where('[firstName+lastName]').equals(['White', 'Queen']).toArray().then(res => {
-//   console.log(`res is `, res);
-// });
-
-// db.persons.where('[firstName+lastName]').between(['White', Dexie.minKey], ['White', Dexie.maxKey]).toArray().then((res) => {
-//   console.log(`res is `, res);
+// db.addPerson({
+//   id: 2,
+//   firstName: "White",
+//   lastName: "Queen",
 // })
 
-// db.persons.where('firstName').equals("White").toArray().then(res => {
-//   console.log(`res is `, res);
+// db.addPerson({
+//   id: 3,
+//   firstName: "Black",
+//   lastName: "One"
+// })
+
+// // db.persons.where({ firstName: 'White', lastName: 'Queen' }).toArray().then(res => {
+// //   console.log(`res is `, res);
+// // });
+
+// // db.persons.where('[firstName+lastName]').equals(['White', 'Queen']).toArray().then(res => {
+// //   console.log(`res is `, res);
+// // });
+
+// // db.persons.where('[firstName+lastName]').between(['White', Dexie.minKey], ['White', Dexie.maxKey]).toArray().then((res) => {
+// //   console.log(`res is `, res);
+// // })
+
+// // db.persons.where('firstName').equals("White").toArray().then(res => {
+// //   console.log(`res is `, res);
+// // });
+
+// // db.persons.where('[firstName+lastName]').anyOf([['White', 'King'], ['White', 'Queen']]).toArray().then(res => {
+// //   console.log(`res is `, res);
+// // });
+
+// db.persons.where('[firstName+lastName]').between(['W', ''], ['Z', '']).toArray().then(res => {
+//   console.log(res);
 // });
 
-// db.persons.where('[firstName+lastName]').anyOf([['White', 'King'], ['White', 'Queen']]).toArray().then(res => {
-//   console.log(`res is `, res);
-// });
 
-db.persons.where('[firstName+lastName]').between(['W', ''], ['Z', '']).toArray().then(res => {
-  console.log(res);
-});
+import Dexie from 'dexie';
+
+class MyDB extends Dexie {
+  friends: Dexie.Table<{ id?: number, firstName: string, lastName: string; yearOfBirth: number, tags: Array<string> }, number>;
+
+  constructor() {
+    super('MyDB');
+    this.version(2).stores({
+      friends: '++id,[firstName+lastName],yearOfBirth,*tags'
+    });
+
+    this.friends = this.table(`friends`);
+  }
+}
+
+const myDB = new MyDB();
+
+class Friend {
+  id!: number;
+  firstName!: string;
+  lastName!: string;
+  yearOfBirth!: number;
+  tags!: Array<string>;
+
+  save() {
+    return myDB.friends.put(this);
+  }
+
+  get age() {
+    return (new Date().getFullYear() - this.yearOfBirth);
+  }
+}
+
+myDB.friends.mapToClass(Friend);
+
