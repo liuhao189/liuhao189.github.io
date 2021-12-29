@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>DexieDB学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1640791712686">
+  <link rel="stylesheet" href="/note/note.css?ts=1640794338516">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -380,7 +380,16 @@
     <span class="k">this</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nx">stores</span><span class="p">({</span>
       <span class="nx">friends</span><span class="o">:</span> <span class="s1">&#39;++id,[firstName+lastName],yearOfBirth,*tags&#39;</span><span class="p">,</span>
       <span class="nx">gameSessions</span><span class="o">:</span> <span class="kc">null</span>
-    <span class="p">});</span>
+    <span class="p">}).</span><span class="nx">upgrade</span><span class="p">(</span><span class="nx">tx</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="c1">// modify可以更改</span>
+      <span class="k">return</span> <span class="nx">tx</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="s2">&quot;friends&quot;</span><span class="p">).</span><span class="nx">modify</span><span class="p">(</span><span class="nx">friend</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="nx">friend</span><span class="p">.</span><span class="nx">firstName</span> <span class="o">=</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">];</span>
+          <span class="nx">friend</span><span class="p">.</span><span class="nx">lastName</span> <span class="o">=</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">];</span>
+          <span class="nx">friend</span><span class="p">.</span><span class="nx">birthDate</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getFullYear</span><span class="p">()</span> <span class="o">-</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+          <span class="k">delete</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+          <span class="k">delete</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">age</span><span class="p">;</span>
+      <span class="p">});</span>
+   <span class="p">});</span>
 
     <span class="k">this</span><span class="p">.</span><span class="nx">friends</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="err">`</span><span class="nx">friends</span><span class="err">`</span><span class="p">);</span>
     <span class="k">this</span><span class="p">.</span><span class="nx">gameSessions</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="err">`</span><span class="nx">gameSessions</span><span class="err">`</span><span class="p">);</span>
@@ -414,10 +423,140 @@
 
 </code></pre>
 <p>调用该方法会使从friends取出的对象会成为你绑定的类的实例。所以原型链上的方法都可以使用。</p>
-<p>在底层，原始的DB对象通过Object.create的方法来浅拷贝到你绑定的类的实例上。</p>
+<p>实现上，原始的DB对象通过Object.create的方法来浅拷贝到你绑定的类的实例上。</p>
 <p>这个功能只适用于Table.get，Table.toArray，Table.each，Collection.toArray()，Collection.each()，Collection.first()，Collection.last()。</p>
 <p>不适用于过滤的查询，Collection.filter，Collection.and，Collection.modify，Collection.Raw。</p>
 <p>值得注意的是，它不适用于任何钩子函数。Table.hook(&#39;creating&#39;)，Table.hook(&#39;update&#39;)，Table.hook(<code>reading</code>)，Table.hook(‘deleting’)。</p>
+<h3 id="add-items">Add Items</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">myDB</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">firstName</span><span class="o">:</span> <span class="s1">&#39;White&#39;</span><span class="p">,</span><span class="nx">lastName</span><span class="o">:</span> <span class="s1">&#39;If&#39;</span><span class="p">,</span><span class="nx">yearOfBirth</span><span class="o">:</span> <span class="mi">1999</span><span class="p">,</span> <span class="nx">tags</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;one&#39;</span><span class="p">,</span><span class="s1">&#39;two&#39;</span><span class="p">,</span><span class="s1">&#39;three&#39;</span><span class="p">]});</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">myDB</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">bulkAdd</span><span class="p">([{</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span><span class="nx">name</span><span class="o">:</span><span class="s1">&#39;BeiBianliu&#39;</span><span class="p">},{</span><span class="nx">id</span><span class="o">:</span><span class="mi">2</span><span class="p">,</span><span class="nx">name</span><span class="o">:</span><span class="s1">&#39;XiBianCao&#39;</span><span class="p">}])</span>
+</pre></div>
+
+</code></pre>
+<p>如果你有大量的对象要存储到ObjectStore中，使用bulkAdd会比add更快一些。</p>
+<h3 id="update-items">Update Items</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">put</span><span class="p">({</span><span class="nx">id</span><span class="o">:</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Foo&quot;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">33</span><span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">bulkPut</span><span class="p">([</span>
+    <span class="p">{</span><span class="nx">id</span><span class="o">:</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Foo2&quot;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">34</span><span class="p">},</span>
+    <span class="p">{</span><span class="nx">id</span><span class="o">:</span> <span class="mi">5</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Bar2&quot;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">44</span><span class="p">}</span>
+<span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">myDB</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="mi">1</span><span class="p">,{</span><span class="nx">name</span><span class="o">:</span><span class="s1">&#39;Bar&#39;</span><span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">myDB</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nx">modify</span><span class="p">({</span><span class="nx">discount</span><span class="o">:</span><span class="mf">0.5</span><span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="delete-items">Delete Items</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="k">delete</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">bulkDelete</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">logEntries</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;timestamp&#39;</span><span class="p">).</span><span class="nx">below</span><span class="p">(</span><span class="nx">oneWeekAgo</span><span class="p">)</span>
+    <span class="p">.</span><span class="k">delete</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<h3 id="queryitems">QueryItems</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">someFriends</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">).</span><span class="nx">between</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">offset</span><span class="p">(</span><span class="mi">150</span><span class="p">).</span><span class="nx">limit</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">).</span><span class="nx">equalsIgnoreCase</span><span class="p">(</span><span class="s2">&quot;josephine&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">friend</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Found Josephine&quot;</span><span class="p">,</span> <span class="nx">friend</span><span class="p">);</span>
+    <span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">abcFriends</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">startsWithAnyOfIgnoreCase</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">inAnyRange</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">18</span><span class="p">],</span> <span class="p">[</span><span class="mi">65</span><span class="p">,</span> <span class="kc">Infinity</span><span class="p">]])</span>
+    <span class="p">.</span><span class="nx">modify</span><span class="p">({</span><span class="nx">discount</span><span class="o">:</span> <span class="mf">0.5</span><span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">friendsContainingLetterA</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+    <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">friend</span> <span class="o">=&gt;</span> <span class="sr">/a/i</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">))</span>
+    <span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<h4 id="joining">Joining</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">db</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Dexie</span><span class="p">(</span><span class="s1">&#39;music&#39;</span><span class="p">);</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nx">stores</span><span class="p">({</span>
+    <span class="nx">genres</span><span class="o">:</span> <span class="s1">&#39;++id,name&#39;</span><span class="p">,</span>
+    <span class="nx">albums</span><span class="o">:</span> <span class="s1">&#39;++id,name,year,*tracks&#39;</span><span class="p">,</span>
+    <span class="nx">bands</span><span class="o">:</span> <span class="s1">&#39;++id,name,*albumIds,genreId&#39;</span>
+<span class="p">});</span>
+
+<span class="nx">async</span> <span class="kd">function</span> <span class="nx">getBandsStartingWithA</span> <span class="p">()</span> <span class="p">{</span>
+
+    <span class="kr">const</span> <span class="nx">bands</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">bands</span>
+        <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">startsWith</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+
+    <span class="nx">await</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span> <span class="p">(</span><span class="nx">bands</span><span class="p">.</span><span class="nx">map</span> <span class="p">(</span><span class="nx">async</span> <span class="nx">band</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="p">[</span><span class="nx">band</span><span class="p">.</span><span class="nx">genre</span><span class="p">,</span> <span class="nx">band</span><span class="p">.</span><span class="nx">albums</span><span class="p">]</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nx">genres</span><span class="p">.</span><span class="nx">get</span> <span class="p">(</span><span class="nx">band</span><span class="p">.</span><span class="nx">genreId</span><span class="p">),</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nx">albums</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">).</span><span class="nx">anyOf</span><span class="p">(</span><span class="nx">band</span><span class="p">.</span><span class="nx">albumIds</span><span class="p">).</span><span class="nx">toArray</span><span class="p">()</span>
+      <span class="p">]);</span>
+    <span class="p">}));</span>
+
+    <span class="k">return</span> <span class="nx">bands</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="ongoing-transcation">Ongoing Transcation</h3>
+<p>原子变更</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">async</span> <span class="kd">function</span> <span class="nx">addComment</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">comment</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+        <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">equals</span><span class="p">(</span><span class="nx">friendId</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">modify</span><span class="p">(</span><span class="nx">friend</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">friend</span><span class="p">.</span><span class="nx">comments</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">comment</span><span class="p">);</span>
+        <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="nx">async</span> <span class="kd">function</span> <span class="nx">spreadYourLove</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">goodFriendKeys</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">goodFriends</span><span class="p">().</span><span class="nx">primaryKeys</span><span class="p">();</span>
+        <span class="nx">await</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span>
+            <span class="nx">goodFriendKeys</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">id</span> <span class="o">=&gt;</span> <span class="nx">addComment</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&quot;I like you!&quot;</span><span class="p">))</span>
+        <span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="https://dexie.org/docs/Tutorial/React">https://dexie.org/docs/Tutorial/React</a></p>
 <p><a href="https://dexie.org/docs/API-Reference#quick-reference">https://dexie.org/docs/API-Reference#quick-reference</a></p>

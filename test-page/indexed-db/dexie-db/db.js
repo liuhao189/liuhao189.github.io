@@ -160,7 +160,7 @@
 // db.persons.where('[firstName+lastName]').between(['W', ''], ['Z', '']).toArray().then(res => {
 //   console.log(res);
 // });
-import Dexie from 'dexie';
+// import Dexie from 'dexie';
 class MyDB extends Dexie {
     constructor() {
         super('MyDB');

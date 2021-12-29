@@ -412,7 +412,16 @@ class MyDB extends Dexie {
     this.version(2).stores({
       friends: '++id,[firstName+lastName],yearOfBirth,*tags',
       gameSessions: null
-    });
+    }).upgrade(tx => {
+      // modify可以更改
+      return tx.table("friends").modify(friend => {
+          friend.firstName = friend.name.split(' ')[0];
+          friend.lastName = friend.name.split(' ')[1];
+          friend.birthDate = new Date(new Date().getFullYear() - friend.age, 0);
+          delete friend.name;
+          delete friend.age;
+      });
+   });
 
     this.friends = this.table(`friends`);
     this.gameSessions = this.table(`gameSessions`);
@@ -448,13 +457,155 @@ myDB.friends.mapToClass(Friend);
 
 调用该方法会使从friends取出的对象会成为你绑定的类的实例。所以原型链上的方法都可以使用。
 
-在底层，原始的DB对象通过Object.create的方法来浅拷贝到你绑定的类的实例上。
+实现上，原始的DB对象通过Object.create的方法来浅拷贝到你绑定的类的实例上。
 
 这个功能只适用于Table.get，Table.toArray，Table.each，Collection.toArray()，Collection.each()，Collection.first()，Collection.last()。
 
 不适用于过滤的查询，Collection.filter，Collection.and，Collection.modify，Collection.Raw。
 
 值得注意的是，它不适用于任何钩子函数。Table.hook('creating')，Table.hook('update')，Table.hook(`reading`)，Table.hook(‘deleting’)。
+
+
+### Add Items
+
+```js
+myDB.friends.add({id:1, firstName: 'White',lastName: 'If',yearOfBirth: 1999, tags: ['one','two','three']});
+```
+
+```js
+myDB.friends.bulkAdd([{id:1,name:'BeiBianliu'},{id:2,name:'XiBianCao'}])
+```
+
+如果你有大量的对象要存储到ObjectStore中，使用bulkAdd会比add更快一些。
+
+### Update Items
+
+```js
+await db.friends.put({id: 4, name: "Foo", age: 33});
+```
+
+```js
+await db.friends.bulkPut([
+    {id: 4, name: "Foo2", age: 34},
+    {id: 5, name: "Bar2", age: 44}
+]);
+```
+
+```js
+await myDB.friends.update(1,{name:'Bar'})
+```
+
+```js
+await myDB.friends.where('id').equals(1).modify({discount:0.5})
+```
+
+### Delete Items
+
+```js
+await db.friends.delete(4);
+```
+
+```js
+await db.friends.bulkDelete([1,2,4]);
+```
+
+```js
+await db.logEntries
+    .where('timestamp').below(oneWeekAgo)
+    .delete();
+```
+
+
+### QueryItems
+
+```js
+const someFriends = await db.friends
+    .where("age").between(20, 25)
+    .offset(150).limit(25)
+    .toArray();
+```
+
+```js
+await db.friends
+    .where("name").equalsIgnoreCase("josephine")
+    .each(friend => {
+        console.log("Found Josephine", friend);
+    });
+```
+
+```js
+const abcFriends = await db.friends
+    .where("name")
+    .startsWithAnyOfIgnoreCase(["a", "b", "c"])
+    .toArray();
+```
+
+```js
+await db.friends
+    .where('age')
+    .inAnyRange([[0,18], [65, Infinity]])
+    .modify({discount: 0.5});
+```
+
+```js
+const friendsContainingLetterA = await db.friends
+    .filter(friend => /a/i.test(friend.name))
+    .toArray();
+```
+
+#### Joining
+
+```js
+var db = new Dexie('music');
+db.version(1).stores({
+    genres: '++id,name',
+    albums: '++id,name,year,*tracks',
+    bands: '++id,name,*albumIds,genreId'
+});
+
+async function getBandsStartingWithA () {
+
+    const bands = await db.bands
+        .where('name')
+        .startsWith('A')
+        .toArray();
+    
+    await Promise.all (bands.map (async band => {
+      [band.genre, band.albums] = await Promise.all([
+        db.genres.get (band.genreId),
+        db.albums.where('id').anyOf(band.albumIds).toArray()
+      ]);
+    }));
+    
+    return bands;
+}
+```
+
+### Ongoing Transcation
+
+原子变更
+
+```js
+async function addComment(friendId, comment) {
+    await db.friends
+        .where('id')
+        .equals(friendId)
+        .modify(friend => {
+            friend.comments.push(comment);
+        });
+}
+
+async function spreadYourLove() {
+    await db.transaction('rw', db.friends, async () => {
+        const goodFriendKeys = await goodFriends().primaryKeys();
+        await Promise.all(
+            goodFriendKeys.map(id => addComment(id, "I like you!"))
+        );
+    });
+}
+```
+
+
 
 
 ## 参考文档
