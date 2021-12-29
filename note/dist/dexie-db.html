@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>DexieDB学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1640622119128">
+  <link rel="stylesheet" href="/note/note.css?ts=1640791712686">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -324,7 +324,7 @@
 
 </code></pre>
 <h4 id="-">浏览器限制</h4>
-<p>IE，非Chromium的Edge，和低于10的Safaru不支持联合索引，也不支持联合索引做主键。你可以声明联合索引，但在使用where(&#39;[x+y]&#39;)时会报错。</p>
+<p>IE，非Chromium的Edge，和低于10的Safari不支持联合索引，也不支持联合索引做主键。你可以声明联合索引，但在使用where(&#39;[x+y]&#39;)时会报错。</p>
 <p>但是使用对象查询参数时，该查询可以在所有浏览器上运行。如果浏览器支持联合索引，则使用联合索引，如果浏览器不支持联合索引，则使用简单索引，如果这些都不支持，则使用全表扫描然后过滤即可。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span>
    <span class="nx">prop1</span><span class="o">:</span> <span class="nx">value1</span><span class="p">,</span>
@@ -354,6 +354,70 @@
 </pre></div>
 
 </code></pre>
+<h3 id="upgrade">upgrade</h3>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">MyDB</span> <span class="kr">extends</span> <span class="nx">Dexie</span> <span class="p">{</span>
+    <span class="kr">constructor</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kr">super</span><span class="p">(</span><span class="s1">&#39;MyDB&#39;</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nx">stores</span><span class="p">({</span>
+            <span class="nx">friends</span><span class="o">:</span> <span class="s1">&#39;++id,name,age&#39;</span><span class="p">,</span>
+            <span class="nx">gameSessions</span><span class="o">:</span> <span class="s1">&#39;id,score&#39;</span>
+        <span class="p">});</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">friends</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="err">`</span><span class="nx">friends</span><span class="err">`</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">gameSessions</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="err">`</span><span class="nx">gameSessions</span><span class="err">`</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="kr">const</span> <span class="nx">myDB</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MyDB</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<p>注意：只有存入数据后，indexedDB中才会出现表结构。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">MyDB</span> <span class="kr">extends</span> <span class="nx">Dexie</span> <span class="p">{</span>
+  <span class="nx">friends</span><span class="o">:</span> <span class="nx">Dexie</span><span class="p">.</span><span class="nx">Table</span><span class="o">&lt;</span><span class="p">{</span> <span class="nx">id</span><span class="o">?:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="nx">number</span> <span class="p">},</span> <span class="nx">number</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="nx">gameSessions</span><span class="o">:</span> <span class="nx">Dexie</span><span class="p">.</span><span class="nx">Table</span><span class="o">&lt;</span><span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">score</span><span class="o">:</span> <span class="nx">number</span> <span class="p">},</span> <span class="nx">number</span><span class="o">&gt;</span><span class="p">;</span>
+
+  <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">super</span><span class="p">(</span><span class="s1">&#39;MyDB&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nx">stores</span><span class="p">({</span>
+      <span class="nx">friends</span><span class="o">:</span> <span class="s1">&#39;++id,[firstName+lastName],yearOfBirth,*tags&#39;</span><span class="p">,</span>
+      <span class="nx">gameSessions</span><span class="o">:</span> <span class="kc">null</span>
+    <span class="p">});</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">friends</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="err">`</span><span class="nx">friends</span><span class="err">`</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">gameSessions</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="err">`</span><span class="nx">gameSessions</span><span class="err">`</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">myDB</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MyDB</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<p>注意：只有存入新数据后，indexedDB才会变更表结构和索引。</p>
+<h3 id="class-binding">Class Binding</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">Friend</span> <span class="p">{</span>
+  <span class="nx">id</span><span class="o">!:</span> <span class="nx">number</span><span class="p">;</span>
+  <span class="nx">firstName</span><span class="o">!:</span> <span class="nx">string</span><span class="p">;</span>
+  <span class="nx">lastName</span><span class="o">!:</span> <span class="nx">string</span><span class="p">;</span>
+  <span class="nx">yearOfBirth</span><span class="o">!:</span> <span class="nx">number</span><span class="p">;</span>
+  <span class="nx">tags</span><span class="o">!:</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="nx">string</span><span class="o">&gt;</span><span class="p">;</span>
+
+  <span class="nx">save</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">myDB</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="nx">get</span> <span class="nx">age</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getFullYear</span><span class="p">()</span> <span class="o">-</span> <span class="k">this</span><span class="p">.</span><span class="nx">yearOfBirth</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">myDB</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">mapToClass</span><span class="p">(</span><span class="nx">Friend</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>调用该方法会使从friends取出的对象会成为你绑定的类的实例。所以原型链上的方法都可以使用。</p>
+<p>在底层，原始的DB对象通过Object.create的方法来浅拷贝到你绑定的类的实例上。</p>
+<p>这个功能只适用于Table.get，Table.toArray，Table.each，Collection.toArray()，Collection.each()，Collection.first()，Collection.last()。</p>
+<p>不适用于过滤的查询，Collection.filter，Collection.and，Collection.modify，Collection.Raw。</p>
+<p>值得注意的是，它不适用于任何钩子函数。Table.hook(&#39;creating&#39;)，Table.hook(&#39;update&#39;)，Table.hook(<code>reading</code>)，Table.hook(‘deleting’)。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://dexie.org/docs/Tutorial/React">https://dexie.org/docs/Tutorial/React</a></p>
 <p><a href="https://dexie.org/docs/API-Reference#quick-reference">https://dexie.org/docs/API-Reference#quick-reference</a></p>
