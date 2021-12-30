@@ -605,8 +605,65 @@ async function spreadYourLove() {
 }
 ```
 
+上面的代码展示了如何复用transcation来执行多个操作。
+
+## Working With Async APIS
+
+Dexie.js使用了异步API，在同步API中，错误处理使用异常捕获机制。这非常方便，因为你无需在各处检查代码，只需要在更高层次上捕获异常即可。
+
+异步API通常在操作完成时发出success和error事件。
+
+IndexedDB同时使用了异常和错误事件来通知调用者，你需要同时使用try/catch和onerror来处理每一个请求。
+
+Dexie.js使用Promise来处理错误。
 
 
+## Promise-Specific Data(Zone)
+
+Dexie Promise支持一种类似于本地线程存储的技术。这可以使一些静态属性绑定到执行中的Promise和它的子Promise中。
+
+Dexie.js和它的transcation API重度依赖Transcation Zones，因为代码需要知道当前执行中的Transcation，而我们又不想把transcation传来传去。
+
+### Promise.PSD
+
+Dexie.Promise.PSD是一个自定义的Zone系统来维护进行中的DB Transcations。从Dexie 2.0.0-beta.4开始，Dexie的Zone系统可以支持await表达式。
+
+```js
+// Create a PSD scope
+Dexie.Promise.newPSD (function () { 
+    // Put something in it.
+    Dexie.Promise.PSD.promiseSpecificVariable = 3; 
+    // Create a promise that uses it
+    new Dexie.Promise(function (resolve, reject) {
+        setTimeout(resolve, 1000);
+    }).then (function () {
+        // This callback will get same PSD instance as was active when .then() was called
+        assert (Dexie.Promise.PSD.promiseSpecificVariable == 3);
+    });
+});
+```
+
+与特定于线程的数据类似，特定于Promise的数据包含绑定到Promise流的静态数据。
+
+#### 目的
+
+在线程的世界里，特定于线程的数据可以被用来存储一些状态到当前执行的线程上。
+
+授权引擎经常使用特定于线程的数据来保存授权规则，而不是将对象传来传去。
+
+日志记录框架还依赖于线程特定的内容，因为用户可以不用传递userName等之类的数据来记录内容。
+
+重入互斥锁是另一种重要模式，它使一个函数能够锁定互斥体，然后调用其它子函数，这些子函数也会锁定相同的互斥锁。
+
+在Dexie中，PSD用于：
+
+1、维护transaction scopes。
+
+2、对事务启用可重用互斥锁。
+
+3、在db.open完成之前，可以订阅db.ready事件。
+
+#### 
 
 ## 参考文档
 
