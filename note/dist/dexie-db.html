@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>DexieDB学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1640881163451">
+  <link rel="stylesheet" href="/note/note.css?ts=1641399846617">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -593,9 +593,189 @@
 <p>1、维护transaction scopes。</p>
 <p>2、对事务启用可重用互斥锁。</p>
 <p>3、在db.open完成之前，可以订阅db.ready事件。</p>
-<p>#### </p>
+<h2 id="-">异常处理</h2>
+<p>在Dexie中，只有Promise.catch可以捕获异常。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="p">()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;test error&#39;</span><span class="p">);</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="catch-">catch意味这异常处理</h3>
+<p>catch意味着异常已经处理，如果你想终止transcation，需要throw这个错误。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transcation</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span><span class="nx">name</span><span class="o">:</span><span class="s1">&#39;Foo&#39;</span><span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Failed to add Foo friend.&quot;</span><span class="p">);</span>
+    <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span>
+  <span class="p">})</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-transactions">使用transactions</h2>
+<p>当你想处理多个操作时，你最好使用transcations。这样做，有以下好处：</p>
+<p>1、如果在数据修改过程中发生了一些错误，错误事件或异常，你的修改会回滚。</p>
+<p>2、不需要处理Promise异常了，你只需要处理transcation的异常。</p>
+<p>3、你可以同步执行所有写入操作，而无需等待上一个完成才能开始下一个。</p>
+<p>4、读操作可以在写操作的下一行执行，这是因为当前事务中存在被挂起的写操作时，其它操作都需要排队。</p>
+<p>5、没有一个错误会错过。因为在catch字句里会捕捉所有的错误。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Any database error event that occur will abort transaction and</span>
+    <span class="c1">// be sent to the catch() method below.</span>
+    <span class="c1">// The exact same rule if any exception is thrown what so ever.</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;Bamse&#39;</span><span class="p">,</span> <span class="nx">kind</span><span class="o">:</span> <span class="s1">&#39;cat&#39;</span><span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">petId</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;Kate&#39;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">89</span><span class="p">,</span> <span class="nx">pets</span><span class="o">:</span> <span class="p">[</span><span class="nx">petId</span><span class="p">]});</span>
+    <span class="p">});</span>
+
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Log or display the error</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">stack</span> <span class="o">||</span> <span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>当使用Transcations时，你可以查询到刚刚add，put，update，delete和modify操作的数据，而不用等到更新操作结束。</p>
+<p>等待的操作框架会处理。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s2">&quot;rw&quot;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Ulla Bella&quot;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">87</span><span class="p">,</span> <span class="nx">isCloseFriend</span><span class="o">:</span> <span class="mi">0</span> <span class="p">});</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Elna&quot;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">99</span><span class="p">,</span> <span class="nx">isCloseFriend</span><span class="o">:</span> <span class="mi">1</span> <span class="p">});</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">65</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">friend</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Retired friend: &quot;</span> <span class="o">+</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h2 id="indexeddb-">IndexedDB事务会自动提交</h2>
+<p>IndexedDB的事务，如果在某个事件循环中没有被使用，它就会被自动提交。</p>
+<h2 id="-indexeddb-">嵌套的IndexedDB事务</h2>
+<p>自动version 0.9.8以后，Dexie支持嵌套的事务。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// MAIN transaction block</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+       <span class="c1">// SUB transaction block</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>嵌套的事务的强大之处在于，使用事务的函数可以被更高级别的代码重用，该代码将其所有的调用转换为更大的事务。</p>
+<h1 id="dexiedb-">DexieDB的最佳实践</h1>
+<h2 id="-promise">熟悉Promise</h2>
+<p>确保你了解Promise A+的基本规范。下面是测试代码：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">doSomething</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Important: Understand why we use &#39;return&#39; here and what we actually return!</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">startsWith</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">).</span><span class="nx">first</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">aFriend</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">aFriend</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span> <span class="c1">// Important: Understand what &#39;return&#39; means here!</span>
+    <span class="p">}).</span><span class="nx">then</span> <span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">aFriendsId</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Important: Understand what it means to return another Promise here:</span>
+        <span class="k">return</span> <span class="nx">fetch</span> <span class="p">(</span><span class="s1">&#39;https://blablabla/friends/&#39;</span> <span class="o">+</span> <span class="nx">aFriendsId</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-catchpromise-">在catchPromise时要多思考</h2>
+<p>catch了错误，没有重新抛出错误是不好的实践。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">somePromiseReturningFunc</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span>
+        <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+        <span class="nx">age</span><span class="o">:</span> <span class="mi">40</span>
+    <span class="p">}).</span><span class="k">catch</span> <span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>下面的做法要比上面的好不少，这样调用者会得到相关的错误信息。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">somePromiseReturningFunc</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span>
+        <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+        <span class="nx">age</span><span class="o">:</span> <span class="mi">40</span>
+    <span class="p">});</span>
+    <span class="c1">// Don&#39;t catch! The caller wouldn&#39;t find out that an error occurred if you do!</span>
+    <span class="c1">// We are returning a Promise, aren&#39;t we? Let caller catch it instead!</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>在transcation范围内，尤其如此。你catch了一个Promise，意味着你有优雅处理错误的方法。如果你没有，请不要catch它。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">myDataOperations</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">id</span><span class="p">){</span>
+            <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="nx">daddy</span><span class="o">:</span> <span class="nx">id</span><span class="p">});</span>
+        <span class="p">}).</span><span class="nx">then</span> <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">startsWith</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">).</span><span class="nx">toArray</span><span class="p">();</span>
+        <span class="p">}).</span><span class="nx">then</span> <span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">pets</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">//</span>
+        <span class="p">});</span> <span class="c1">// Don&#39;t catch! Transaction SHOULD abort if error occur, shouldn&#39;t it?</span>
+    <span class="p">});</span> <span class="c1">// Don&#39;t catch! Let the caller catch us instead! I mean we are returning a promise, aren&#39;t we?!</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>但是在事件处理器或顶层的Promise中，需要Catch。因为没有人会调用你，你需要处理这个错误，如果不你处理这个错误，这个错误就会到unhandlerejection事件中。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">somePromiseReturningFunc</span><span class="p">().</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#appErrorLabel&#39;</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">stack</span> <span class="o">||</span> <span class="nx">err</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>某些时候，你对某些错误有合适的处理方式，这种情况下，你可以catch这个错误。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">getHillary</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+    <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;[firstName+lastName]&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">equals</span><span class="p">([</span><span class="s1">&#39;Hillary&#39;</span><span class="p">,</span> <span class="s1">&#39;Clinton&#39;</span><span class="p">])</span>
+    <span class="p">.</span><span class="nx">toArray</span><span class="p">()</span>
+    <span class="p">.</span><span class="k">catch</span><span class="p">(</span><span class="s1">&#39;DataError&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// May fail in IE/Edge because it lacks support for compound keys.</span>
+      <span class="c1">// Use a fallback method:</span>
+      <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span>
+        <span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;firstName&#39;</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">equals</span><span class="p">(</span><span class="s1">&#39;Hillary&#39;</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">friend</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">lastName</span> <span class="o">==</span> <span class="s1">&#39;Clinton&#39;</span><span class="p">;</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>如果只是为了log和debug，需要将错误err throw出去。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">myFunc</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+        <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">});</span>
+    <span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Failed to add foo!: &quot;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">);</span>
+        <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span> <span class="c1">// Re-throw the error to abort flow!</span>
+    <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">id</span><span class="p">){</span>
+        <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="nx">daddy</span><span class="o">:</span> <span class="nx">id</span><span class="p">});</span>
+    <span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Failed to add bar!: &quot;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">);</span>
+        <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span> <span class="c1">// Re-throw the error!</span>
+    <span class="p">}).</span><span class="nx">then</span> <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="p">...</span>
+    <span class="p">});</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-api">在事务中不要使用其它异步API</h2>
+<p>IndexedDB的事务，如果在一个事件循环中没有被使用，就会自动提交。这意味着你不要在你事务中调用其它异步API。</p>
+<p>如果你想要调用一个耗时短的Async-API，你需要使用Dexie.waitFor来保持事务。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">Dexie</span><span class="p">.</span><span class="nx">waitFor</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">timeout</span><span class="o">=</span><span class="mi">60000</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="https://dexie.org/docs/Tutorial/React">https://dexie.org/docs/Tutorial/React</a></p>
 <p><a href="https://dexie.org/docs/API-Reference#quick-reference">https://dexie.org/docs/API-Reference#quick-reference</a></p>
+<p><a href="https://dexie.org/docs/Tutorial/Best-Practices">https://dexie.org/docs/Tutorial/Best-Practices</a></p>
 </body>
 </html>
