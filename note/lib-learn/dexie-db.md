@@ -663,10 +663,219 @@ Dexie.Promise.newPSD (function () {
 
 3、在db.open完成之前，可以订阅db.ready事件。
 
-#### 
+## 异常处理
+
+在Dexie中，只有Promise.catch可以捕获异常。
+
+```js
+db.transaction('rw',db.friends, ()=>{
+  throw new Error('test error');
+}).catch(err => {
+  console.error(err);
+})
+```
+
+### catch意味这异常处理
+
+catch意味着异常已经处理，如果你想终止transcation，需要throw这个错误。
+
+```js
+db.transcation('rw',db.friends,()=>{
+  db.friends.add({id:1,name:'Foo'}).catch(err=>{
+    console.error("Failed to add Foo friend.");
+    throw err;
+  })
+});
+```
+
+## 使用transactions
+
+当你想处理多个操作时，你最好使用transcations。这样做，有以下好处：
+
+1、如果在数据修改过程中发生了一些错误，错误事件或异常，你的修改会回滚。
+
+2、不需要处理Promise异常了，你只需要处理transcation的异常。
+
+3、你可以同步执行所有写入操作，而无需等待上一个完成才能开始下一个。
+
+4、读操作可以在写操作的下一行执行，这是因为当前事务中存在被挂起的写操作时，其它操作都需要排队。
+
+5、没有一个错误会错过。因为在catch字句里会捕捉所有的错误。
+
+```js
+db.transaction('rw', db.friends, db.pets, function () {
+    // Any database error event that occur will abort transaction and
+    // be sent to the catch() method below.
+    // The exact same rule if any exception is thrown what so ever.
+    return db.pets.add({name: 'Bamse', kind: 'cat'}).then(function (petId) {
+        return db.friends.add({name: 'Kate', age: 89, pets: [petId]});
+    });
+
+}).catch(function (error) {
+    // Log or display the error
+    console.error (error.stack || error);
+});
+```
+
+当使用Transcations时，你可以查询到刚刚add，put，update，delete和modify操作的数据，而不用等到更新操作结束。
+
+等待的操作框架会处理。
+
+```js
+db.transaction("rw", db.friends, function () {
+    db.friends.add({ name: "Ulla Bella", age: 87, isCloseFriend: 0 });
+    db.friends.add({ name: "Elna", age: 99, isCloseFriend: 1 });
+    db.friends.where("age").above(65).each(function (friend) {
+        console.log("Retired friend: " + friend.name);
+    });
+}).catch(function (error) {
+    console.error(error);
+});
+```
+
+## IndexedDB事务会自动提交
+
+IndexedDB的事务，如果在某个事件循环中没有被使用，它就会被自动提交。
+
+## 嵌套的IndexedDB事务
+
+自动version 0.9.8以后，Dexie支持嵌套的事务。
+
+```js
+db.transaction('rw', db.friends, db.pets, function () {
+    // MAIN transaction block
+    db.transaction('rw', db.pets, function () {
+       // SUB transaction block
+    });
+});
+```
+
+嵌套的事务的强大之处在于，使用事务的函数可以被更高级别的代码重用，该代码将其所有的调用转换为更大的事务。
+
+# DexieDB的最佳实践
+
+## 熟悉Promise
+
+确保你了解Promise A+的基本规范。下面是测试代码：
+
+```js
+function doSomething() {
+    // Important: Understand why we use 'return' here and what we actually return!
+    return db.friends.where('name').startsWith('A').first().then(function (aFriend) {
+        return aFriend.id; // Important: Understand what 'return' means here!
+    }).then (function (aFriendsId) {
+        // Important: Understand what it means to return another Promise here:
+        return fetch ('https://blablabla/friends/' + aFriendsId);
+    });
+}
+```
+## 在catchPromise时要多思考
+
+catch了错误，没有重新抛出错误是不好的实践。
+
+```js
+function somePromiseReturningFunc() {
+    return db.friends.add({
+        name: 'foo',
+        age: 40
+    }).catch (function (err) {
+        console.log(err);
+    });
+}
+```
+
+下面的做法要比上面的好不少，这样调用者会得到相关的错误信息。
+
+```js
+function somePromiseReturningFunc() {
+    return db.friends.add({
+        name: 'foo',
+        age: 40
+    });
+    // Don't catch! The caller wouldn't find out that an error occurred if you do!
+    // We are returning a Promise, aren't we? Let caller catch it instead!
+}
+```
+
+在transcation范围内，尤其如此。你catch了一个Promise，意味着你有优雅处理错误的方法。如果你没有，请不要catch它。
+
+```js
+function myDataOperations() {
+    return db.transaction('rw', db.friends, db.pets, function(){
+        return db.friends.add({name: 'foo'}).then(function(id){
+            return db.pets.add({name: 'bar', daddy: id});
+        }).then (function() {
+            return db.pets.where('name').startsWith('b').toArray();
+        }).then (function (pets) {
+            //
+        }); // Don't catch! Transaction SHOULD abort if error occur, shouldn't it?
+    }); // Don't catch! Let the caller catch us instead! I mean we are returning a promise, aren't we?!
+}
+```
+
+但是在事件处理器或顶层的Promise中，需要Catch。因为没有人会调用你，你需要处理这个错误，如果不你处理这个错误，这个错误就会到unhandlerejection事件中。
+
+```js
+somePromiseReturningFunc().catch(function (err) {
+    $('#appErrorLabel').text(err);
+    console.error(err.stack || err);
+});
+```
+
+某些时候，你对某些错误有合适的处理方式，这种情况下，你可以catch这个错误。
+
+```js
+function getHillary() {
+  return db.friends
+    .where('[firstName+lastName]')
+    .equals(['Hillary', 'Clinton'])
+    .toArray()
+    .catch('DataError', function (err) {
+      // May fail in IE/Edge because it lacks support for compound keys.
+      // Use a fallback method:
+      return db.friends
+        .where('firstName')
+        .equals('Hillary')
+        .and(function (friend) {
+          return friend.lastName == 'Clinton';
+        });
+    });
+}
+```
+如果只是为了log和debug，需要将错误err throw出去。
+
+```js
+function myFunc() {
+    return Promise.resolve().then(function(){
+        return db.friends.add({name: 'foo'});
+    }).catch(function (err) {
+        console.error("Failed to add foo!: " + err);
+        throw err; // Re-throw the error to abort flow!
+    }).then(function(id){
+        return db.pets.add({name: 'bar', daddy: id});
+    }).catch(function (err) {
+        console.error("Failed to add bar!: " + err);
+        throw err; // Re-throw the error!
+    }).then (function() {
+        ...
+    });
+};
+```
+
+## 在事务中不要使用其它异步API
+
+IndexedDB的事务，如果在一个事件循环中没有被使用，就会自动提交。这意味着你不要在你事务中调用其它异步API。
+
+如果你想要调用一个耗时短的Async-API，你需要使用Dexie.waitFor来保持事务。
+
+```js
+Dexie.waitFor(promise, timeout=60000)
+```
 
 ## 参考文档
 
 https://dexie.org/docs/Tutorial/React
 
 https://dexie.org/docs/API-Reference#quick-reference
+
+https://dexie.org/docs/Tutorial/Best-Practices
