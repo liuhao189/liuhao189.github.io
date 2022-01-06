@@ -203,38 +203,78 @@
 // });
 
 
+// import Dexie from 'dexie';
+
+// class MyDB extends Dexie {
+//   friends: Dexie.Table<{ id?: number, firstName: string, lastName: string; yearOfBirth: number, tags: Array<string> }, number>;
+
+//   constructor() {
+//     super('MyDB');
+//     this.version(2).stores({
+//       friends: '++id,[firstName+lastName],yearOfBirth,*tags'
+//     });
+
+//     this.friends = this.table(`friends`);
+//   }
+// }
+
+// const myDB = new MyDB();
+
+// class Friend {
+//   id!: number;
+//   firstName!: string;
+//   lastName!: string;
+//   yearOfBirth!: number;
+//   tags!: Array<string>;
+
+//   save() {
+//     return myDB.friends.put(this);
+//   }
+
+//   get age() {
+//     return (new Date().getFullYear() - this.yearOfBirth);
+//   }
+// }
+
+// myDB.friends.mapToClass(Friend);
+
+
 import Dexie from 'dexie';
 
 class MyDB extends Dexie {
-  friends: Dexie.Table<{ id?: number, firstName: string, lastName: string; yearOfBirth: number, tags: Array<string> }, number>;
+  // folders!: Dexie.Table<any>;
 
   constructor() {
-    super('MyDB');
-    this.version(2).stores({
-      friends: '++id,[firstName+lastName],yearOfBirth,*tags'
+    super('MyAppDB');
+    this.version(1).stores({
+      folders: '++id,&path'
     });
-
-    this.friends = this.table(`friends`);
+    // this.folders = this.table('folders');
   }
 }
 
 const myDB = new MyDB();
+//@ts-ignore
+const Folder = myDB.folders.defineClass({
+  id: Number,
+  path: String,
+  desc: String
+});
 
-class Friend {
-  id!: number;
-  firstName!: string;
-  lastName!: string;
-  yearOfBirth!: number;
-  tags!: Array<string>;
-
-  save() {
-    return myDB.friends.put(this);
-  }
-
-  get age() {
-    return (new Date().getFullYear() - this.yearOfBirth);
-  }
+Folder.prototype.save = function () {
+  //@ts-ignore
+  return myDB.folders.put(this);
 }
 
-myDB.friends.mapToClass(Friend);
+
+// class Folder {
+//   path!: string
+//   desc!: string;
+
+//   save() {
+//     return myDB.folders.put(this);
+//   }
+// }
+
+// myDB.folders.mapToClass(Folder);
 

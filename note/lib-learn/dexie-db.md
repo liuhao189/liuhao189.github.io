@@ -675,7 +675,7 @@ db.transaction('rw',db.friends, ()=>{
 })
 ```
 
-### catch意味这异常处理
+### catch意味着异常处理
 
 catch意味着异常已经处理，如果你想终止transcation，需要throw这个错误。
 
@@ -692,7 +692,7 @@ db.transcation('rw',db.friends,()=>{
 
 当你想处理多个操作时，你最好使用transcations。这样做，有以下好处：
 
-1、如果在数据修改过程中发生了一些错误，错误事件或异常，你的修改会回滚。
+1、如果在数据修改过程中发生了一些错误，你的修改会回滚。
 
 2、不需要处理Promise异常了，你只需要处理transcation的异常。
 
@@ -717,9 +717,7 @@ db.transaction('rw', db.friends, db.pets, function () {
 });
 ```
 
-当使用Transcations时，你可以查询到刚刚add，put，update，delete和modify操作的数据，而不用等到更新操作结束。
-
-等待的操作框架会处理。
+当使用Transcations时，你可以查询到刚刚add，put，update，delete和modify操作的数据，而不用等到更新操作结束。等待的操作框架会处理。
 
 ```js
 db.transaction("rw", db.friends, function () {
@@ -871,6 +869,124 @@ IndexedDB的事务，如果在一个事件循环中没有被使用，就会自�
 ```js
 Dexie.waitFor(promise, timeout=60000)
 ```
+
+## 在事务中使用全局的Promise
+
+确保在事务中使用全局对象的Promise(window.Promise)。如果使用polyfill，确保在页面初始化时设置window.Promise。
+
+估计Dexie在内部重写了一部分Promise的逻辑。使用Dexie.Promise也是可以的。
+
+```js
+db.transaction(..., ()=>{
+    Dexie.Promise.all()
+    Dexie.Promise.race()
+    new Dexie.Promise((resolve, reject) => { ... })
+})
+```
+
+## 当你有多个操作时，使用transcation。
+
+使用事务的益处：
+
+1、稳健性，任何错误发生，事务会回滚。
+
+2、简洁的代码，你可以顺序写所有操作，它们在事务中排队。
+
+3、一行代码即可catch所有错误。
+
+4、在事务块中的代码，DB的操作可以不用处理异常。
+
+5、更快的执行速度。
+
+```js
+db.transaction("rw", db.friends, db.pets, function() {
+    db.friends.add({name: "Måns", isCloseFriend: 1}); // unhandled promise = ok!
+    db.friends.add({name: "Nils", isCloseFriend: 1}); // unhandled promise = ok!
+    db.friends.add({name: "Jon", isCloseFriend: 1});  // unhandled promise = ok!
+    db.pets.add({name: "Josephina", kind: "dog"});    // unhandled promise = ok!
+    // If any of the promises above fails, transaction will abort and it's promise
+    // reject.
+
+    // Since we are in a transaction, we can query the table right away and
+    // still get the results of the write operations above.
+    var promise = db.friends.where("isCloseFriend").equals(1).toArray();
+
+    // Make the transaction resolve with the last promise result
+    return promise;
+
+}).then(function (closeFriends) {
+
+    // Transaction complete.
+    console.log("My close friends: " + JSON.stringify(closeFriends));
+
+}).catch(function (error) {
+
+    // Log or display the error.
+    console.error(error);
+    // Notice that when using a transaction, it's enough to catch
+    // the transaction Promise instead of each db operation promise.
+});
+```
+
+## 如果事务要被放弃，重新抛出错误
+
+如果只是为了log和debug的目的，需要重新抛出错误。也可以返回retuen Promise.reject(err)
+
+## 可选的，声明方法
+
+当你使用db.version(1).stores({...})声明ObjectStores时，你只是声明了索引，并不是所有属性。
+
+较好的实践是对于持久化的类，有一个更详细的class声明。这可以让IDE自动提示代码。
+
+有两个不同的方法：
+
+1、mapToClass，将已有的类映射到objectStore。
+
+2、defineClass，让Dexie声明一个类。
+
+```js
+import Dexie from 'dexie';
+
+class MyDB extends Dexie {
+  folders!: Dexie.Table<Folder>;
+
+  constructor() {
+    super('MyAppDB');
+    this.version(1).stores({
+      folders: '++id,&path'
+    });
+    this.folders = this.table('folders');
+  }
+}
+
+const myDB = new MyDB();
+class Folder {
+  path!: string
+  desc!: string;
+
+  save() {
+    return myDB.folders.put(this);
+  }
+}
+
+myDB.folders.mapToClass(Folder);
+```
+
+```js
+const myDB = new MyDB();
+//@ts-ignore
+const Folder = myDB.folders.defineClass({
+  id: Number,
+  path: String,
+  desc: String
+});
+
+Folder.prototype.save = function () {
+  //@ts-ignore
+  return myDB.folders.put(this);
+}
+```
+
 
 ## 参考文档
 
