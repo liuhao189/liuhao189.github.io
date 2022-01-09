@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>DexieDB学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1641399846617">
+  <link rel="stylesheet" href="/note/note.css?ts=1641745617609">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -603,7 +603,7 @@
 </pre></div>
 
 </code></pre>
-<h3 id="catch-">catch意味这异常处理</h3>
+<h3 id="catch-">catch意味着异常处理</h3>
 <p>catch意味着异常已经处理，如果你想终止transcation，需要throw这个错误。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transcation</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,()</span><span class="o">=&gt;</span><span class="p">{</span>
   <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span><span class="nx">name</span><span class="o">:</span><span class="s1">&#39;Foo&#39;</span><span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="o">=&gt;</span><span class="p">{</span>
@@ -616,7 +616,7 @@
 </code></pre>
 <h2 id="-transactions">使用transactions</h2>
 <p>当你想处理多个操作时，你最好使用transcations。这样做，有以下好处：</p>
-<p>1、如果在数据修改过程中发生了一些错误，错误事件或异常，你的修改会回滚。</p>
+<p>1、如果在数据修改过程中发生了一些错误，你的修改会回滚。</p>
 <p>2、不需要处理Promise异常了，你只需要处理transcation的异常。</p>
 <p>3、你可以同步执行所有写入操作，而无需等待上一个完成才能开始下一个。</p>
 <p>4、读操作可以在写操作的下一行执行，这是因为当前事务中存在被挂起的写操作时，其它操作都需要排队。</p>
@@ -636,8 +636,7 @@
 </pre></div>
 
 </code></pre>
-<p>当使用Transcations时，你可以查询到刚刚add，put，update，delete和modify操作的数据，而不用等到更新操作结束。</p>
-<p>等待的操作框架会处理。</p>
+<p>当使用Transcations时，你可以查询到刚刚add，put，update，delete和modify操作的数据，而不用等到更新操作结束。等待的操作框架会处理。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s2">&quot;rw&quot;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
     <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Ulla Bella&quot;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">87</span><span class="p">,</span> <span class="nx">isCloseFriend</span><span class="o">:</span> <span class="mi">0</span> <span class="p">});</span>
     <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Elna&quot;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">99</span><span class="p">,</span> <span class="nx">isCloseFriend</span><span class="o">:</span> <span class="mi">1</span> <span class="p">});</span>
@@ -770,6 +769,105 @@
 <p>IndexedDB的事务，如果在一个事件循环中没有被使用，就会自动提交。这意味着你不要在你事务中调用其它异步API。</p>
 <p>如果你想要调用一个耗时短的Async-API，你需要使用Dexie.waitFor来保持事务。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">Dexie</span><span class="p">.</span><span class="nx">waitFor</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">timeout</span><span class="o">=</span><span class="mi">60000</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-promise">在事务中使用全局的Promise</h2>
+<p>确保在事务中使用全局对象的Promise(window.Promise)。如果使用polyfill，确保在页面初始化时设置window.Promise。</p>
+<p>估计Dexie在内部重写了一部分Promise的逻辑。使用Dexie.Promise也是可以的。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(...,</span> <span class="p">()</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">Dexie</span><span class="p">.</span><span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">()</span>
+    <span class="nx">Dexie</span><span class="p">.</span><span class="nx">Promise</span><span class="p">.</span><span class="nx">race</span><span class="p">()</span>
+    <span class="k">new</span> <span class="nx">Dexie</span><span class="p">.</span><span class="nx">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="p">...</span> <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-transcation-">当你有多个操作时，使用transcation。</h2>
+<p>使用事务的益处：</p>
+<p>1、稳健性，任何错误发生，事务会回滚。</p>
+<p>2、简洁的代码，你可以顺序写所有操作，它们在事务中排队。</p>
+<p>3、一行代码即可catch所有错误。</p>
+<p>4、在事务块中的代码，DB的操作可以不用处理异常。</p>
+<p>5、更快的执行速度。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s2">&quot;rw&quot;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Måns&quot;</span><span class="p">,</span> <span class="nx">isCloseFriend</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span> <span class="c1">// unhandled promise = ok!</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Nils&quot;</span><span class="p">,</span> <span class="nx">isCloseFriend</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span> <span class="c1">// unhandled promise = ok!</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Jon&quot;</span><span class="p">,</span> <span class="nx">isCloseFriend</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>  <span class="c1">// unhandled promise = ok!</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Josephina&quot;</span><span class="p">,</span> <span class="nx">kind</span><span class="o">:</span> <span class="s2">&quot;dog&quot;</span><span class="p">});</span>    <span class="c1">// unhandled promise = ok!</span>
+    <span class="c1">// If any of the promises above fails, transaction will abort and it&#39;s promise</span>
+    <span class="c1">// reject.</span>
+
+    <span class="c1">// Since we are in a transaction, we can query the table right away and</span>
+    <span class="c1">// still get the results of the write operations above.</span>
+    <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s2">&quot;isCloseFriend&quot;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nx">toArray</span><span class="p">();</span>
+
+    <span class="c1">// Make the transaction resolve with the last promise result</span>
+    <span class="k">return</span> <span class="nx">promise</span><span class="p">;</span>
+
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">closeFriends</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">// Transaction complete.</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;My close friends: &quot;</span> <span class="o">+</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">closeFriends</span><span class="p">));</span>
+
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">// Log or display the error.</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+    <span class="c1">// Notice that when using a transaction, it&#39;s enough to catch</span>
+    <span class="c1">// the transaction Promise instead of each db operation promise.</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">如果事务要被放弃，重新抛出错误</h2>
+<p>如果只是为了log和debug的目的，需要重新抛出错误。也可以返回retuen Promise.reject(err)</p>
+<h2 id="-">可选的，声明方法</h2>
+<p>当你使用db.version(1).stores({...})声明ObjectStores时，你只是声明了索引，并不是所有属性。</p>
+<p>较好的实践是对于持久化的类，有一个更详细的class声明。这可以让IDE自动提示代码。</p>
+<p>有两个不同的方法：</p>
+<p>1、mapToClass，将已有的类映射到objectStore。</p>
+<p>2、defineClass，让Dexie声明一个类。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">Dexie</span> <span class="nx">from</span> <span class="s1">&#39;dexie&#39;</span><span class="p">;</span>
+
+<span class="kr">class</span> <span class="nx">MyDB</span> <span class="kr">extends</span> <span class="nx">Dexie</span> <span class="p">{</span>
+  <span class="nx">folders</span><span class="o">!:</span> <span class="nx">Dexie</span><span class="p">.</span><span class="nx">Table</span><span class="o">&lt;</span><span class="nx">Folder</span><span class="o">&gt;</span><span class="p">;</span>
+
+  <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">super</span><span class="p">(</span><span class="s1">&#39;MyAppDB&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nx">stores</span><span class="p">({</span>
+      <span class="nx">folders</span><span class="o">:</span> <span class="s1">&#39;++id,&amp;path&#39;</span>
+    <span class="p">});</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">folders</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="s1">&#39;folders&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">myDB</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MyDB</span><span class="p">();</span>
+<span class="kr">class</span> <span class="nx">Folder</span> <span class="p">{</span>
+  <span class="nx">path</span><span class="o">!:</span> <span class="nx">string</span>
+  <span class="nx">desc</span><span class="o">!:</span> <span class="nx">string</span><span class="p">;</span>
+
+  <span class="nx">save</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">myDB</span><span class="p">.</span><span class="nx">folders</span><span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">myDB</span><span class="p">.</span><span class="nx">folders</span><span class="p">.</span><span class="nx">mapToClass</span><span class="p">(</span><span class="nx">Folder</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">myDB</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MyDB</span><span class="p">();</span>
+<span class="c1">//@ts-ignore</span>
+<span class="kr">const</span> <span class="nx">Folder</span> <span class="o">=</span> <span class="nx">myDB</span><span class="p">.</span><span class="nx">folders</span><span class="p">.</span><span class="nx">defineClass</span><span class="p">({</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+  <span class="nx">path</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+  <span class="nx">desc</span><span class="o">:</span> <span class="nb">String</span>
+<span class="p">});</span>
+
+<span class="nx">Folder</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">save</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="c1">//@ts-ignore</span>
+  <span class="k">return</span> <span class="nx">myDB</span><span class="p">.</span><span class="nx">folders</span><span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="p">}</span>
 </pre></div>
 
 </code></pre>

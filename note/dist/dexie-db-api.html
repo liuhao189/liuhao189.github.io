@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dexie-DB-2</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1641745617609">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="dexie-db-2">Dexie-DB-2</h1>
+<h2 id="-">构建扩展</h2>
+<p>Dexie可以非常方便地添加扩展。</p>
+<h3 id="-">注册扩展</h3>
+<p>Dexie.addons数组包括了Dexie的扩展。一个扩展可以通过Dexie.addons.push(fn)来注册。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">Dexie</span> <span class="nx">from</span> <span class="s1">&#39;dexie&#39;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">ForEachAddon</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">forEach</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">each</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">Dexie</span><span class="p">.</span><span class="nx">addons</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">ForEachAddon</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="dexie-">Dexie类所在的位置</h3>
+<p>Dexie类，像Collection，Table在Dexie构造函数内的闭包中创建的。为了扩展原型链，你必须用Dexie的实例。</p>
+<h3 id="-">覆盖已存在的方法</h3>
+<p>为了覆盖已存在的方法，你可以直接替换为你自己的方法。一个方便的工具函数是Dexie.override。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">each</span> <span class="o">=</span> <span class="nx">Dexie</span><span class="p">.</span><span class="nx">override</span><span class="p">(</span><span class="nx">db</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">each</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">originalFn</span><span class="p">){</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">returnVal</span> <span class="o">=</span> <span class="nx">originalFn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+    <span class="c1">// do something else</span>
+    <span class="k">return</span> <span class="nx">returnVal</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">受保护的方法</h3>
+<p>API目录没有列出Dexie受保护的方法和属性。但是你可以看源代码，发现很多以下划线_开始的方法和属性。</p>
+<p>对于这些以_开始的方法和属性，Dexie并不保证完全的兼容。</p>
+<h3 id="-prototype">什么时候使用prototype</h3>
+<p>对于Collection，WhereClause，Table，Transcation等内部类，使用prototype来添加方法。因为这样可以更快速得创建实例。</p>
+<p>但是对于Dexie，不要使用prototype，因为一般Dexie是单例的，不会创建很多实例。</p>
+<h3 id="-">创建内部类</h3>
+<p>另外一种创建Dexie插件的方式是继承已有的类，并覆写一部分行为。eg：继承Table，并覆写db._tableFactory方法。</p>
+<h3 id="-">另外一直注册方式</h3>
+<p>你可以通过继承类的方式来扩展Dexie的功能。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">Dexie</span> <span class="nx">from</span> <span class="s1">&#39;dexie&#39;</span><span class="p">;</span>
+
+<span class="kr">class</span> <span class="nx">MyDerivedDexie</span> <span class="kr">extends</span> <span class="nx">Dexie</span> <span class="p">{</span>
+    <span class="nx">anotherProperty</span><span class="p">;</span>
+
+    <span class="nx">anotherMethod</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// Do something here...</span>
+    <span class="p">}</span>
+
+  <span class="nx">constructor</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">super</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">anotherProperty</span> <span class="o">=</span> <span class="s2">&quot;other prop&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="collection">Collection</h2>
+<p>代表DB Objects的对象集合。注意，它并不包含任何对象，它只是包含如何执行DB-Query的信息。</p>
+<p>当返回Promise的方法（toArray，keys，count，each）等调用时，Query才会执行。</p>
+<h3 id="-">创建</h3>
+<p>Collection的构造方法是私有的。WhereClause和一些Table的方法返回Collection的实例。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">collection</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">equalsIgnoreCase</span><span class="p">(</span><span class="s1">&#39;david&#39;</span><span class="p">);</span>
+
+<span class="nx">collection</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">friend</span><span class="p">){</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Found</span><span class="err">：</span><span class="nx">$</span><span class="p">{</span><span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span> <span class="kd">with</span> <span class="nx">name</span> <span class="nx">david</span><span class="err">`</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">startsWithIgnoreCase</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">).</span><span class="nx">toArray</span><span class="p">((</span><span class="nx">friends</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Found</span> <span class="nx">$</span><span class="p">{</span><span class="nx">friends</span><span class="p">.</span><span class="nx">length</span><span class="p">}</span> <span class="nx">friends</span> <span class="nx">starting</span> <span class="kd">with</span> <span class="nx">d</span><span class="err">`</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">25</span><span class="p">).</span><span class="nx">offset</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="nx">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">friends</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">friends</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;\n&#39;</span><span class="p">));</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">toCollection</span><span class="p">().</span><span class="nx">count</span><span class="p">((</span><span class="nx">count</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">count</span><span class="p">}</span> <span class="nx">friends</span> <span class="k">in</span> <span class="nx">total</span><span class="err">`</span><span class="p">)</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">25</span><span class="p">).</span><span class="nx">or</span><span class="p">(</span><span class="s1">&#39;shoeSize&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">9</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="nx">friend</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Found</span> <span class="nx">big</span> <span class="nx">friends</span> <span class="nx">$</span><span class="p">{</span><span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span><span class="err">`</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">方法</h3>
+<h4 id="add">add</h4>
+<p>添加JS的过滤条件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">25</span><span class="p">).</span><span class="nx">and</span><span class="p">((</span><span class="nx">friend</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="k">return</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;White&#39;</span>
+<span class="p">}).</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">friends</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">friends</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>
