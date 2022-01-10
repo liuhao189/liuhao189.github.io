@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Dexie-DB-2</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1641745617609">
+  <link rel="stylesheet" href="/note/note.css?ts=1641831710510">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -47,14 +47,14 @@
 <h3 id="-prototype">什么时候使用prototype</h3>
 <p>对于Collection，WhereClause，Table，Transcation等内部类，使用prototype来添加方法。因为这样可以更快速得创建实例。</p>
 <p>但是对于Dexie，不要使用prototype，因为一般Dexie是单例的，不会创建很多实例。</p>
-<h3 id="-">创建内部类</h3>
+<h3 id="-">创建内部继承类</h3>
 <p>另外一种创建Dexie插件的方式是继承已有的类，并覆写一部分行为。eg：继承Table，并覆写db._tableFactory方法。</p>
-<h3 id="-">另外一直注册方式</h3>
+<h3 id="-">另外一种注册方式</h3>
 <p>你可以通过继承类的方式来扩展Dexie的功能。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">Dexie</span> <span class="nx">from</span> <span class="s1">&#39;dexie&#39;</span><span class="p">;</span>
 
 <span class="kr">class</span> <span class="nx">MyDerivedDexie</span> <span class="kr">extends</span> <span class="nx">Dexie</span> <span class="p">{</span>
-    <span class="nx">anotherProperty</span><span class="p">;</span>
+  <span class="nx">anotherProperty</span><span class="p">;</span>
 
     <span class="nx">anotherMethod</span><span class="p">()</span> <span class="p">{</span>
         <span class="c1">// Do something here...</span>
@@ -108,6 +108,11 @@
 <h3 id="-">方法</h3>
 <h4 id="add">add</h4>
 <p>添加JS的过滤条件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">collection</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">filter</span><span class="p">);</span>
+<span class="c1">//filter:Function function(val){ return true/false; }</span>
+</pre></div>
+
+</code></pre>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">25</span><span class="p">).</span><span class="nx">and</span><span class="p">((</span><span class="nx">friend</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
   <span class="k">return</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;White&#39;</span>
 <span class="p">}).</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">friends</span><span class="o">=&gt;</span><span class="p">{</span>
@@ -116,5 +121,86 @@
 </pre></div>
 
 </code></pre>
+<h4 id="clone">clone</h4>
+<p>拷贝查询条件。注意并不是拷贝数据库项目。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transcation</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">async</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+  <span class="kd">let</span> <span class="nx">collection</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">75</span><span class="p">);</span>
+
+  <span class="kd">let</span> <span class="nx">clone</span> <span class="o">=</span> <span class="nx">collection</span><span class="p">.</span><span class="nx">clone</span><span class="p">().</span><span class="nx">reverse</span><span class="p">().</span><span class="nx">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="kd">let</span> <span class="nx">allOldFriends</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">collection</span><span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+
+  <span class="kd">let</span> <span class="nx">oldestFriend</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">clone</span><span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h4 id="count">count</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">collection</span><span class="p">.</span><span class="nx">count</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+<span class="c1">// callback:Function function(count) {} </span>
+<span class="c1">// callback返回Promise</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">性能说明</h5>
+<p>如果在简单查询上执行，会调用IndexedDB的ObjectStore的count方法，这个执行速度会更快。</p>
+<p>如果使用了高级查询，Dexie必须执行查询，然后遍历所有数据，然后返回count。</p>
+<p>快速查询例子：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">table</span><span class="p">.</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="nx">value</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="nx">value</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">below</span><span class="p">(</span><span class="nx">value</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">between</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span><span class="nx">b</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">startsWith</span><span class="p">(</span><span class="nx">value</span><span class="p">).</span><span class="nx">count</span><span class="p">()</span>
+</pre></div>
+
+</code></pre>
+<p>这写例子快速的原因是，它们可以映射到基本的IDBKeyRange的only，lowerBound，upperBound和bound方法。</p>
+<p>需要Dexie计算的例子：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">equalsIgnoreCase</span><span class="p">(</span><span class="nx">value</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">startsWithIgnoreCase</span><span class="p">(</span><span class="nx">value</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">anyOf</span><span class="p">(</span><span class="nx">valueArray</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="nx">value</span><span class="p">).</span><span class="nx">and</span><span class="p">(</span><span class="nx">filterFn</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">index</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="nx">value1</span><span class="p">).</span><span class="nx">or</span><span class="p">(</span><span class="nx">index2</span><span class="p">).</span><span class="nx">below</span><span class="p">(</span><span class="nx">value2</span><span class="p">).</span><span class="nx">count</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<h4 id="delete">delete</h4>
+<p>删除查询到的所有数据。返回Promise的值表示删除的数据数量。</p>
+<h5 id="-">错误处理</h5>
+<p>如果数据删除失败或回调中发生异常，整个操作会失败，事务会放弃。</p>
+<p>如果你Catch了返回的Promise，事务不会被放弃，你会收到Dexie.MultiMofifyError的错误对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nx">failures</span><span class="o">:</span> <span class="p">[],</span><span class="c1">//错误对象数组</span>
+  <span class="nx">failedKeys</span><span class="o">:</span> <span class="p">[],</span> <span class="c1">// key的数组，和failures顺序一致</span>
+  <span class="nx">successCount</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1">// 成功删除的数量</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>如果你想log错误，并想让事务回滚，你必须在事务块中写操作代码，然后catch这个Transaction。</p>
+<p>catch了这个操作，然后调用transaction.abort也是可以的。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">orders</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;state&#39;</span><span class="p">).</span><span class="nx">anyOf</span><span class="p">(</span><span class="s1">&#39;finished&#39;</span><span class="p">,</span><span class="s1">&#39;discarded&#39;</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">or</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">).</span><span class="nx">below</span><span class="p">(</span><span class="err">`</span><span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">01</span><span class="err">`</span><span class="p">).</span><span class="k">delete</span><span class="p">()</span>
+  <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">deleteCount</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Deleted</span> <span class="nx">$</span><span class="p">{</span><span class="nx">deleteCount</span><span class="p">}</span> <span class="nx">items</span><span class="p">.</span><span class="err">`</span><span class="p">);</span>
+  <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">orders</span><span class="p">,</span> <span class="nx">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">deleteCount</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">orders</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;state&#39;</span><span class="p">).</span><span class="nx">anyOf</span><span class="p">(</span><span class="s1">&#39;finished&#39;</span><span class="p">,</span><span class="s1">&#39;discarded&#39;</span><span class="p">).</span><span class="k">delete</span><span class="p">();</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Deleted</span> <span class="nx">$</span><span class="p">{</span><span class="nx">deleteCount</span><span class="p">}</span> <span class="nx">items</span><span class="p">.</span><span class="err">`</span><span class="p">)</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">注意</h5>
+<p>Collection.delete和Collection.mofify(function(){delete this.value})的效果类似，但是要比后者快得多。</p>
 </body>
 </html>
