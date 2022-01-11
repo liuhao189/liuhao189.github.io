@@ -232,3 +232,176 @@ db.transaction('rw',db.orders, async () => {
 ##### 注意
 
 Collection.delete和Collection.mofify(function(){delete this.value})的效果类似，但是要比后者快得多。
+
+#### desc
+
+按降序排列Collection中的数据。
+
+```js
+collection.desc();
+```
+
+注意：用sortBy或自然排序的句子，这个方法都会反序Collection中的数据，如果调用了两次，排序规则会到原来的顺序。
+
+
+#### distinct
+
+```js
+collection.distince()
+```
+
+注意：返回按主键去重的结果，只有在联合主键索引的情况下才有用。
+
+#### each
+
+执行查询，然后遍历结果数组。
+
+```js
+//callback : function(item,cursor){}
+collection.each(callback);
+```
+
+注意：each实在readonly的事务中执行的，如果你要在回调中修改数据。请使用Collection.modify方法。
+
+当然，你也可以将你的代码包裹在一个ReadWrite事务中。
+
+如果遍历结束，返回的Promise会返回undefined。如果遍历失败，返回的Promise会rejected。
+
+##### Notes
+
+1、这个操作会隐式得在Readonly的事务中执行，除非代码已经包裹在一个事务中。
+
+2、callback不应该修改数据库，如果需要修改，使用Collection.modify。
+
+3、callback的返回值会被忽略，所以返回Promise没有任何作用。
+
+4、在大多数情况下，读取Table或Collection的值，使用Collection.toArray，Collection.primaryKeys，Collection.keys的性能会更好。
+
+```js
+const db = new Dexie('dbname')
+db.version(1).stores({
+  friends: `id,name,age`
+});
+
+db.friends.bulkPut([
+  {id: 1, name: 'One', age: 33},
+  {id: 2, name: 'Two', age: 44 },
+  {id: 3, name: 'Three', age: 1}
+]).then(()=>{
+  console.log(`All my friends, ordered by id:`);
+  return db.friends.each(item=> {
+    console.log(item.name);
+  });
+}).then(()=>{
+  console.log(`All my friends, ordered by age:`);
+  return db.friends.orderBy('age').each(item => {
+    console.log(item.name)
+  })
+}).then(()=>{
+  console.log('Friends over 30 years old:');
+  return db.friends.where('age').above(30).each(item => {
+    console.log(item.name);
+  })
+}).catch(err=>{
+  console.error(err);
+})
+```
+
+#### eachKey
+
+使用index或主键查询，然后遍历数据并调用方法。
+
+```js
+// callback: function(key,cursor){}
+collection.eachKey(callback);
+```
+
+#### eachPrimaryKey
+
+使用index查询，然后遍历数据并调用方法。
+
+```js
+// callback: function(primaryKey){}
+collection.eachPrimaryKey(callback);
+```
+
+#### eachUniqueKey
+
+使用index或主键查询，然后不同的key值才调用方法。
+
+```js
+// callback: funciton(key,cursor){}
+collection.eachUniqueKey(callback);
+```
+
+```js
+db.friends.orderBy('firstName').eachUniqueKey((firstName)=>{
+  console.log(firstName);
+})
+```
+
+#### filter
+
+过滤查询到的数据。
+
+```js
+// fn: function(val){return true/false};
+// return collection instance。
+collection.filter(fn);
+```
+
+该方法和and的功能和用法均相同。
+
+```js
+db.friends.orderBy('age').filter((item)=>{
+  return item.name === 'Foo';
+})
+```
+
+#### first
+
+返回第一个数据。
+
+```js
+// cb: optional funciton(item){}
+// return: Promise
+collection.first(cb);
+```
+
+注意：如果没有传递callback方法，返回的Promise会resolve 结果值。
+
+如果传递了callback方法，返回的Promise会resolve callback的返回值。
+
+#### keys
+
+```js
+// cb: optional function(keysArray){}
+// return: Promise
+collection.keys(cb);
+```
+
+##### 性能提示
+
+跟Collection.primaryKeys类似，这个操作比Collection.toArray速度快。
+
+原因有：
+
+1、整个对象不用实例化。
+
+2、底层数据库引擎不用读取数据值，只有索引值即可。
+
+##### 注意
+
+cb参数会收到查询用到索引的值。只能在索引上使用，不能使用在主键上。
+
+```js
+db.friends.orderBy('firstName').keys((firstNames)=>{
+  alert(`My Friends are: ` + firstNames.join(','))
+});
+
+db.friends.orderBy('shoeSize').uniqueKeys(shoeSizes=>{
+  alert(`My friends have the following shoe size: `, shoeSizes.join(','));
+});
+// keys(), uniqueKeys()，eachKey，eachUniqueKey不能在主键上调用。
+db.friends.orderBy('id').keys();//will fial
+```

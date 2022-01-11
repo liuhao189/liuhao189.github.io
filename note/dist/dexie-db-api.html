@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Dexie-DB-2</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1641831710510">
+  <link rel="stylesheet" href="/note/note.css?ts=1641917521678">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -202,5 +202,141 @@
 </code></pre>
 <h5 id="-">注意</h5>
 <p>Collection.delete和Collection.mofify(function(){delete this.value})的效果类似，但是要比后者快得多。</p>
+<h4 id="desc">desc</h4>
+<p>按降序排列Collection中的数据。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">collection</span><span class="p">.</span><span class="nx">desc</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<p>注意：用sortBy或自然排序的句子，这个方法都会反序Collection中的数据，如果调用了两次，排序规则会到原来的顺序。</p>
+<h4 id="distinct">distinct</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">collection</span><span class="p">.</span><span class="nx">distince</span><span class="p">()</span>
+</pre></div>
+
+</code></pre>
+<p>注意：返回按主键去重的结果，只有在联合主键索引的情况下才有用。</p>
+<h4 id="each">each</h4>
+<p>执行查询，然后遍历结果数组。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//callback : function(item,cursor){}</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>注意：each实在readonly的事务中执行的，如果你要在回调中修改数据。请使用Collection.modify方法。</p>
+<p>当然，你也可以将你的代码包裹在一个ReadWrite事务中。</p>
+<p>如果遍历结束，返回的Promise会返回undefined。如果遍历失败，返回的Promise会rejected。</p>
+<h5 id="notes">Notes</h5>
+<p>1、这个操作会隐式得在Readonly的事务中执行，除非代码已经包裹在一个事务中。</p>
+<p>2、callback不应该修改数据库，如果需要修改，使用Collection.modify。</p>
+<p>3、callback的返回值会被忽略，所以返回Promise没有任何作用。</p>
+<p>4、在大多数情况下，读取Table或Collection的值，使用Collection.toArray，Collection.primaryKeys，Collection.keys的性能会更好。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">db</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Dexie</span><span class="p">(</span><span class="s1">&#39;dbname&#39;</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nx">stores</span><span class="p">({</span>
+  <span class="nx">friends</span><span class="o">:</span> <span class="err">`</span><span class="nx">id</span><span class="p">,</span><span class="nx">name</span><span class="p">,</span><span class="nx">age</span><span class="err">`</span>
+<span class="p">});</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">bulkPut</span><span class="p">([</span>
+  <span class="p">{</span><span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;One&#39;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">33</span><span class="p">},</span>
+  <span class="p">{</span><span class="nx">id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;Two&#39;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">44</span> <span class="p">},</span>
+  <span class="p">{</span><span class="nx">id</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;Three&#39;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="p">]).</span><span class="nx">then</span><span class="p">(()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">All</span> <span class="nx">my</span> <span class="nx">friends</span><span class="p">,</span> <span class="nx">ordered</span> <span class="nx">by</span> <span class="nx">id</span><span class="o">:</span><span class="err">`</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">item</span><span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">All</span> <span class="nx">my</span> <span class="nx">friends</span><span class="p">,</span> <span class="nx">ordered</span> <span class="nx">by</span> <span class="nx">age</span><span class="o">:</span><span class="err">`</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">orderBy</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="nx">item</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Friends over 30 years old:&#39;</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="nx">item</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+  <span class="p">})</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h4 id="eachkey">eachKey</h4>
+<p>使用index或主键查询，然后遍历数据并调用方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// callback: function(key,cursor){}</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">eachKey</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h4 id="eachprimarykey">eachPrimaryKey</h4>
+<p>使用index查询，然后遍历数据并调用方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// callback: function(primaryKey){}</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">eachPrimaryKey</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h4 id="eachuniquekey">eachUniqueKey</h4>
+<p>使用index或主键查询，然后不同的key值才调用方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// callback: funciton(key,cursor){}</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">eachUniqueKey</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">orderBy</span><span class="p">(</span><span class="s1">&#39;firstName&#39;</span><span class="p">).</span><span class="nx">eachUniqueKey</span><span class="p">((</span><span class="nx">firstName</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">firstName</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h4 id="filter">filter</h4>
+<p>过滤查询到的数据。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// fn: function(val){return true/false};</span>
+<span class="c1">// return collection instance。</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>该方法和and的功能和用法均相同。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">orderBy</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">filter</span><span class="p">((</span><span class="nx">item</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="k">return</span> <span class="nx">item</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;Foo&#39;</span><span class="p">;</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h4 id="first">first</h4>
+<p>返回第一个数据。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// cb: optional funciton(item){}</span>
+<span class="c1">// return: Promise</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">first</span><span class="p">(</span><span class="nx">cb</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>注意：如果没有传递callback方法，返回的Promise会resolve 结果值。</p>
+<p>如果传递了callback方法，返回的Promise会resolve callback的返回值。</p>
+<h4 id="keys">keys</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// cb: optional function(keysArray){}</span>
+<span class="c1">// return: Promise</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">cb</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">性能提示</h5>
+<p>跟Collection.primaryKeys类似，这个操作比Collection.toArray速度快。</p>
+<p>原因有：</p>
+<p>1、整个对象不用实例化。</p>
+<p>2、底层数据库引擎不用读取数据值，只有索引值即可。</p>
+<h5 id="-">注意</h5>
+<p>cb参数会收到查询用到索引的值。只能在索引上使用，不能使用在主键上。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">orderBy</span><span class="p">(</span><span class="s1">&#39;firstName&#39;</span><span class="p">).</span><span class="nx">keys</span><span class="p">((</span><span class="nx">firstNames</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">alert</span><span class="p">(</span><span class="err">`</span><span class="nx">My</span> <span class="nx">Friends</span> <span class="nx">are</span><span class="o">:</span> <span class="err">`</span> <span class="o">+</span> <span class="nx">firstNames</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+<span class="p">});</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">orderBy</span><span class="p">(</span><span class="s1">&#39;shoeSize&#39;</span><span class="p">).</span><span class="nx">uniqueKeys</span><span class="p">(</span><span class="nx">shoeSizes</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">alert</span><span class="p">(</span><span class="err">`</span><span class="nx">My</span> <span class="nx">friends</span> <span class="nx">have</span> <span class="nx">the</span> <span class="nx">following</span> <span class="nx">shoe</span> <span class="nx">size</span><span class="o">:</span> <span class="err">`</span><span class="p">,</span> <span class="nx">shoeSizes</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">));</span>
+<span class="p">});</span>
+<span class="c1">// keys(), uniqueKeys()，eachKey，eachUniqueKey不能在主键上调用。</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">orderBy</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">).</span><span class="nx">keys</span><span class="p">();</span><span class="c1">//will fial</span>
+</pre></div>
+
+</code></pre>
 </body>
 </html>
