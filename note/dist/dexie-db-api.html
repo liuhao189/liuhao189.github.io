@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Dexie-DB-2</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1641917521678">
+  <link rel="stylesheet" href="/note/note.css?ts=1642090579179">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -222,11 +222,11 @@
 </pre></div>
 
 </code></pre>
-<p>注意：each实在readonly的事务中执行的，如果你要在回调中修改数据。请使用Collection.modify方法。</p>
+<p>注意：each是在readonly的事务中执行的，如果你要在回调中修改数据。请使用Collection.modify方法。</p>
 <p>当然，你也可以将你的代码包裹在一个ReadWrite事务中。</p>
 <p>如果遍历结束，返回的Promise会返回undefined。如果遍历失败，返回的Promise会rejected。</p>
 <h5 id="notes">Notes</h5>
-<p>1、这个操作会隐式得在Readonly的事务中执行，除非代码已经包裹在一个事务中。</p>
+<p>1、这个操作会隐式得在Readonly的事务中执行，除非代码已经包裹在一个其它事务中。</p>
 <p>2、callback不应该修改数据库，如果需要修改，使用Collection.modify。</p>
 <p>3、callback的返回值会被忽略，所以返回Promise没有任何作用。</p>
 <p>4、在大多数情况下，读取Table或Collection的值，使用Collection.toArray，Collection.primaryKeys，Collection.keys的性能会更好。</p>
@@ -338,5 +338,105 @@
 </pre></div>
 
 </code></pre>
+<h4 id="primarykeys">primaryKeys</h4>
+<p>取出Collection中的所有主键。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// callback: Function(keysArr){} optional</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">primaryKeys</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">性能注意点</h5>
+<p>和Collection.keys方法类似，这个操作比Collection.toArray方法快。</p>
+<p>如果可以，这个方法会使用IDBObjectStore.getAllKeys()/IDBIndex.getAllKeys()来获得所有key值。</p>
+<p>上述情况只能在没有使用reversed，没有offset，filter只使用below，above，between，equals，startsWith或Table.orderBy方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">async</span> <span class="p">()</span><span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">results</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;firstName&#39;</span><span class="p">).</span><span class="nx">startsWith</span><span class="p">(</span><span class="s1">&#39;Ali&#39;</span><span class="p">).</span><span class="nx">primaryKeys</span><span class="p">(),</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;lastName&#39;</span><span class="p">).</span><span class="nx">startsWith</span><span class="p">(</span><span class="s1">&#39;Svens&#39;</span><span class="p">).</span><span class="nx">primaryKeys</span><span class="p">(),</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">between</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">65</span><span class="p">).</span><span class="nx">primaryKeys</span><span class="p">(),</span>
+  <span class="p">]);</span>
+
+  <span class="kr">const</span> <span class="nx">intersection</span> <span class="o">=</span> <span class="nx">results</span><span class="p">.</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">ids1</span><span class="p">,</span><span class="nx">ids2</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">set</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">(</span><span class="nx">ids1</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">ids2</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">id</span><span class="o">=&gt;</span> <span class="nx">set</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">id</span><span class="p">));</span>
+  <span class="p">})</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h4 id="raw">raw</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// return the collection instance</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">raw</span><span class="p">()</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">注意</h5>
+<p>使结果操作忽略所有Table.hook(&#39;reading&#39;)的订阅。eg：不会map object到它们的mapped class。</p>
+<h4 id="reverse">reverse</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//return collection.reverse()</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">reverse</span><span class="p">()</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">注意</h5>
+<p>reverse会反序collection中的数组，和desc方法有相同的功能。是用来代替desc功能的。</p>
+<h4 id="sortby">sortBy</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// keyPath: string</span>
+<span class="c1">// callback: function(array){}</span>
+<span class="c1">// return Promise</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">sortBy</span><span class="p">(</span><span class="nx">keyPath</span><span class="p">,</span><span class="nx">callback</span><span class="o">?</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">注意事项</h5>
+<p>在Collection中的Items会默认按where子句中的index或primary键排序。如果使用了or，collection不会自动排序了。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">25</span><span class="p">).</span><span class="nx">reverse</span><span class="p">().</span><span class="nx">sortBy</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h4 id="toarray">toArray</h4>
+<p>执行查询，并将结果使用where子句中使用的index来排序。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//callback: optional Funciton function(arr) {}</span>
+<span class="c1">// return Promise</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h4 id="uniquekeys">uniqueKeys</h4>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// callback optional function(keysArray){}</span>
+<span class="c1">// return Promise</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">uniqueKeys</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">orderBy</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">uniqueKeys</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">keyaArr</span><span class="p">){})</span>
+</pre></div>
+
+</code></pre>
+<h4 id="until">until</h4>
+<p>直到给定的filter返回true之前，忽略所有的items。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// filterFn，function(item){} 当返回true时，会停止遍历</span>
+<span class="c1">// bInclueStopEntry: boolean，是否包含停止的item</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">until</span><span class="p">(</span><span class="nx">filterFn</span><span class="p">,</span><span class="nx">bInclueStopEntry</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h5 id="-">注意</h5>
+<p>和limit类似，但是让你指定一个函数来告知何时停止。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">cancelled</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">getLogs</span><span class="p">(){</span>
+  <span class="nx">cancelled</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">logEntries</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">).</span><span class="nx">between</span><span class="p">(</span><span class="nx">yesterday</span><span class="p">,</span><span class="nx">today</span><span class="p">).</span><span class="nx">until</span><span class="p">(()</span><span class="o">=&gt;</span><span class="nx">cancelled</span><span class="p">).</span><span class="nx">toArray</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">calcel</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">cancelled</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">参考文档</h2>
+<p><a href="https://dexie.org/docs/API-Reference#quick-reference">https://dexie.org/docs/API-Reference#quick-reference</a></p>
 </body>
 </html>

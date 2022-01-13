@@ -261,7 +261,7 @@ collection.distince()
 collection.each(callback);
 ```
 
-注意：each实在readonly的事务中执行的，如果你要在回调中修改数据。请使用Collection.modify方法。
+注意：each是在readonly的事务中执行的，如果你要在回调中修改数据。请使用Collection.modify方法。
 
 当然，你也可以将你的代码包裹在一个ReadWrite事务中。
 
@@ -269,7 +269,7 @@ collection.each(callback);
 
 ##### Notes
 
-1、这个操作会隐式得在Readonly的事务中执行，除非代码已经包裹在一个事务中。
+1、这个操作会隐式得在Readonly的事务中执行，除非代码已经包裹在一个其它事务中。
 
 2、callback不应该修改数据库，如果需要修改，使用Collection.modify。
 
@@ -405,3 +405,128 @@ db.friends.orderBy('shoeSize').uniqueKeys(shoeSizes=>{
 // keys(), uniqueKeys()，eachKey，eachUniqueKey不能在主键上调用。
 db.friends.orderBy('id').keys();//will fial
 ```
+
+#### primaryKeys
+
+取出Collection中的所有主键。
+
+```js
+// callback: Function(keysArr){} optional
+collection.primaryKeys(callback)
+```
+
+##### 性能注意点
+
+和Collection.keys方法类似，这个操作比Collection.toArray方法快。
+
+如果可以，这个方法会使用IDBObjectStore.getAllKeys()/IDBIndex.getAllKeys()来获得所有key值。
+
+上述情况只能在没有使用reversed，没有offset，filter只使用below，above，between，equals，startsWith或Table.orderBy方法。
+
+```js
+db.transaction('r', db.friends, async ()=> {
+  const results = await Promise.all([
+    db.friends.where('firstName').startsWith('Ali').primaryKeys(),
+    db.friends.where('lastName').startsWith('Svens').primaryKeys(),
+    db.friends.where('age').between(18,65).primaryKeys(),
+  ]);
+
+  const intersection = results.reduce((ids1,ids2)=>{
+    const set = new Set(ids1);
+    return ids2.filter(id=> set.has(id));
+  })
+});
+```
+
+#### raw
+
+```js
+// return the collection instance
+collection.raw()
+```
+
+##### 注意
+
+使结果操作忽略所有Table.hook('reading')的订阅。eg：不会map object到它们的mapped class。
+
+#### reverse
+
+```js
+//return collection.reverse()
+collection.reverse()
+```
+
+##### 注意
+
+reverse会反序collection中的数组，和desc方法有相同的功能。是用来代替desc功能的。
+
+#### sortBy
+
+```js
+// keyPath: string
+// callback: function(array){}
+// return Promise
+collection.sortBy(keyPath,callback?)
+```
+
+##### 注意事项
+
+在Collection中的Items会默认按where子句中的index或primary键排序。如果使用了or，collection不会自动排序了。
+
+```js
+db.friends.where('age').above(25).reverse().sortBy('name');
+```
+
+#### toArray
+
+执行查询，并将结果使用where子句中使用的index来排序。
+
+```js
+//callback: optional Funciton function(arr) {}
+// return Promise
+collection.toArray(callback)
+```
+
+#### uniqueKeys
+
+```js
+// callback optional function(keysArray){}
+// return Promise
+collection.uniqueKeys(callback)
+```
+
+```js
+db.friends.orderBy('name').uniqueKeys(function(keyaArr){})
+```
+
+#### until
+
+直到给定的filter返回true之前，忽略所有的items。
+
+```js
+// filterFn，function(item){} 当返回true时，会停止遍历
+// bInclueStopEntry: boolean，是否包含停止的item
+collection.until(filterFn,bInclueStopEntry);
+```
+
+##### 注意
+
+和limit类似，但是让你指定一个函数来告知何时停止。
+
+```js
+let cancelled = false;
+
+function getLogs(){
+  cancelled = false;
+  return db.logEntries.where('date').between(yesterday,today).until(()=>cancelled).toArray();
+}
+
+function calcel() {
+  cancelled = true;
+}
+```
+
+
+## 参考文档
+
+https://dexie.org/docs/API-Reference#quick-reference
