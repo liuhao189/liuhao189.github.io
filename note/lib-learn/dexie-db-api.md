@@ -501,7 +501,7 @@ db.friends.orderBy('name').uniqueKeys(function(keyaArr){})
 
 #### until
 
-直到给定的filter返回true之前，忽略所有的items。
+直到给定的filter返回true之后，忽略所有的items。
 
 ```js
 // filterFn，function(item){} 当返回true时，会停止遍历
