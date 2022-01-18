@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>软件架构模式</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1642436255900">
+  <link rel="stylesheet" href="/note/note.css?ts=1642522899158">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -94,7 +94,28 @@
 <p>事件中介可以通过多种方式实现，作为一名架构师，你应该理解这些实现选项中的每一个，以确保为事件中介选择的解决方案符合您的需求。</p>
 <p>最简单和最常见的实现是通过Spring intergration、Apache Cemel或Mule ESB等开源集成中心实现的。</p>
 <p>这些开源集成集线器中的事件流通常通过Java代码或DSL实现。对于更复杂的中介和编排，您可以使用BPEL(Business-Process-Execution-Language)和BPEL引擎结合使用。</p>
-<p>BPEL是一种标准的类XML的语言，它描述了处理初始事件所需的数据和步骤。对于需要更复杂的编排，你可以使用阢流程管理器（BPM-Business-Process-Manager）。</p>
+<p>BPEL是一种标准的类XML的语言，它描述了处理初始事件所需的数据和步骤。对于需要更复杂的编排，你可以使用BPM流程管理器（BPM-Business-Process-Manager）。</p>
+<h3 id="-">代理人拓扑</h3>
+<p>代理拓扑与中介拓扑的不同之处在于没有中央事件中介器。相反，消息流通过轻量级消息代理以类似链的方式发布在事件处理器组件之间。</p>
+<p>当你具有简单的事件处理流并且不希望中央事件业务流程时，此拓扑非常有用。</p>
+<p>有两种基本的架构组件：1、代理组件；2、事件处理组件。</p>
+<p>代理组件可以是集中式的或联合式的，并且包含事件流中使用的所有事件通道。代理组件中包含的事件通道可以是消息队列，消息主题。</p>
+<p><img src="/note/assets/imgs/event-software-arch.png" alt="代理人结构图"></p>
+<p>没有中心事件中介组件控制和协调初始事件，每个事件处理器组件负责处理一个事件，并可能发布另一个新事件，指示它刚刚执行的操作。</p>
+<p><img src="/note/assets/imgs/event-chain-software-arch.png" alt="事件链结构图"></p>
+<p>代理人拓扑主要是使用事件处理流来完成业务逻辑。很像接力赛跑。</p>
+<h3 id="-">注意事项</h3>
+<p>事件驱动的架构实现起来比较复杂，这主要是因为它的异步分布式特性。必须解决各种分布式体系结构问题。eg：远程可用性、缺乏响应性以及代理或中介失败时的代理重新连接逻辑。</p>
+<p>另外一个问题是，单个业务流程缺乏原子事务。由于事件处理器组件是高度解耦和分布式的，因此在它们之间维护事务工作单元非常困难。</p>
+<p>如果您发现需要在事件处理器之间分割单个工作单元，那么这种模式可能不适用于您的应用程序。</p>
+<p>事件驱动的体系结构模式最困难的方面之一是事件处理器组件契约的创建、维护和治理。</p>
+<h3 id="-">模式分析</h3>
+<p>1、敏捷性：高，对变化的响应能力高，由于事件处理器是单一用途的，并且与其它事件处理器组件完全解耦。只对一个或几个事件处理器进行更改，不影响其它事件处理器。</p>
+<p>2、部署容易：高，由于处理器组件的解耦，很容易部署。代理人模式比中介模式更好部署，因为中介组件可能依赖于事件处理器组件。</p>
+<p>3、可测试性：低，虽然单个单元测试不是非常困难，但它确实需要某种专门的测试客户端或测试工具来生成事件。</p>
+<p>4、性能：高，虽然由于涉及到所有的消息传递基础设施，但通常情况下，该模式通过其异步功能实现了高性能。执行解耦的并行异步操作的能力超过了对消息进行排队和消费的成本。</p>
+<p>5、可伸缩性：高，可伸缩性是通过高度独立和解耦的事件处理器实现的。每个事件处理器可单独伸缩，从而实现细粒度的可伸缩性。</p>
+<p>6、易于开发：低，由于模式的异步特性以及契约的创建，需要为无响应的事件处理器和失败的代理提供更高级的错误处理条件，开发可能会有些复杂。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://orkhanscience.medium.com/software-architecture-patterns-5-mins-read-e9e3c8eb47d2">https://orkhanscience.medium.com/software-architecture-patterns-5-mins-read-e9e3c8eb47d2</a></p>
 <p><a href="https://www.oreilly.com/content/software-architecture-patterns/">https://www.oreilly.com/content/software-architecture-patterns/</a></p>
