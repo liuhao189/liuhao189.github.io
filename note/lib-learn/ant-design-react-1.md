@@ -6,7 +6,7 @@ antd为Web应用提供了丰富的基础UI组件，除了官方组件，Antd官�
 
 ### 通用组件
 
-Button，Icon和Tyography排版。
+Button，Icon和Typography排版。
 
 ### 布局
 
@@ -46,6 +46,36 @@ EditableProTable，ProLayout，ProForm，ProTable，ProDescriptions，ProList。
 四种状态：1、危险，删除&移动&修改权限等危险操作，一般需二次确认；2、幽灵，背景色比较复杂的地方，首页或产品页；3、禁用，不可用的时候，一般需要文案解释；4、加载中，异步操作等待反馈的时候，也可避免多次提交。
 
 图标按钮：当需要在Button内嵌入Icon时，可以设置icon属性，或者直接在Button内使用Icon组件。想控制icon具体的位置，只能直接使用Icon组件。
+
+按钮尺寸：按钮有大、中、小三种尺寸。通过设置size为large，small。
+
+加载中状态：添加loading属性即可让按钮处于加载状态。
+
+不可用状态：添加disabled属性可让按钮处于不可用状态，同时按钮样式也会改变。
+
+幽灵按钮：将按钮的内容反色，背景变为透明，常用在有色背景上。
+
+多个按钮组合：按钮组合使用时，推荐使用1个主操作+n个次操作，3个以上操作时候将更多操作放到Dropdown.Button中组合使用。
+
+block按钮：block属性将使按钮适合其父宽度。
+
+危险按钮：在4.0以后，危险成为一种按钮属性而不是按钮类型。
+
+API：block，danger，disabled，ghost，href，htmlType，icon，loading，shape，size，target，type，onClick。
+
+此外还支持原生button的所有属性。
+
+FAQ：如何移除两个汉字之间的空格？
+
+根据Ant Design设计规范要求，我们会在按钮内只有两个汉字时自动添加空格，如果不需要此属性，可以设置ConfigProvider的autoInsertSpaceInButton为false。
+
+## Icon图标
+
+语义化的矢量图形，使用图标组件，你需要安装@ant-design/icons图标组件包。
+
+基本用法：不同主题的icon组件名为图标加主题做为后缀，通过设置spin属性来实现动画旋转。
+
+双色图标：可以通过设置twoToneColor属性设置主题色。
 
 
 
