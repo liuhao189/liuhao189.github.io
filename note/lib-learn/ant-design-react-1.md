@@ -77,5 +77,51 @@ FAQ：如何移除两个汉字之间的空格？
 
 双色图标：可以通过设置twoToneColor属性设置主题色。
 
+自定义图标：利用Icon组件封装一个可复用的自定义图标。可以通过component属性传入一个组件来渲染最终的图标。
 
+使用iconfont：对于使用IconFont的用户，通过设置createFromIconFontCN方法参数对象中的scriptUrl字段，即可轻松使用已有项目中的图标。
+
+使用多个iconfont：@ant-design/icons@4.1.0以后，scriptUrl可引用多个资源，用户可灵活的管理iconfont图标，如果资源的图标出现重名，会按照数组顺序进行覆盖。
+
+API：className，设置图标的样式名；rotate图标旋转角度；spin，是否有旋转动画；style设置图标的样式；twoToneColor，仅使用双色图标，设置双色图标的主要颜色。
+
+提供三种主题的图标（Outlined，Filled，TwoTone），不同主题的Icon组件为图标名加主题做为后缀。
+
+### 自定义Icon
+
+API：component，控制如何渲染图标，通常是一个渲染根组件为<svg>的React组件；rotate，图标旋转角度；spin，是否有旋转动画；style，设置图标的样式。
+
+### 关于SVG图标
+
+从3.9.0之后，我们使用了SVG图标替换了原先的font图标，从而带来了以下优势：
+
+1、完全里先后使用，不需要从CDN下载字体文件。图标不会因为网络问题呈现方块，也无需字体文件本地部署。
+
+2、在低端设备上SVG有更好的清晰度。
+
+3、支持多色图标。可以使用style和classnName设置图标的大小和单色图标的颜色。
+
+4、对于内建图标的更换可以提供更多的API，而不需要进行样式覆盖。
+
+### 双色图标主色
+
+可以通过getTwoToneColor和setTwoToneColor来全局设置图标主色。
+
+### 自定义font图标
+
+createFromIconfontCN方法，其本质是创建了一个使用use标签来渲染图标的组件。
+
+方法参数为：{extraCommonProps: { [key string]:any }, scriptUrl:string|string[]}。
+
+### 自定义SVG图标
+
+如果使用webpack，可以通过配置@svgr/webpack来将svg图标作为React组件导入。
+
+Icon中的compoent组件接受的属性：className，fill，height，style，width。
+
+## Typography排版
+
+文本的基本格式。
+
+何时使用：当需要展示标题、段落、列表内容时使用，如文章/博客/日志的文本样式。当需要一列基于文本的基础操作时，如拷贝/省略/可编辑。
 
