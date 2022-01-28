@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>AntDesign Of React - 1</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1643300411574">
+  <link rel="stylesheet" href="/note/note.css?ts=1643387759651">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -60,7 +60,7 @@
 <p>API：component，控制如何渲染图标，通常是一个渲染根组件为&lt;svg&gt;的React组件；rotate，图标旋转角度；spin，是否有旋转动画；style，设置图标的样式。</p>
 <h3 id="-svg-">关于SVG图标</h3>
 <p>从3.9.0之后，我们使用了SVG图标替换了原先的font图标，从而带来了以下优势：</p>
-<p>1、完全里先后使用，不需要从CDN下载字体文件。图标不会因为网络问题呈现方块，也无需字体文件本地部署。</p>
+<p>1、完全离线后使用，不需要从CDN下载字体文件。图标不会因为网络问题呈现方块，也无需字体文件本地部署。</p>
 <p>2、在低端设备上SVG有更好的清晰度。</p>
 <p>3、支持多色图标。可以使用style和classnName设置图标的大小和单色图标的颜色。</p>
 <p>4、对于内建图标的更换可以提供更多的API，而不需要进行样式覆盖。</p>
@@ -74,6 +74,74 @@
 <p>Icon中的compoent组件接受的属性：className，fill，height，style，width。</p>
 <h2 id="typography-">Typography排版</h2>
 <p>文本的基本格式。</p>
-<p>何时使用：当需要展示标题、段落、列表内容时使用，如文章/博客/日志的文本样式。当需要一列基于文本的基础操作时，如拷贝/省略/可编辑。</p>
+<p>何时使用：当需要展示标题、段落、列表内容时使用，如文章/博客/日志的文本样式。当需要一些基于文本的基础操作时，如拷贝/省略/可编辑。</p>
+<p>标题组件：展示不同级别的标题。默认level为1，可以设置1，2，3，4，5。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="o">&lt;</span><span class="nx">Title</span><span class="o">&gt;</span><span class="nx">h1</span><span class="err">，</span><span class="nx">Ant</span> <span class="nx">Design</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/Title&gt;</span>
+<span class="o">&lt;</span><span class="nx">Title</span> <span class="nx">level</span><span class="o">=</span><span class="p">{</span><span class="mi">2</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">h2</span><span class="o">&lt;</span><span class="err">/Title&gt;</span>
+</pre></div>
+
+</code></pre>
+<p>文本和超链接组件：内置不同样式的文本和超链接组件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="o">&lt;</span><span class="nx">Text</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;secondary&quot;</span><span class="o">&gt;</span><span class="nx">secondary</span><span class="o">&lt;</span><span class="err">/Text&gt;</span>
+<span class="o">&lt;</span><span class="nx">Text</span> <span class="nx">mark</span><span class="o">&gt;</span><span class="nx">Mark</span><span class="o">&lt;</span><span class="err">/Text&gt;</span>
+<span class="o">&lt;</span><span class="nx">Link</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;https://ant.design&quot;</span> <span class="nx">target</span><span class="o">=</span><span class="s2">&quot;_blank&quot;</span><span class="o">&gt;</span><span class="nx">Link</span><span class="o">&lt;</span><span class="err">/Link&gt;</span>
+</pre></div>
+
+</code></pre>
+<p>可交互：提供可编辑和可复制等额外的交互能力。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="o">&lt;</span><span class="nx">Paragraph</span> <span class="nx">editable</span><span class="o">=</span><span class="p">{{</span><span class="nx">onChange</span><span class="o">:</span><span class="nx">setEditableStr</span><span class="p">}}</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">editableStr</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/Paragraph&gt;</span>
+<span class="o">&lt;</span><span class="nx">Paragraph</span> <span class="nx">copyable</span><span class="o">&gt;</span><span class="nx">Copy</span> <span class="nx">Text</span><span class="o">&lt;</span><span class="err">/Paragraph&gt;</span>
+</pre></div>
+
+</code></pre>
+<p>省略号：多行文本省略，可以通过tooltip属性配置省略展示内容。大量文本推荐使用expandable。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="o">&lt;</span><span class="nx">Paragraph</span> <span class="nx">ellipsis</span><span class="o">=</span><span class="p">{</span><span class="nx">ellipsis</span> <span class="o">?</span> <span class="p">{</span><span class="nx">rows</span><span class="o">:</span><span class="mi">2</span><span class="p">,</span><span class="nx">expandable</span><span class="o">:</span><span class="kc">true</span><span class="p">,</span><span class="nx">symbol</span><span class="o">:</span><span class="s1">&#39;more&#39;</span><span class="p">}</span><span class="o">:</span><span class="kc">false</span><span class="p">}</span><span class="o">&gt;</span>  <span class="o">&lt;</span><span class="err">/Paragraph&gt;</span>
+</pre></div>
+
+</code></pre>
+<p>省略中间：使用ellipsis={{suffix:...}}可以封装一个从中间省略内容的组件，适合于需要保留文本末位特征的内容。</p>
+<p>添加后缀的省略：使用ellipsis的suffix属性指定。</p>
+<h3 id="text-title-paragraph">Text &amp;&amp; Title &amp;&amp; Paragraph</h3>
+<p>API：code，copyable，delete，disabled，editable，ellipsis，keyboard，mark，onClick，strong，italic，type文本类型，underline。</p>
+<h3 id="copyable">Copyable</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nx">text</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">//拷贝到剪切板里的文本</span>
+  <span class="nx">onCopy</span><span class="o">:</span> <span class="kd">function</span><span class="p">,</span><span class="c1">// 拷贝成功的回调函数，</span>
+  <span class="nx">icon</span><span class="o">:</span> <span class="nx">ReactNode</span><span class="p">,</span> <span class="c1">// 自定义拷贝图标</span>
+  <span class="nx">tooltips</span><span class="o">:</span> <span class="kc">false</span> <span class="o">|</span> <span class="p">[</span><span class="nx">ReactNode</span><span class="p">,</span> <span class="nx">ReactNode</span><span class="p">]</span> <span class="c1">// 自定义提示稳文案，默认为[复制，复制成功]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="editable">editable</h3>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nx">icon</span>: <span class="kt">ReactNode</span><span class="p">,</span>
+  <span class="nx">tooltip</span>: <span class="kt">boolean</span><span class="p">,</span>
+  <span class="nx">editing</span>: <span class="kt">boolean</span><span class="p">,</span> 
+  <span class="nx">maxLength</span>: <span class="kt">number</span><span class="p">,</span>
+  <span class="nx">autoSize</span>: <span class="kt">boolean</span> <span class="o">|</span> <span class="p">{</span><span class="nx">minRows</span>:<span class="kt">number</span><span class="p">,</span> <span class="nx">maxRows</span>: <span class="kt">number</span><span class="p">},</span> 
+  <span class="nx">onStart</span>: <span class="kt">function</span><span class="p">,</span>
+  <span class="nx">onChange</span>: <span class="kt">function</span><span class="p">,</span> <span class="c1">// 文本域编辑时触发</span>
+  <span class="nx">onCancel</span>: <span class="kt">function</span><span class="p">,</span> <span class="c1">//esc退出编辑状态时触发</span>
+  <span class="nx">onEnd</span>: <span class="kt">function</span><span class="p">,</span>
+  <span class="nx">triggerType</span><span class="o">:</span> <span class="p">(</span><span class="s1">&#39;icon&#39;</span><span class="o">|</span><span class="s1">&#39;text&#39;</span><span class="p">)[],</span>
+  <span class="nx">enterIcon</span>: <span class="kt">ReactNode</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="ellipsis">ellipsis</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nx">rows</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span>
+  <span class="nx">expandable</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span>
+  <span class="nx">suffix</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">//自定义省略内容后缀</span>
+  <span class="nx">symbol</span><span class="o">:</span> <span class="nx">ReactNode</span><span class="p">,</span> <span class="c1">//自定义展示描述文件，默认为 展开</span>
+  <span class="nx">tooltip</span><span class="o">:</span> <span class="kr">boolean</span><span class="o">|</span> <span class="nx">ReactNode</span><span class="p">,</span> 
+  <span class="nx">onExpand</span><span class="o">:</span> <span class="kd">function</span><span class="p">,</span>
+  <span class="nx">onEllipsis</span><span class="o">:</span><span class="kd">function</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 </body>
 </html>

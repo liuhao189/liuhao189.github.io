@@ -95,7 +95,7 @@ API：component，控制如何渲染图标，通常是一个渲染根组件为<s
 
 从3.9.0之后，我们使用了SVG图标替换了原先的font图标，从而带来了以下优势：
 
-1、完全里先后使用，不需要从CDN下载字体文件。图标不会因为网络问题呈现方块，也无需字体文件本地部署。
+1、完全离线后使用，不需要从CDN下载字体文件。图标不会因为网络问题呈现方块，也无需字体文件本地部署。
 
 2、在低端设备上SVG有更好的清晰度。
 
@@ -123,5 +123,84 @@ Icon中的compoent组件接受的属性：className，fill，height，style，wi
 
 文本的基本格式。
 
-何时使用：当需要展示标题、段落、列表内容时使用，如文章/博客/日志的文本样式。当需要一列基于文本的基础操作时，如拷贝/省略/可编辑。
+何时使用：当需要展示标题、段落、列表内容时使用，如文章/博客/日志的文本样式。当需要一些基于文本的基础操作时，如拷贝/省略/可编辑。
+
+标题组件：展示不同级别的标题。默认level为1，可以设置1，2，3，4，5。
+
+```js
+<Title>h1，Ant Design.</Title>
+<Title level={2}>h2</Title>
+```
+
+文本和超链接组件：内置不同样式的文本和超链接组件。
+
+```js
+<Text type="secondary">secondary</Text>
+<Text mark>Mark</Text>
+<Link href="https://ant.design" target="_blank">Link</Link>
+```
+
+可交互：提供可编辑和可复制等额外的交互能力。
+
+```js
+<Paragraph editable={{onChange:setEditableStr}}>{editableStr}</Paragraph>
+<Paragraph copyable>Copy Text</Paragraph>
+```
+
+省略号：多行文本省略，可以通过tooltip属性配置省略展示内容。大量文本推荐使用expandable。
+
+```js
+<Paragraph ellipsis={ellipsis ? {rows:2,expandable:true,symbol:'more'}:false}>  </Paragraph>
+```
+
+省略中间：使用ellipsis={{suffix:...}}可以封装一个从中间省略内容的组件，适合于需要保留文本末位特征的内容。
+
+添加后缀的省略：使用ellipsis的suffix属性指定。
+
+### Text && Title && Paragraph
+
+API：code，copyable，delete，disabled，editable，ellipsis，keyboard，mark，onClick，strong，italic，type文本类型，underline。
+
+### Copyable
+
+```js
+{
+  text: string, //拷贝到剪切板里的文本
+  onCopy: function,// 拷贝成功的回调函数，
+  icon: ReactNode, // 自定义拷贝图标
+  tooltips: false | [ReactNode, ReactNode] // 自定义提示稳文案，默认为[复制，复制成功]
+}
+```
+
+### editable
+
+```ts
+{
+  icon: ReactNode,
+  tooltip: boolean,
+  editing: boolean, 
+  maxLength: number,
+  autoSize: boolean | {minRows:number, maxRows: number}, 
+  onStart: function,
+  onChange: function, // 文本域编辑时触发
+  onCancel: function, //esc退出编辑状态时触发
+  onEnd: function,
+  triggerType: ('icon'|'text')[],
+  enterIcon: ReactNode,
+}
+```
+
+### ellipsis
+
+```js
+{
+  rows: number,
+  expandable: boolean,
+  suffix: string, //自定义省略内容后缀
+  symbol: ReactNode, //自定义展示描述文件，默认为 展开
+  tooltip: boolean| ReactNode, 
+  onExpand: function,
+  onEllipsis:function,
+}
+```
 
