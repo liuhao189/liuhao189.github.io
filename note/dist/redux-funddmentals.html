@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redux基本原理</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1643820423158">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="redux-">Redux基本原理</h1>
+<h2 id="-redux-">第一部分：Redux概述</h2>
+<p>What：Redux是一个使用叫actions的事件来管理和更新应用状态的类库。它作为在整个应用程序中使用得状态的集中式存储，其规则确保状态只能以肯预测的方式更新。</p>
+<p>Why：Redux提供的模式和工具使您更容易理解应用程序中的状态更新的时间、地点、原因和方式，以及发生这些更改时应用程序的逻辑。</p>
+<p>When：Redux也有利弊，需要学习概念，书写更多的代码，添加一些间接方法，并要求你遵循某些限制。是短期生产力和长期生产力之间的权衡。</p>
+<p>在下列场景下更有用：</p>
+<p>1、有大量的应用程序状态需要在应用程序的许多地方。</p>
+<p>2、应用程序状态会高频更新。</p>
+<p>3、更新状态的逻辑可能很复杂。</p>
+<p>4、多人开发，中大型代码库。</p>
+<h3 id="redux-">Redux类库和工具</h3>
+<p>Redux是一个独立的JS类库，通常它会和其它类库配合使用。</p>
+<p>React-redux是官方库。</p>
+<p>React-Toolki是我们推荐的编写Redux逻辑的方法，包含了很多有用的函数。</p>
+<p>React-DevTools-Extension展示了状态的变更历史。</p>
+<h3 id="redux-">Redux基本概念</h3>
+<h4 id="redux-store">Redux Store</h4>
+<p>Store包含了应用的全局状态。</p>
+<p>Store的特点：</p>
+<p>1、不可直接修改Store中的状态。</p>
+<p>2、导致状态更新的唯一方法是创建一个普通的Action对象，该对象描述应用程序中发生的事情。然后将该Action Dispatch到Store中。</p>
+<p>3、在Dispatch时，Store会运行根reducer函数，并让它格局old state和Action来计算new state。</p>
+<p>4、最后，Store通知订阅者状态已经更新，因此UI可以用新数据更新。</p>
+<p>UI：在应用中，UI应该在屏幕上展示已存在的数据。</p>
+<h4 id="data-flow">Data Flow</h4>
+<p>1、Action做为UI的响应法被Dispatch出来。</p>
+<p>2、Store执行Reducer函数来计算新状态，然后通知订阅者。</p>
+<p>3、UI渲染收到状态变更通知展示新状态。</p>
+<h2 id="-">第二部分：概念和数据流转</h2>
+<h3 id="-">背景概念</h3>
+<h4 id="-">状态管理</h4>
+<p>React管理counter的组件：自包含应用，包含了state，view和actions。</p>
+<p>单向数据流：</p>
+<p>1、状态描述应用在特定时间点的状态；</p>
+<p>2、UI渲染基于state。</p>
+<p>3、当一些事件发生，state根据发生了什么开始更新。</p>
+<p>4、UI根据new state来重新渲染。</p>
+<p>当多个组件需要共享和使用相同的状态时，简单性就会崩溃。有时，可以通过提升状态到父组件来解决，但这并不总是有帮助的。</p>
+<p>通过定义和分离状态管理中涉及到的概念，并强制实施在视图和状态之间保持独立性的规则，我们为代码提供了更多的结构和可维护性。</p>
+<h4 id="-">不可变性</h4>
+<h2 id="-">参考文档</h2>
+<p><a href="https://redux.js.org/tutorials/fundamentals/part-1-overview">https://redux.js.org/tutorials/fundamentals/part-1-overview</a></p>
+</body>
+</html>
