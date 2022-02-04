@@ -99,13 +99,79 @@ giveAwesomePowers的纯函数版本，先拷贝person，然后再添加新属性
 
 React更喜欢不变性：在React中，不要直接改变state和props。
 
-React中：直接改变state可以导致奇怪的bug，同时另组件难以优化。
+React中：直接改变state可能导致奇怪的bug，同时使组件难以优化。
 
 提高组件性能的通用手法是使组件变纯，组件的重新渲染只是当它的props改变，而不是每次父组件重新渲染时。
 
 不可变性对纯函数很重要：默认情况下，React组件在父组件重渲染时，或使用setState时会重新渲染。
 
 继承了React.PureComponent的组件只在它的props改变或setState时，重新渲染，是常见的性能优化手段。
+
+JS的对象和数组直接使用===，判断的是引用相等。
+
+为什么不遍历检查相等？根据对象的大小，遍历检查的时间差异很大。而引用相等判断会在常量时间内完成。
+
+React的setState方法会浅拷贝state，然后和参数合并来生成新的state。
+
+##### 常见场景
+
+改变对象：利用展开运算符，多层对象需要多层展开。
+
+```js
+{
+  ...state,
+  prop: state.age++,
+}
+```
+
+插入数组：利用展开运算符。
+
+```js
+[
+  newItem,
+  ...state
+]
+```
+
+数组中item变更：map方法返回新数组即可。
+
+数组中插入item：先slice拷贝，然后splice。
+
+数组中删除item：使用filter即可。
+
+##### 使用Immer类库更新
+
+Immer让你可以以常见的手法来更新状态。Immer会帮你处理为不可变更新。
+
+```bash
+npm i immer 
+```
+
+然后引入produce方法。
+
+```js
+function immerifiedReducer(state, action) {
+  const key = 'ravenclaw';
+
+  return produce(state, draft => {
+    draft.houses[key].points += 3;
+  });
+}
+```
+
+produce方法返回了一个柯里化的方法，所以setState的函数版本可以直接传递一个参数。
+
+```js
+this.setState(produce(draft => {
+  draft.count += 1;
+}));
+```
+
+Immer：数据中未更改的部分不需要复制，而是在内存中与相同状态的旧版本共存。使用Immer时，会对草稿对象进行更改，该对象会记录更改并负责创建必要的副本。
+
+##### Immer的原理
+
+草稿是当前状态的代理，Immer会将你对草稿的操作记录下来，一旦你的更新方法运行结束，Immer会根据操作记录和nextState来生成nextState。
 
 
 ## 参考文档
