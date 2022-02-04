@@ -141,10 +141,10 @@ React的setState方法会浅拷贝state，然后和参数合并来生成新的st
 
 ##### 使用Immer类库更新
 
-Immer让你可以以常见的手法来更新状态。Immer会帮你处理为不可变更新。
+Immer让你可以用常见的手法来更新对象。Immer会帮你处理为不可变更新。
 
 ```bash
-npm i immer 
+npm i immer
 ```
 
 然后引入produce方法。
@@ -171,8 +171,100 @@ Immer：数据中未更改的部分不需要复制，而是在内存中与相同
 
 ##### Immer的原理
 
-草稿是当前状态的代理，Immer会将你对草稿的操作记录下来，一旦你的更新方法运行结束，Immer会根据操作记录和nextState来生成nextState。
+草稿是当前状态的代理，Immer会将你对草稿的操作记录下来，一旦你的更新方法运行结束，Immer会根据操作记录和old state来生成nextState。
 
+
+### Redux的专业术语
+
+#### Actions
+
+普通的JS对象，type字段表示类型。可以理解为应用中发生的事件。
+
+type一般是domain/eventName格式的，额外的信息存储在payload中。
+
+#### Reducers
+
+Reducer是一个接受当前状态和一个action对象的函数，返回新的状态。(state,action) => newState。可以理解为事件处理器。
+
+Reducer需要是纯函数，只基于state和action计算newState，不允许改变已有的state，只能做不可变的更新。不能有异步逻辑和副作用。
+
+#### Store
+
+集中式的状态存储的地方，有getState方法可以获取当前数据。
+
+#### Dispatch
+
+store有一个dispatch方法，只有调用该方法才能更新state。可以理解为事件生成器。
+
+#### Selectors
+
+Selectors是知道如何从store中提取特定信息的函数。可以减少重复的提取state的逻辑。
+
+### 核心概念和原则
+
+#### 数据的唯一来源
+
+应用的全部状态应该存储到全局唯一的store中。
+
+#### 状态是只读的
+
+只能使用dispatch action来更新数据。UI不会直接写数据，action是普通的JS对象，可以被logged，序列化存储，为了调试和测试重现。
+
+#### 用纯reducer函数用来更新
+
+更好理解。
+
+#### Redux应用的数据流
+
+初始化：
+
+1、Redux Store使用root reducer方法来初始化。并生成初始state。
+
+2、UI组件根据当前的状态渲染，同时订阅了store的更新事件。
+
+更新：
+
+1、app中发生了事件，app dispatch了action到Store。
+
+2、store执行reducer函数，reducer函数根据当前状态和action来计算newState。
+
+3、store通知UI状态更新。UI组件检查自身关注的状态是否改变。
+
+## 第三部分，State，Action和Reducer
+
+### 设计State的值
+
+React和Redux的核心原则之一是UI应该基于你的状态。
+
+核心的是：todoList和当前的filter选项。todoItem包含name，completed status，id，color分类。Filter包含color和status。
+
+todos是应用级别的state，然而filter选型是UI级别的state。
+
+### 设计state结构
+
+Redux中，我们的状态一般使用普通的JS对象和数组来构成。
+
+### 设计Actions
+
+描述当前发送了什么事件的action。
+
+1、add，toggle，select color，delete，mark all completed，clear all。。。
+
+### 写Reducers
+
+Redux App只有一个reducer函数，即root reducer。
+
+Redux的目标之一是让你的代码可预测，当一个函数的输出只由输入参数决定，代码的工作方式和相关的测试会很容易。
+
+### 分开Reducers
+
+Redux的reducers一般按照它们更新的state的部分来分开维护。
+
+我们推荐基于功能来组织你的redux代码。同功能模块的redux代码经常分离到一个以slice结尾的文件中。
+
+### 结合Reducers
+
+combineReducers方法。
 
 ## 参考文档
 
