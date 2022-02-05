@@ -208,7 +208,7 @@ Selectors是知道如何从store中提取特定信息的函数。可以减少重
 
 #### 状态是只读的
 
-只能使用dispatch action来更新数据。UI不会直接写数据，action是普通的JS对象，可以被logged，序列化存储，为了调试和测试重现。
+只能使用dispatch action来更新数据。UI不会直接写数据，action是普通的JS对象，可以被logged，序列化存储，方便调试和测试。
 
 #### 用纯reducer函数用来更新
 
@@ -265,6 +265,106 @@ Redux的reducers一般按照它们更新的state的部分来分开维护。
 ### 结合Reducers
 
 combineReducers方法。
+
+## 第四部分，Store
+
+Store负责的部分：
+
+1、将当前应用程序状态存储在内部。
+
+2、允许使用store.getState来获取当前状态。
+
+3、允许使用store.dispatch(action)来更新状态。
+
+4、允许使用store.subscribe来注册回调函数。
+
+5、允许使用store.subscribe返回的unsubscribe函数来注销回调。
+
+### 创建Store
+
+主要使用createStore方法来创建Store。createStore的第二个参数可以接受preloadedState。
+
+```js
+import { createStore } from 'redux';
+```
+
+### Redux Store的代码实现
+
+store有state和reducer的属性存储。getState返回当前的state。subscribe保存一个监听函数数组。dispatch调用reducer，然后保存状态，最后一次调用监听器。
+
+store在初始化时dispatch了一个action，来初始化reducer提供的状态。
+
+store的API包含{dispatch, subscribe, getState}。
+
+### 配置Store
+
+Store允许使用插件来增强功能。插件可以提供自身版本的dispatch，getState和subscribe函数。
+
+Redux里有一个compose方法来混合多个插件功能。
+
+```js
+const composedEnhancer = compose(sayHiDispatch, includeMeaningOfLife);
+createStore(rootReducer, undefined, composedEnhancer);
+```
+
+### 中间件
+
+插件的功能非常强大，因为插件可以重写dispatch，getState和subscribe。但是大多数情况下，我们只需要自定义我们的dispatch的表现。
+
+Redux允许使用一种特殊的插件来自定义dispatch，这种特殊的插件叫做middleware。
+
+中间件的最佳使用方式是链式调用。
+
+### 使用中间件
+
+主要使用applyMiddleware方法。
+
+```js
+import {createStore, applyMiddleware } from 'redux';
+const middlewareEnhancer = applyMiddleware(print1, print2, print3);
+const store = createStore(rootReducer, middlewareEnahancer)//如果没有初始化状态，插件可以是第二个参数。
+```
+
+Middleware围绕store的dispatch方法形成了一个pipeline。跟recuder不同的是，middleware可以包含副作用。
+
+### 写自定义的中间件
+
+Redux的middleware一般包含一系列的三层嵌套函数。
+
+```js
+function exampleMiddleware(storeAPI) {
+  return function wrapDispatch(next) {
+    return function handleAction(action) {
+      //可以使用storeAPI.dispatch(action)来重启流水线
+      //可以使用storeAPI.getState来获取状态
+      //可以使用next(action)来执行流水线的下一个方法
+      return next(action);
+    }
+  }
+}
+```
+
+只有handleAction的函数代码在action被dispatched时被调用。
+
+### Middleware的使用场景
+
+middleWare可以做很多事情。
+
+1、打印一些日志。
+
+2、设置定时器。
+
+3、调用async的API。
+
+4、修改action。
+
+5、暂停action或stop action。
+
+中间件旨在包含具有副作用的逻辑。此外，中间件可以让dispatch接受不是普通对象的action。
+
+### Redux DevTools
+
+
 
 ## 参考文档
 

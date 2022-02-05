@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Redux基本原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1643992358302">
+  <link rel="stylesheet" href="/note/note.css?ts=1644079267908">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -138,7 +138,7 @@
 <h4 id="-">数据的唯一来源</h4>
 <p>应用的全部状态应该存储到全局唯一的store中。</p>
 <h4 id="-">状态是只读的</h4>
-<p>只能使用dispatch action来更新数据。UI不会直接写数据，action是普通的JS对象，可以被logged，序列化存储，为了调试和测试重现。</p>
+<p>只能使用dispatch action来更新数据。UI不会直接写数据，action是普通的JS对象，可以被logged，序列化存储，方便调试和测试。</p>
 <h4 id="-reducer-">用纯reducer函数用来更新</h4>
 <p>更好理解。</p>
 <h4 id="redux-">Redux应用的数据流</h4>
@@ -167,6 +167,69 @@
 <p>我们推荐基于功能来组织你的redux代码。同功能模块的redux代码经常分离到一个以slice结尾的文件中。</p>
 <h3 id="-reducers">结合Reducers</h3>
 <p>combineReducers方法。</p>
+<h2 id="-store">第四部分，Store</h2>
+<p>Store负责的部分：</p>
+<p>1、将当前应用程序状态存储在内部。</p>
+<p>2、允许使用store.getState来获取当前状态。</p>
+<p>3、允许使用store.dispatch(action)来更新状态。</p>
+<p>4、允许使用store.subscribe来注册回调函数。</p>
+<p>5、允许使用store.subscribe返回的unsubscribe函数来注销回调。</p>
+<h3 id="-store">创建Store</h3>
+<p>主要使用createStore方法来创建Store。createStore的第二个参数可以接受preloadedState。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createStore</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="redux-store-">Redux Store的代码实现</h3>
+<p>store有state和reducer的属性存储。getState返回当前的state。subscribe保存一个监听函数数组。dispatch调用reducer，然后保存状态，最后一次调用监听器。</p>
+<p>store在初始化时dispatch了一个action，来初始化reducer提供的状态。</p>
+<p>store的API包含{dispatch, subscribe, getState}。</p>
+<h3 id="-store">配置Store</h3>
+<p>Store允许使用插件来增强功能。插件可以提供自身版本的dispatch，getState和subscribe函数。</p>
+<p>Redux里有一个compose方法来混合多个插件功能。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">composedEnhancer</span> <span class="o">=</span> <span class="nx">compose</span><span class="p">(</span><span class="nx">sayHiDispatch</span><span class="p">,</span> <span class="nx">includeMeaningOfLife</span><span class="p">);</span>
+<span class="nx">createStore</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">,</span> <span class="kc">undefined</span><span class="p">,</span> <span class="nx">composedEnhancer</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">中间件</h3>
+<p>插件的功能非常强大，因为插件可以重写dispatch，getState和subscribe。但是大多数情况下，我们只需要自定义我们的dispatch的表现。</p>
+<p>Redux允许使用一种特殊的插件来自定义dispatch，这种特殊的插件叫做middleware。</p>
+<p>中间件的最佳使用方式是链式调用。</p>
+<h3 id="-">使用中间件</h3>
+<p>主要使用applyMiddleware方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span><span class="nx">createStore</span><span class="p">,</span> <span class="nx">applyMiddleware</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">middlewareEnhancer</span> <span class="o">=</span> <span class="nx">applyMiddleware</span><span class="p">(</span><span class="nx">print1</span><span class="p">,</span> <span class="nx">print2</span><span class="p">,</span> <span class="nx">print3</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">,</span> <span class="nx">middlewareEnahancer</span><span class="p">)</span><span class="c1">//如果没有初始化状态，插件可以是第二个参数。</span>
+</pre></div>
+
+</code></pre>
+<p>Middleware围绕store的dispatch方法形成了一个pipeline。跟recuder不同的是，middleware可以包含副作用。</p>
+<h3 id="-">写自定义的中间件</h3>
+<p>Redux的middleware一般包含一系列的三层嵌套函数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">exampleMiddleware</span><span class="p">(</span><span class="nx">storeAPI</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="nx">wrapDispatch</span><span class="p">(</span><span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kd">function</span> <span class="nx">handleAction</span><span class="p">(</span><span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">//可以使用storeAPI.dispatch(action)来重启流水线</span>
+      <span class="c1">//可以使用storeAPI.getState来获取状态</span>
+      <span class="c1">//可以使用next(action)来执行流水线的下一个方法</span>
+      <span class="k">return</span> <span class="nx">next</span><span class="p">(</span><span class="nx">action</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>只有handleAction的函数代码在action被dispatched时被调用。</p>
+<h3 id="middleware-">Middleware的使用场景</h3>
+<p>middleWare可以做很多事情。</p>
+<p>1、打印一些日志。</p>
+<p>2、设置定时器。</p>
+<p>3、调用async的API。</p>
+<p>4、修改action。</p>
+<p>5、暂停action或stop action。</p>
+<p>中间件旨在包含具有副作用的逻辑。此外，中间件可以让dispatch接受不是普通对象的action。</p>
+<h3 id="redux-devtools">Redux DevTools</h3>
 <h2 id="-">参考文档</h2>
 <p><a href="https://redux.js.org/tutorials/fundamentals/part-1-overview">https://redux.js.org/tutorials/fundamentals/part-1-overview</a></p>
 <p><a href="https://daveceddia.com/react-redux-immutability-guide/">https://daveceddia.com/react-redux-immutability-guide/</a></p>
