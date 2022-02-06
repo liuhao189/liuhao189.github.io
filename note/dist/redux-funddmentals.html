@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Redux基本原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1644079267908">
+  <link rel="stylesheet" href="/note/note.css?ts=1644165454478">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -181,7 +181,7 @@
 
 </code></pre>
 <h3 id="redux-store-">Redux Store的代码实现</h3>
-<p>store有state和reducer的属性存储。getState返回当前的state。subscribe保存一个监听函数数组。dispatch调用reducer，然后保存状态，最后一次调用监听器。</p>
+<p>store有state和reducer的属性存储。getState返回当前的state。subscribe保存一个监听函数数组。dispatch调用reducer，然后保存状态，最后依次调用监听器。</p>
 <p>store在初始化时dispatch了一个action，来初始化reducer提供的状态。</p>
 <p>store的API包含{dispatch, subscribe, getState}。</p>
 <h3 id="-store">配置Store</h3>
@@ -195,7 +195,6 @@
 <h3 id="-">中间件</h3>
 <p>插件的功能非常强大，因为插件可以重写dispatch，getState和subscribe。但是大多数情况下，我们只需要自定义我们的dispatch的表现。</p>
 <p>Redux允许使用一种特殊的插件来自定义dispatch，这种特殊的插件叫做middleware。</p>
-<p>中间件的最佳使用方式是链式调用。</p>
 <h3 id="-">使用中间件</h3>
 <p>主要使用applyMiddleware方法。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span><span class="nx">createStore</span><span class="p">,</span> <span class="nx">applyMiddleware</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux&#39;</span><span class="p">;</span>
@@ -220,7 +219,7 @@
 </pre></div>
 
 </code></pre>
-<p>只有handleAction的函数代码在action被dispatched时被调用。</p>
+<p>只有handleAction的函数代码在action被dispatch时被调用。</p>
 <h3 id="middleware-">Middleware的使用场景</h3>
 <p>middleWare可以做很多事情。</p>
 <p>1、打印一些日志。</p>
@@ -230,6 +229,43 @@
 <p>5、暂停action或stop action。</p>
 <p>中间件旨在包含具有副作用的逻辑。此外，中间件可以让dispatch接受不是普通对象的action。</p>
 <h3 id="redux-devtools">Redux DevTools</h3>
+<p>在安装浏览器Redux-DevTools插件后，我们需要在store中配置一个配套的插件才可以使用浏览器插件。</p>
+<p>我们需要安装一个redux-devtools-extension的npm包，该npm包导出comoseWidthDevTools方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">composeWithDevTools</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;redux-devtools-extension&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">composedEnhancer</span> <span class="o">=</span> <span class="nx">composeWithDevTools</span><span class="p">(</span><span class="nx">applyMiddleware</span><span class="p">(</span><span class="nx">print1</span><span class="p">,</span><span class="nx">print2</span><span class="p">));</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">,</span> <span class="nx">composedEnhancer</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-ui-react">第五部分，UI和React</h2>
+<p>React中的UI可以理解为state的函数，Redux包含状态并响应UI的交互动作。</p>
+<h3 id="react-redux">React-redux</h3>
+<p>官方的react的包为react-redux。</p>
+<h3 id="-">设计组件树</h3>
+<p>和设计state的结构类似，我们也需要根据需求来设计UI组件树。</p>
+<h3 id="-useselector-">使用useSelector来读取状态</h3>
+<p>useSelector接受一个选择函数。选择函数的输入参数为整个state，可以返回state的部分值，也可以返回计算的值。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">selectTodos</span> <span class="o">=</span> <span class="nx">state</span> <span class="o">=&gt;</span> <span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">;</span>
+<span class="c1">//</span>
+<span class="kr">const</span> <span class="nx">selectTotalCompletedTodos</span> <span class="o">=</span> <span class="nx">state</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">completedTodos</span> <span class="o">=</span> <span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">todo</span> <span class="o">=&gt;</span> <span class="nx">todo</span><span class="p">.</span><span class="nx">completed</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">completedTodos</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>useSelector会订阅Redux Store的state改变事件。如果state改变，它会调用selector函数。如果selector函数的返回和上一次的值不同，useSelector会使我们的组件重新渲染。</p>
+<p>注意：useSelector使用===来比较state是否改变。eg: map的数组每次都会触发重新渲染。</p>
+<h3 id="-usedispatch">使用useDispatch</h3>
+<p>react-redux的useDispatch的结果为store的dispatch方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">dispatch</span> <span class="o">=</span> <span class="nx">useDispatch</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-provider-store">使用Provider来提供Store</h3>
+<p>我们需要告诉React-redux，我们使用是全局store。这通过&lt;Provider&gt;组件包裹&lt;App&gt;组件，然后将store设置为&lt;Provider&gt;的store属性。</p>
+<h3 id="react-redy-">React-Redy模式</h3>
+<h4 id="-">全局状态、组件状态和表单</h4>
 <h2 id="-">参考文档</h2>
 <p><a href="https://redux.js.org/tutorials/fundamentals/part-1-overview">https://redux.js.org/tutorials/fundamentals/part-1-overview</a></p>
 <p><a href="https://daveceddia.com/react-redux-immutability-guide/">https://daveceddia.com/react-redux-immutability-guide/</a></p>

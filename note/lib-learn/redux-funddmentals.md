@@ -290,7 +290,7 @@ import { createStore } from 'redux';
 
 ### Redux Store的代码实现
 
-store有state和reducer的属性存储。getState返回当前的state。subscribe保存一个监听函数数组。dispatch调用reducer，然后保存状态，最后一次调用监听器。
+store有state和reducer的属性存储。getState返回当前的state。subscribe保存一个监听函数数组。dispatch调用reducer，然后保存状态，最后依次调用监听器。
 
 store在初始化时dispatch了一个action，来初始化reducer提供的状态。
 
@@ -312,8 +312,6 @@ createStore(rootReducer, undefined, composedEnhancer);
 插件的功能非常强大，因为插件可以重写dispatch，getState和subscribe。但是大多数情况下，我们只需要自定义我们的dispatch的表现。
 
 Redux允许使用一种特殊的插件来自定义dispatch，这种特殊的插件叫做middleware。
-
-中间件的最佳使用方式是链式调用。
 
 ### 使用中间件
 
@@ -344,7 +342,7 @@ function exampleMiddleware(storeAPI) {
 }
 ```
 
-只有handleAction的函数代码在action被dispatched时被调用。
+只有handleAction的函数代码在action被dispatch时被调用。
 
 ### Middleware的使用场景
 
@@ -363,6 +361,62 @@ middleWare可以做很多事情。
 中间件旨在包含具有副作用的逻辑。此外，中间件可以让dispatch接受不是普通对象的action。
 
 ### Redux DevTools
+
+在安装浏览器Redux-DevTools插件后，我们需要在store中配置一个配套的插件才可以使用浏览器插件。
+
+我们需要安装一个redux-devtools-extension的npm包，该npm包导出comoseWidthDevTools方法。
+
+```js
+import { composeWithDevTools } from 'redux-devtools-extension';
+const composedEnhancer = composeWithDevTools(applyMiddleware(print1,print2));
+const store = createStore(rootReducer, composedEnhancer);
+```
+
+## 第五部分，UI和React
+
+React中的UI可以理解为state的函数，Redux包含状态并响应UI的交互动作。
+
+### React-redux
+
+官方的react的包为react-redux。
+
+### 设计组件树
+
+和设计state的结构类似，我们也需要根据需求来设计UI组件树。
+
+### 使用useSelector来读取状态
+
+useSelector接受一个选择函数。选择函数的输入参数为整个state，可以返回state的部分值，也可以返回计算的值。
+
+```js
+const selectTodos = state => state.todos;
+//
+const selectTotalCompletedTodos = state => {
+  const completedTodos = state.todos.filter(todo => todo.completed);
+  return completedTodos.length;
+}
+```
+
+useSelector会订阅Redux Store的state改变事件。如果state改变，它会调用selector函数。如果selector函数的返回和上一次的值不同，useSelector会使我们的组件重新渲染。
+
+注意：useSelector使用===来比较state是否改变。eg: map的数组每次都会触发重新渲染。
+
+### 使用useDispatch
+
+react-redux的useDispatch的结果为store的dispatch方法。
+
+```js
+const dispatch = useDispatch();
+```
+
+### 使用Provider来提供Store
+
+我们需要告诉React-redux，我们使用是全局store。这通过<Provider>组件包裹<App>组件，然后将store设置为<Provider>的store属性。
+
+### React-Redy模式
+
+#### 全局状态、组件状态和表单
+
 
 
 
