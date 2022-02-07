@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Redux基本原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1644209089956">
+  <link rel="stylesheet" href="/note/note.css?ts=1644246255433">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -275,15 +275,15 @@
 <p>4、将这个状态恢复到指定的时间，有价值吗？</p>
 <p>5、你想缓存数据吗？</p>
 <p>6、热加载UI组件时，是否需要保存这些数据？</p>
-<p>大多数表单组件的状态不应该保存在Redux中，一般在编辑时保存在表单组件中，用户完成后dispatch到store中。</p>
+<p>大多数表单组件的状态不应该保存在Redux中，一般在编辑时保存在表单组件中，用户完成表单后dispatch到store中。</p>
 <h4 id="-selectors">在组件中使用多个Selectors</h4>
 <p>当组件中使用多个redux状态时，我们可以在组件中使用多个useSelector。这是个好主意，每一次的useSelector需要尽可能少得返回值。</p>
 <h4 id="-id-data">通过ID来选择data</h4>
 <p>&lt;TodoList&gt;读取整个state.todos数组，然后将数组的item传递给&lt;TodoListItem&gt;。</p>
 <p>但是这有潜在的性能问题：</p>
-<p>1、改变todo对象，意味着需要创建todo和state.todos数组。</p>
+<p>1、改变todo对象，意味着需要创建新的todo和新的state.todos数组。</p>
 <p>2、每一次更新todo对象时，整个TodoList都会重新渲染。</p>
-<p>3、由于React组件重渲染时，React会递归的渲染它的所有子组件，这意味着所有&lt;TodoListItem&gt;组件也会重新渲染。</p>
+<p>3、由于React组件重渲染时，React会递归得渲染它的所有子组件，这意味着所有&lt;TodoListItem&gt;组件也会重新渲染。</p>
 <p>重新渲染大量组件会导致应用变慢。</p>
 <p>优化的方法：</p>
 <p>1、使用React.momo来包裹住所有的TodoListItem组件，这样它们只会在它们的props真正改变的时候重新渲染。</p>
@@ -292,10 +292,8 @@
 </pre></div>
 
 </code></pre>
-<p>上述代码每次都返回了新数组，默认情况下会重新渲染组件。</p>
-<p>一个可行的方式是改变useSelector的比较逻辑。useSelector可以在第二个参数中传入比较函数。</p>
-<p>比较函数接受newState和oldState，如果相同，则返回true，如果不相同，则返回false。</p>
-<p>React-Redux有一个shallowEqual组件来比较数组的元素是否相同。</p>
+<p>上述代码每次都返回了新数组，默认情况下会重新渲染组件。一个可行的方式是改变useSelector的比较逻辑。useSelector可以在第二个参数中传入比较函数。</p>
+<p>比较函数接受newState和oldState，如果相同，则返回true，如果不相同，则返回false。React-Redux有一个shallowEqual组件来比较数组的元素是否相同。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">shallowEqual</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react-redux&#39;</span><span class="p">;</span>
 
 <span class="kr">const</span> <span class="nx">todoIds</span> <span class="o">=</span> <span class="nx">useSelector</span><span class="p">(</span><span class="nx">state</span><span class="o">=&gt;</span><span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">todo</span><span class="o">=&gt;</span><span class="nx">todo</span><span class="p">.</span><span class="nx">id</span><span class="p">),</span> <span class="nx">shallowEqual</span><span class="p">);</span>
@@ -304,10 +302,10 @@
 </code></pre>
 <h2 id="-">第六部分，异步逻辑和数据获取</h2>
 <h3 id="redux-">Redux中间件和副作用</h3>
-<p>Redux不知道异步逻辑。它只知道怎样同步dispatch action，调用root reducer来更新状态，然后通知订阅或者。所有的异步逻辑需要在store之外完成。</p>
+<p>Redux不知道异步逻辑。所有的异步逻辑需要在store之外完成。</p>
 <p>Redux middleware是用来包含逻辑和副作用代码的。</p>
 <h3 id="-middleware-">写一个异步Middleware方法</h3>
-<p>如果写一个middleware，可以让dispatch一个function，而不是一个object，那么我们就可以将逻辑分离出去。</p>
+<p>如果写一个middleware，可以dispatch一个function，而不是一个object，那么我们就可以将逻辑分离出去。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">asyncFunctionMiddleware</span> <span class="o">=</span> <span class="nx">storeAPI</span> <span class="o">=&gt;</span> <span class="nx">next</span> <span class="o">=&gt;</span> <span class="nx">action</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">action</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">){</span>
     <span class="k">return</span> <span class="nx">action</span><span class="p">(</span><span class="nx">storeAPI</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">,</span> <span class="nx">storeAPI</span><span class="p">.</span><span class="nx">getState</span><span class="p">);</span>
@@ -328,8 +326,7 @@
 <h3 id="redux-">Redux异步数据流</h3>
 <p>主要是middleware处理了其它类型的action，然后调用了异步方法，当异步方法完成时，再dispatch一个普通的object。</p>
 <h3 id="-redux-thunk-">使用Redux Thunk中间件</h3>
-<p>Redux有一个官方的异步中间件，redux-thunk。这个中间件会传递dispatch和getState给dispatch的函数。</p>
-<p>单词thunk是一个编程术语，意思是一段做延迟工作的代码。</p>
+<p>Redux有一个官方的异步中间件，redux-thunk。这个中间件会传递dispatch和getState给dispatch的函数。单词thunk是一个编程术语，意思是一段做延迟工作的代码。</p>
 <h3 id="config-store">config Store</h3>
 <pre><code class="lang-bash"><div class="highlight"><pre>npm i redux-thunk
 </pre></div>
@@ -337,7 +334,7 @@
 </code></pre>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">thunkMiddleware</span> <span class="nx">from</span> <span class="s1">&#39;redux-thunk&#39;</span><span class="p">;</span>
 <span class="kr">const</span> <span class="nx">comosedEnhancer</span> <span class="o">=</span> <span class="nx">applyMiddleware</span><span class="p">(</span><span class="nx">thunkMiddleware</span><span class="p">);</span>
-<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createSTore</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">,</span> <span class="nx">composedEnhancer</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">,</span> <span class="nx">composedEnhancer</span><span class="p">);</span>
 </pre></div>
 
 </code></pre>
@@ -354,6 +351,96 @@
 </code></pre>
 <p>这种写函数来准备dispatch内容的方式叫做 action creator模式。</p>
 <p>Thunk函数既可用于异步逻辑，也可用于同步逻辑。thunk提供了一种方法来编写任何需要访问dispatch和getState的可重用逻辑。</p>
+<h2 id="-redux-">第七部分，标准Redux模式</h2>
+<h3 id="action-">Action生成器</h3>
+<p>一个Action生成器是一个创建Action对象的函数。使用Action生成器，不用每次都手写类似的代码。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">todoAdded</span> <span class="o">=</span> <span class="nx">text</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;todos/todoAdded&#39;</span><span class="p">,</span>
+    <span class="nx">payload</span><span class="o">:</span> <span class="nx">text</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+<span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">(</span><span class="nx">todoAdded</span><span class="p">(</span><span class="err">`</span><span class="nx">Buy</span> <span class="nx">milk</span><span class="err">`</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<p>直接传递给dispatch，action生成器的结果即可。</p>
+<p>最终两个作用：</p>
+<p>1、准备和格式化action对象。</p>
+<p>2、封装了创建action需要的额外工作。</p>
+<h3 id="-selectors">缓存Selectors</h3>
+<p>某些情况下，我们需要根据state计算出来的派生数据。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">selectTodoIds</span> <span class="o">=</span> <span class="nx">state</span> <span class="o">=&gt;</span> <span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">todo</span> <span class="o">=&gt;</span> <span class="nx">todo</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>除了自定义比较函数外，还可以使用memoized selectors。memoized selector可以缓存最近的值，如果输入参数相同，直接返回缓存的结果。</p>
+<h3 id="-createselector">使用createSelector</h3>
+<p>Reselect库提供了一个createSelector来返回momoized selector函数。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i reselect
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">createSelector</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;reselect&#39;</span><span class="p">;</span>
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">selectTodoIds</span> <span class="o">=</span> <span class="nx">createSelector</span><span class="p">(</span>
+  <span class="nx">state</span> <span class="o">=&gt;</span> <span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">,</span>
+  <span class="nx">todos</span> <span class="o">=&gt;</span> <span class="nx">todos</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">todo</span><span class="o">=&gt;</span><span class="nx">todo</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="c1">//</span>
+<span class="kr">const</span> <span class="nx">todoIds</span> <span class="o">=</span> <span class="nx">useSelector</span><span class="p">(</span><span class="nx">selectTodoIds</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>Memoized selectors只在你通过原始state计算派生数据时有用。如果只是返回原始数据，直接返回即可。</p>
+<p>循环依赖问题：如果两个切片文件互相依赖，可能导致应用崩溃。如果那样的话，尝试把公共代码移到另一个文件。</p>
+<h3 id="-">异步请求状态</h3>
+<p>异步请求时间可能会比较长，需要增加loading提示。</p>
+<p>Redux经常这样处理：</p>
+<p>1、有loading state的值来表示当前请求状态。</p>
+<p>2、在API调用前，dispatch一个request satrted action，这个action改变请求状态到loading。</p>
+<p>3、在API返回后，dispatch一个request end action，改变请求状态到done。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nx">status</span><span class="o">:</span> <span class="s1">&#39;idle&#39;</span> <span class="c1">// loading, succeeded, failed</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>字符串表示的状态值更具拓展性，建议使用字符串枚举值。</p>
+<h3 id="flux-actions">Flux标准Actions</h3>
+<p>这是一种建议的方法，用来规范action对象的字段。</p>
+<p>1、如果你的action对象有具体的数据，数据应该在action.payload中。</p>
+<p>2、action可以有action.meta字段添加额外的描述性数据。</p>
+<p>3、action可以有action.error字段添加错误信息。</p>
+<p>如果有错误，error需要设置为true，同时payload为error对象。</p>
+<p>然而大多数应用都不会使用action.error的值，而是使用两个不同的type来标记成功和失败。eg：todos/todosLoadingSucceed，todos/todosLoadingFailed。</p>
+<h3 id="-">规一化状态</h3>
+<p>在大型Redux应用中，使用归一化的结构存储数据很常见。</p>
+<p>归一化的结构存储意味着：</p>
+<p>1、数据块只有一个拷贝。</p>
+<p>2、允许直接使用Id来查找Item。</p>
+<p>3、根据Id来引用其它项，而不是复制整个项。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">rootState</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">todos</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">status</span><span class="o">:</span> <span class="s1">&#39;idle&#39;</span><span class="p">,</span>
+    <span class="nx">entities</span><span class="o">:</span> <span class="p">{</span>
+      <span class="mi">2</span><span class="o">:</span> <span class="p">{</span> <span class="nx">id</span><span class="o">:</span><span class="mi">2</span><span class="p">,</span> <span class="nx">text</span><span class="o">:</span> <span class="s1">&#39;Buy milk&#39;</span><span class="p">,</span> <span class="nx">completed</span><span class="o">:</span> <span class="kc">false</span> <span class="p">},</span>
+      <span class="mi">7</span><span class="o">:</span> <span class="p">{</span> <span class="nx">id</span><span class="o">:</span><span class="mi">7</span><span class="p">,</span> <span class="nx">text</span><span class="o">:</span><span class="s1">&#39;Clean room&#39;</span><span class="p">,</span><span class="nx">completed</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="thunks-promises">Thunks和Promises</h3>
+<p>我们可以写返回promise的thunk函数，然后在组件中等待promise结果。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">dispatch</span><span class="p">(</span><span class="nx">saveNewTodo</span><span class="p">(</span><span class="nx">trimmedText</span><span class="p">));</span>
+<span class="nx">setText</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="nx">setStatus</span><span class="p">(</span><span class="s1">&#39;idle&#39;</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-redux-toolkit">第八部分，Redux Toolkit</h2>
 <h2 id="-">参考文档</h2>
 <p><a href="https://redux.js.org/tutorials/fundamentals/part-1-overview">https://redux.js.org/tutorials/fundamentals/part-1-overview</a></p>
 <p><a href="https://daveceddia.com/react-redux-immutability-guide/">https://daveceddia.com/react-redux-immutability-guide/</a></p>

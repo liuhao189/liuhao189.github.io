@@ -435,7 +435,7 @@ eg：header的input的值，其它组件不关心，放到redux没有任何好�
 
 6、热加载UI组件时，是否需要保存这些数据？
 
-大多数表单组件的状态不应该保存在Redux中，一般在编辑时保存在表单组件中，用户完成后dispatch到store中。
+大多数表单组件的状态不应该保存在Redux中，一般在编辑时保存在表单组件中，用户完成表单后dispatch到store中。
 
 #### 在组件中使用多个Selectors
 
@@ -447,11 +447,11 @@ eg：header的input的值，其它组件不关心，放到redux没有任何好�
 
 但是这有潜在的性能问题：
 
-1、改变todo对象，意味着需要创建todo和state.todos数组。
+1、改变todo对象，意味着需要创建新的todo和新的state.todos数组。
 
 2、每一次更新todo对象时，整个TodoList都会重新渲染。
 
-3、由于React组件重渲染时，React会递归的渲染它的所有子组件，这意味着所有<TodoListItem>组件也会重新渲染。
+3、由于React组件重渲染时，React会递归得渲染它的所有子组件，这意味着所有<TodoListItem>组件也会重新渲染。
 
 重新渲染大量组件会导致应用变慢。
 
@@ -465,13 +465,9 @@ eg：header的input的值，其它组件不关心，放到redux没有任何好�
 const selectTodoIds = useSelector(state => state.todos.map(todo => todo.id));
 ```
 
-上述代码每次都返回了新数组，默认情况下会重新渲染组件。
+上述代码每次都返回了新数组，默认情况下会重新渲染组件。一个可行的方式是改变useSelector的比较逻辑。useSelector可以在第二个参数中传入比较函数。
 
-一个可行的方式是改变useSelector的比较逻辑。useSelector可以在第二个参数中传入比较函数。
-
-比较函数接受newState和oldState，如果相同，则返回true，如果不相同，则返回false。
-
-React-Redux有一个shallowEqual组件来比较数组的元素是否相同。
+比较函数接受newState和oldState，如果相同，则返回true，如果不相同，则返回false。React-Redux有一个shallowEqual组件来比较数组的元素是否相同。
 
 ```js
 import { shallowEqual } from 'react-redux';
@@ -483,13 +479,13 @@ const todoIds = useSelector(state=>state.todos.map(todo=>todo.id), shallowEqual)
 
 ### Redux中间件和副作用
 
-Redux不知道异步逻辑。它只知道怎样同步dispatch action，调用root reducer来更新状态，然后通知订阅或者。所有的异步逻辑需要在store之外完成。
+Redux不知道异步逻辑。所有的异步逻辑需要在store之外完成。
 
 Redux middleware是用来包含逻辑和副作用代码的。
 
 ### 写一个异步Middleware方法
 
-如果写一个middleware，可以让dispatch一个function，而不是一个object，那么我们就可以将逻辑分离出去。
+如果写一个middleware，可以dispatch一个function，而不是一个object，那么我们就可以将逻辑分离出去。
 
 ```js
 const asyncFunctionMiddleware = storeAPI => next => action => {
@@ -514,9 +510,7 @@ dispatch(fetchSomeData);
 
 ### 使用Redux Thunk中间件
 
-Redux有一个官方的异步中间件，redux-thunk。这个中间件会传递dispatch和getState给dispatch的函数。
-
-单词thunk是一个编程术语，意思是一段做延迟工作的代码。
+Redux有一个官方的异步中间件，redux-thunk。这个中间件会传递dispatch和getState给dispatch的函数。单词thunk是一个编程术语，意思是一段做延迟工作的代码。
 
 ### config Store
 
@@ -527,7 +521,7 @@ npm i redux-thunk
 ```js
 import thunkMiddleware from 'redux-thunk';
 const comosedEnhancer = applyMiddleware(thunkMiddleware);
-const store = createSTore(rootReducer, composedEnhancer);
+const store = createStore(rootReducer, composedEnhancer);
 ```
 
 ### 保存todoItems
@@ -546,7 +540,132 @@ export function saveNewTodo(text) {
 
 Thunk函数既可用于异步逻辑，也可用于同步逻辑。thunk提供了一种方法来编写任何需要访问dispatch和getState的可重用逻辑。
 
+## 第七部分，标准Redux模式
 
+### Action生成器
+
+一个Action生成器是一个创建Action对象的函数。使用Action生成器，不用每次都手写类似的代码。
+
+```js
+const todoAdded = text => {
+  return {
+    type: 'todos/todoAdded',
+    payload: text
+  }
+}
+//
+store.dispatch(todoAdded(`Buy milk`));
+```
+
+直接传递给dispatch，action生成器的结果即可。
+
+最终两个作用：
+
+1、准备和格式化action对象。
+
+2、封装了创建action需要的额外工作。
+
+### 缓存Selectors
+
+某些情况下，我们需要根据state计算出来的派生数据。
+
+```js
+const selectTodoIds = state => state.todos.map(todo => todo.id)
+```
+
+除了自定义比较函数外，还可以使用memoized selectors。memoized selector可以缓存最近的值，如果输入参数相同，直接返回缓存的结果。
+
+### 使用createSelector
+
+Reselect库提供了一个createSelector来返回momoized selector函数。
+
+```bash
+npm i reselect
+```
+
+```js
+import { createSelector } from 'reselect';
+export const selectTodoIds = createSelector(
+  state => state.todos,
+  todos => todos.map(todo=>todo.id)
+)
+//
+const todoIds = useSelector(selectTodoIds)
+```
+
+Memoized selectors只在你通过原始state计算派生数据时有用。如果只是返回原始数据，直接返回即可。
+
+循环依赖问题：如果两个切片文件互相依赖，可能导致应用崩溃。如果那样的话，尝试把公共代码移到另一个文件。
+
+### 异步请求状态
+
+异步请求时间可能会比较长，需要增加loading提示。
+
+Redux经常这样处理：
+
+1、有loading state的值来表示当前请求状态。
+
+2、在API调用前，dispatch一个request satrted action，这个action改变请求状态到loading。
+
+3、在API返回后，dispatch一个request end action，改变请求状态到done。
+
+```js
+{
+  status: 'idle' // loading, succeeded, failed
+}
+```
+
+字符串表示的状态值更具拓展性，建议使用字符串枚举值。
+
+### Flux标准Actions
+
+这是一种建议的方法，用来规范action对象的字段。
+
+1、如果你的action对象有具体的数据，数据应该在action.payload中。
+
+2、action可以有action.meta字段添加额外的描述性数据。
+
+3、action可以有action.error字段添加错误信息。
+
+如果有错误，error需要设置为true，同时payload为error对象。
+
+然而大多数应用都不会使用action.error的值，而是使用两个不同的type来标记成功和失败。eg：todos/todosLoadingSucceed，todos/todosLoadingFailed。
+
+### 规一化状态
+
+在大型Redux应用中，使用归一化的结构存储数据很常见。
+
+归一化的结构存储意味着：
+
+1、数据块只有一个拷贝。
+
+2、允许直接使用Id来查找Item。
+
+3、根据Id来引用其它项，而不是复制整个项。
+
+```js
+const rootState = {
+  todos: {
+    status: 'idle',
+    entities: {
+      2: { id:2, text: 'Buy milk', completed: false },
+      7: { id:7, text:'Clean room',completed: true }
+    }
+  }
+}
+```
+
+### Thunks和Promises
+
+我们可以写返回promise的thunk函数，然后在组件中等待promise结果。
+
+```js
+await dispatch(saveNewTodo(trimmedText));
+setText('');
+setStatus('idle')
+```
+
+## 第八部分，Redux Toolkit
 
 ## 参考文档
 
