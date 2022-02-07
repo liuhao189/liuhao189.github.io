@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Redux基本原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1644165454478">
+  <link rel="stylesheet" href="/note/note.css?ts=1644209089956">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -264,8 +264,96 @@
 </code></pre>
 <h3 id="-provider-store">使用Provider来提供Store</h3>
 <p>我们需要告诉React-redux，我们使用是全局store。这通过&lt;Provider&gt;组件包裹&lt;App&gt;组件，然后将store设置为&lt;Provider&gt;的store属性。</p>
-<h3 id="react-redy-">React-Redy模式</h3>
+<h3 id="react-redux-">React-Redux模式</h3>
 <h4 id="-">全局状态、组件状态和表单</h4>
+<p>只在一个地方用到的状态应该保存为组件状态，跨组件用到的状态可以放到redux中。</p>
+<p>eg：header的input的值，其它组件不关心，放到redux没有任何好处，应该保留在组件内。</p>
+<p>经验法则：</p>
+<p>1、应用的其它部分关心这个数据吗？</p>
+<p>2、是否需要根据原始数据来派生其它数据？</p>
+<p>3、是否使用相同的数据来驱动多个组件？</p>
+<p>4、将这个状态恢复到指定的时间，有价值吗？</p>
+<p>5、你想缓存数据吗？</p>
+<p>6、热加载UI组件时，是否需要保存这些数据？</p>
+<p>大多数表单组件的状态不应该保存在Redux中，一般在编辑时保存在表单组件中，用户完成后dispatch到store中。</p>
+<h4 id="-selectors">在组件中使用多个Selectors</h4>
+<p>当组件中使用多个redux状态时，我们可以在组件中使用多个useSelector。这是个好主意，每一次的useSelector需要尽可能少得返回值。</p>
+<h4 id="-id-data">通过ID来选择data</h4>
+<p>&lt;TodoList&gt;读取整个state.todos数组，然后将数组的item传递给&lt;TodoListItem&gt;。</p>
+<p>但是这有潜在的性能问题：</p>
+<p>1、改变todo对象，意味着需要创建todo和state.todos数组。</p>
+<p>2、每一次更新todo对象时，整个TodoList都会重新渲染。</p>
+<p>3、由于React组件重渲染时，React会递归的渲染它的所有子组件，这意味着所有&lt;TodoListItem&gt;组件也会重新渲染。</p>
+<p>重新渲染大量组件会导致应用变慢。</p>
+<p>优化的方法：</p>
+<p>1、使用React.momo来包裹住所有的TodoListItem组件，这样它们只会在它们的props真正改变的时候重新渲染。</p>
+<p>2、另外一种方法是，&lt;TodoList&gt;组件只读取IDS，然后把ID传递给&lt;TodoListItem&gt;。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">selectTodoIds</span> <span class="o">=</span> <span class="nx">useSelector</span><span class="p">(</span><span class="nx">state</span> <span class="o">=&gt;</span> <span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">todo</span> <span class="o">=&gt;</span> <span class="nx">todo</span><span class="p">.</span><span class="nx">id</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<p>上述代码每次都返回了新数组，默认情况下会重新渲染组件。</p>
+<p>一个可行的方式是改变useSelector的比较逻辑。useSelector可以在第二个参数中传入比较函数。</p>
+<p>比较函数接受newState和oldState，如果相同，则返回true，如果不相同，则返回false。</p>
+<p>React-Redux有一个shallowEqual组件来比较数组的元素是否相同。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">shallowEqual</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react-redux&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">todoIds</span> <span class="o">=</span> <span class="nx">useSelector</span><span class="p">(</span><span class="nx">state</span><span class="o">=&gt;</span><span class="nx">state</span><span class="p">.</span><span class="nx">todos</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">todo</span><span class="o">=&gt;</span><span class="nx">todo</span><span class="p">.</span><span class="nx">id</span><span class="p">),</span> <span class="nx">shallowEqual</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">第六部分，异步逻辑和数据获取</h2>
+<h3 id="redux-">Redux中间件和副作用</h3>
+<p>Redux不知道异步逻辑。它只知道怎样同步dispatch action，调用root reducer来更新状态，然后通知订阅或者。所有的异步逻辑需要在store之外完成。</p>
+<p>Redux middleware是用来包含逻辑和副作用代码的。</p>
+<h3 id="-middleware-">写一个异步Middleware方法</h3>
+<p>如果写一个middleware，可以让dispatch一个function，而不是一个object，那么我们就可以将逻辑分离出去。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">asyncFunctionMiddleware</span> <span class="o">=</span> <span class="nx">storeAPI</span> <span class="o">=&gt;</span> <span class="nx">next</span> <span class="o">=&gt;</span> <span class="nx">action</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">action</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">){</span>
+    <span class="k">return</span> <span class="nx">action</span><span class="p">(</span><span class="nx">storeAPI</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">,</span> <span class="nx">storeAPI</span><span class="p">.</span><span class="nx">getState</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">next</span><span class="p">(</span><span class="nx">action</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+<span class="kd">function</span> <span class="nx">fetchSomeData</span><span class="p">(</span><span class="nx">dispatch</span><span class="p">,</span> <span class="nx">getState</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">client</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;todos&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">todos</span> <span class="o">=&gt;</span> <span class="p">{</span>
+     <span class="nx">dispatch</span><span class="p">({</span><span class="nx">type</span><span class="o">:</span><span class="s1">&#39;todos/todosLoaded&#39;</span><span class="p">,</span><span class="nx">payload</span><span class="o">:</span> <span class="nx">todos</span><span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+<span class="nx">dispatch</span><span class="p">(</span><span class="nx">fetchSomeData</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="redux-">Redux异步数据流</h3>
+<p>主要是middleware处理了其它类型的action，然后调用了异步方法，当异步方法完成时，再dispatch一个普通的object。</p>
+<h3 id="-redux-thunk-">使用Redux Thunk中间件</h3>
+<p>Redux有一个官方的异步中间件，redux-thunk。这个中间件会传递dispatch和getState给dispatch的函数。</p>
+<p>单词thunk是一个编程术语，意思是一段做延迟工作的代码。</p>
+<h3 id="config-store">config Store</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i redux-thunk
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">thunkMiddleware</span> <span class="nx">from</span> <span class="s1">&#39;redux-thunk&#39;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">comosedEnhancer</span> <span class="o">=</span> <span class="nx">applyMiddleware</span><span class="p">(</span><span class="nx">thunkMiddleware</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createSTore</span><span class="p">(</span><span class="nx">rootReducer</span><span class="p">,</span> <span class="nx">composedEnhancer</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-todoitems">保存todoItems</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kd">function</span> <span class="nx">saveNewTodo</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">async</span> <span class="kd">function</span> <span class="nx">saveNewTodoThunk</span><span class="p">(</span><span class="nx">dispatch</span><span class="p">,</span><span class="nx">getState</span><span class="p">)</span> <span class="p">{</span>
+     <span class="kr">const</span> <span class="nx">initTodo</span> <span class="o">=</span> <span class="p">{</span><span class="nx">text</span><span class="p">};</span>
+     <span class="kr">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">client</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/fakeApi/todos&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nx">todo</span><span class="o">:</span> <span class="nx">initTodo</span><span class="p">});</span>
+     <span class="nx">dispatch</span><span class="p">({</span><span class="nx">type</span><span class="o">:</span><span class="s1">&#39;todos/todoAdded&#39;</span><span class="p">,</span> <span class="nx">payload</span><span class="o">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">todo</span> <span class="p">});</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>这种写函数来准备dispatch内容的方式叫做 action creator模式。</p>
+<p>Thunk函数既可用于异步逻辑，也可用于同步逻辑。thunk提供了一种方法来编写任何需要访问dispatch和getState的可重用逻辑。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://redux.js.org/tutorials/fundamentals/part-1-overview">https://redux.js.org/tutorials/fundamentals/part-1-overview</a></p>
 <p><a href="https://daveceddia.com/react-redux-immutability-guide/">https://daveceddia.com/react-redux-immutability-guide/</a></p>

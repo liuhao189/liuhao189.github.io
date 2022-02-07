@@ -413,10 +413,138 @@ const dispatch = useDispatch();
 
 我们需要告诉React-redux，我们使用是全局store。这通过<Provider>组件包裹<App>组件，然后将store设置为<Provider>的store属性。
 
-### React-Redy模式
+### React-Redux模式
 
 #### 全局状态、组件状态和表单
 
+只在一个地方用到的状态应该保存为组件状态，跨组件用到的状态可以放到redux中。
+
+eg：header的input的值，其它组件不关心，放到redux没有任何好处，应该保留在组件内。
+
+经验法则：
+
+1、应用的其它部分关心这个数据吗？
+
+2、是否需要根据原始数据来派生其它数据？
+
+3、是否使用相同的数据来驱动多个组件？
+
+4、将这个状态恢复到指定的时间，有价值吗？
+
+5、你想缓存数据吗？
+
+6、热加载UI组件时，是否需要保存这些数据？
+
+大多数表单组件的状态不应该保存在Redux中，一般在编辑时保存在表单组件中，用户完成后dispatch到store中。
+
+#### 在组件中使用多个Selectors
+
+当组件中使用多个redux状态时，我们可以在组件中使用多个useSelector。这是个好主意，每一次的useSelector需要尽可能少得返回值。
+
+#### 通过ID来选择data
+
+<TodoList>读取整个state.todos数组，然后将数组的item传递给<TodoListItem>。
+
+但是这有潜在的性能问题：
+
+1、改变todo对象，意味着需要创建todo和state.todos数组。
+
+2、每一次更新todo对象时，整个TodoList都会重新渲染。
+
+3、由于React组件重渲染时，React会递归的渲染它的所有子组件，这意味着所有<TodoListItem>组件也会重新渲染。
+
+重新渲染大量组件会导致应用变慢。
+
+优化的方法：
+
+1、使用React.momo来包裹住所有的TodoListItem组件，这样它们只会在它们的props真正改变的时候重新渲染。
+
+2、另外一种方法是，<TodoList>组件只读取IDS，然后把ID传递给<TodoListItem>。
+
+```js
+const selectTodoIds = useSelector(state => state.todos.map(todo => todo.id));
+```
+
+上述代码每次都返回了新数组，默认情况下会重新渲染组件。
+
+一个可行的方式是改变useSelector的比较逻辑。useSelector可以在第二个参数中传入比较函数。
+
+比较函数接受newState和oldState，如果相同，则返回true，如果不相同，则返回false。
+
+React-Redux有一个shallowEqual组件来比较数组的元素是否相同。
+
+```js
+import { shallowEqual } from 'react-redux';
+
+const todoIds = useSelector(state=>state.todos.map(todo=>todo.id), shallowEqual);
+```
+
+## 第六部分，异步逻辑和数据获取
+
+### Redux中间件和副作用
+
+Redux不知道异步逻辑。它只知道怎样同步dispatch action，调用root reducer来更新状态，然后通知订阅或者。所有的异步逻辑需要在store之外完成。
+
+Redux middleware是用来包含逻辑和副作用代码的。
+
+### 写一个异步Middleware方法
+
+如果写一个middleware，可以让dispatch一个function，而不是一个object，那么我们就可以将逻辑分离出去。
+
+```js
+const asyncFunctionMiddleware = storeAPI => next => action => {
+  if(typeof action === 'function'){
+    return action(storeAPI.dispatch, storeAPI.getState);
+  }
+  return next(action);
+}
+//
+function fetchSomeData(dispatch, getState) {
+  client.get('todos').then(todos => {
+     dispatch({type:'todos/todosLoaded',payload: todos});
+  });
+}
+//
+dispatch(fetchSomeData);
+```
+
+### Redux异步数据流
+
+主要是middleware处理了其它类型的action，然后调用了异步方法，当异步方法完成时，再dispatch一个普通的object。
+
+### 使用Redux Thunk中间件
+
+Redux有一个官方的异步中间件，redux-thunk。这个中间件会传递dispatch和getState给dispatch的函数。
+
+单词thunk是一个编程术语，意思是一段做延迟工作的代码。
+
+### config Store
+
+```bash
+npm i redux-thunk
+```
+
+```js
+import thunkMiddleware from 'redux-thunk';
+const comosedEnhancer = applyMiddleware(thunkMiddleware);
+const store = createSTore(rootReducer, composedEnhancer);
+```
+
+### 保存todoItems
+
+```js
+export function saveNewTodo(text) {
+  return async function saveNewTodoThunk(dispatch,getState) {
+     const initTodo = {text};
+     const response = await client.post('/fakeApi/todos', {todo: initTodo});
+     dispatch({type:'todos/todoAdded', payload: response.todo });
+  }
+}
+```
+
+这种写函数来准备dispatch内容的方式叫做 action creator模式。
+
+Thunk函数既可用于异步逻辑，也可用于同步逻辑。thunk提供了一种方法来编写任何需要访问dispatch和getState的可重用逻辑。
 
 
 
