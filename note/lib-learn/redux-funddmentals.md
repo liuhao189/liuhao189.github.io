@@ -667,9 +667,9 @@ setStatus('idle')
 
 ## 第八部分，Redux Toolkit
 
-Redux的许多方面都设计到编写一些冗长的代码，设置Redux Store的步骤较繁琐，最后，很多时候用户不确定编写Redux逻辑的正确方法是什么。
+Redux的许多方面都涉及到编写一些冗长的代码，设置Redux Store的步骤较繁琐，最后，很多时候用户不确定编写Redux逻辑的正确方法是什么。
 
-这就是Redux团队创建Redux Toolkit的原因。Redux Toolkit包含我们认为构建Redux应用程序必不可少的包和函数。
+这就是Redux团队创建Redux Toolkit的原因。Redux Toolkit包含我们认为构建Redux应用程序必不可少的方法。
 
 ```js
 npm i @reduxjs/toolkit
@@ -693,13 +693,13 @@ export default store;
 
 configureStore做的工作：
 
-1、将reducer切片结合为root-reducer函数，并创建store。
+1、将reducer切片结合为root reducer函数，并创建store。
 
 2、添加了thunk中间件，添加了其它检查错误的中间件，自动设置了Redux DevTools插件。
 
 ### 包清理
 
-Redux Toolkit引用了Redux，redux-thunk和reselect，然后重新导出了这些APIS，这样我们可以更少的引用包。
+Redux Toolkit引用了Redux，redux-thunk和reselect，并重新导出了这些APIS，这样我们可以更少的引用包。
 
 ### 写切片
 
@@ -735,7 +735,7 @@ initialState：reducer的初始化状态。
 
 reducers：key为string，value是case reducer函数。
 
-Action Creator：createSlice自定生成action type(name/keyName)，默认接受一个参数，然后把参数设置到action.payload。
+Action Creator：createSlice自动生成action type(name/keyName)，默认接受一个参数，然后把参数设置到action.payload。
 
 在Redux Toolkit的createSlice和createReducer函数内部，由于它们使用了Immer库，你可以直接修改状态的值。
 
@@ -757,7 +757,7 @@ Action Creator：createSlice自定生成action type(name/keyName)，默认接受
 
 ### 写Thunk
 
-Redux-Toolkit有一个createAsyncThunk API来简化Thunk的声明。
+Redux Toolkit有一个createAsyncThunk API来简化Thunk的声明。
 
 ```js
 export const fetchTodos = createAsyncThunk('todos/fetchTodos', async () => {

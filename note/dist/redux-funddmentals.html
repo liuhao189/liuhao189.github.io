@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Redux基本原理</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1644251158769">
+  <link rel="stylesheet" href="/note/note.css?ts=1644338509924">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -441,8 +441,8 @@
 
 </code></pre>
 <h2 id="-redux-toolkit">第八部分，Redux Toolkit</h2>
-<p>Redux的许多方面都设计到编写一些冗长的代码，设置Redux Store的步骤较繁琐，最后，很多时候用户不确定编写Redux逻辑的正确方法是什么。</p>
-<p>这就是Redux团队创建Redux Toolkit的原因。Redux Toolkit包含我们认为构建Redux应用程序必不可少的包和函数。</p>
+<p>Redux的许多方面都涉及到编写一些冗长的代码，设置Redux Store的步骤较繁琐，最后，很多时候用户不确定编写Redux逻辑的正确方法是什么。</p>
+<p>这就是Redux团队创建Redux Toolkit的原因。Redux Toolkit包含我们认为构建Redux应用程序必不可少的方法。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">i</span> <span class="err">@</span><span class="nx">reduxjs</span><span class="o">/</span><span class="nx">toolkit</span>
 </pre></div>
 
@@ -462,10 +462,10 @@
 
 </code></pre>
 <p>configureStore做的工作：</p>
-<p>1、将reducer切片结合为root-reducer函数，并创建store。</p>
+<p>1、将reducer切片结合为root reducer函数，并创建store。</p>
 <p>2、添加了thunk中间件，添加了其它检查错误的中间件，自动设置了Redux DevTools插件。</p>
 <h3 id="-">包清理</h3>
-<p>Redux Toolkit引用了Redux，redux-thunk和reselect，然后重新导出了这些APIS，这样我们可以更少的引用包。</p>
+<p>Redux Toolkit引用了Redux，redux-thunk和reselect，并重新导出了这些APIS，这样我们可以更少的引用包。</p>
 <h3 id="-">写切片</h3>
 <p>Redux Toolkit有一个createSlice的API来简化slice的创建。</p>
 <p>作用：</p>
@@ -491,7 +491,7 @@
 <p>name参数：action type的名字前缀。</p>
 <p>initialState：reducer的初始化状态。</p>
 <p>reducers：key为string，value是case reducer函数。</p>
-<p>Action Creator：createSlice自定生成action type(name/keyName)，默认接受一个参数，然后把参数设置到action.payload。</p>
+<p>Action Creator：createSlice自动生成action type(name/keyName)，默认接受一个参数，然后把参数设置到action.payload。</p>
 <p>在Redux Toolkit的createSlice和createReducer函数内部，由于它们使用了Immer库，你可以直接修改状态的值。</p>
 <pre><code class="lang-js"><div class="highlight"><pre>  <span class="c1">// createSlice的reducers的key可以是一个对象，然后包含多个参数</span>
   <span class="nx">todoColorSelcted</span><span class="o">:</span> <span class="p">{</span>
@@ -510,7 +510,7 @@
 
 </code></pre>
 <h3 id="-thunk">写Thunk</h3>
-<p>Redux-Toolkit有一个createAsyncThunk API来简化Thunk的声明。</p>
+<p>Redux Toolkit有一个createAsyncThunk API来简化Thunk的声明。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kr">const</span> <span class="nx">fetchTodos</span> <span class="o">=</span> <span class="nx">createAsyncThunk</span><span class="p">(</span><span class="s1">&#39;todos/fetchTodos&#39;</span><span class="p">,</span> <span class="nx">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="kr">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">fetch</span><span class="p">(</span><span class="s1">&#39;./todos.json&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">());</span>
   <span class="k">return</span> <span class="nx">response</span><span class="p">.</span><span class="nx">todos</span><span class="p">;</span>
