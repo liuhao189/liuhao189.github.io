@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Electron-开始</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1644423659019">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="electron-">Electron-开始</h1>
+<h2 id="electron-">Electron是什么？</h2>
+<p>Electron是一个使用JS，HTML和CSS构建桌面应用程序的框架。嵌入Chromium和Node.js到二进制的Electron中，允许使用Web开发技术创建跨平台应用。</p>
+<h2 id="electron-fiddle-">Electron Fiddle运行实例</h2>
+<p>Electron Fiddle是由Electron开发并由其维护者支持的程序，建议将其作为一个学习工具来安装。可以在开发过程中对Electron的api进行实验或对特性进行原型化。</p>
+<h2 id="-">快速入门</h2>
+<h3 id="-">环境要求</h3>
+<p>需要安装Node.js，推荐使用最新的LTS版本。</p>
+<p>注意：Electron将Node.js嵌入到其二进制文件中，你应用运行时的Node.js版本与你系统中运行的Node.js版本无关。</p>
+<h3 id="-">创建应用</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>mkdir my-electron-app <span class="o">&amp;&amp;</span> <span class="nb">cd </span>my-electron-app
+npm init
+<span class="c"># 注意author与description可为任意值，应用打包时需要</span>
+npm  i electron --save-dev
+</pre></div>
+
+</code></pre>
+<p>然后添加start的脚本命令。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">scripts</span><span class="o">:</span><span class="p">{</span>
+    <span class="s2">&quot;start&quot;</span><span class="o">:</span> <span class="s2">&quot;electron .&quot;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">运行主进程</h3>
+<p>任何Electron应用程序的入口都是main文件，这个文件控制了主进程，它运行在一个完整的Node.js环境，负责控制您应用的生命周期，显示原生页面，执行特殊操作并管理渲染器进程。</p>
+<p>首先，添加HTML文件。</p>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;head&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;UTF-8&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">&quot;X-UA-Compatible&quot;</span>
+            <span class="na">content=</span><span class="s">&quot;IE=edge&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;viewport&quot;</span>
+            <span class="na">content=</span><span class="s">&quot;width=device-width, initial-scale=1.0&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;title&gt;</span>Electron Window<span class="nt">&lt;/title&gt;</span>
+    <span class="nt">&lt;/head&gt;</span>
+    <span class="nt">&lt;body&gt;</span>
+        <span class="nt">&lt;h1&gt;</span>Hello World!<span class="nt">&lt;/h1&gt;</span>
+        <span class="nt">&lt;p&gt;</span>We are using Node.js <span class="nt">&lt;span</span> <span class="na">id=</span><span class="s">&quot;nodeVersion&quot;</span><span class="nt">&gt;&lt;/span&gt;</span>，Chrpmium <span class="nt">&lt;span</span> <span class="na">id=</span><span class="s">&quot;chromeVersion&quot;</span><span class="nt">&gt;&lt;/span&gt;</span> and electron
+            <span class="nt">&lt;span</span> <span class="na">id=</span><span class="s">&quot;electronVersion&quot;</span><span class="nt">&gt;&lt;/span&gt;&lt;/p&gt;</span>
+    <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+
+</code></pre>
+<p>然后，创建main.js文件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">{</span> <span class="nx">app</span><span class="p">,</span> <span class="nx">BrowserWindow</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;electron&#39;</span><span class="p">);</span>
+
+<span class="kd">function</span> <span class="nx">createWindow</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">win</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BrowserWindow</span><span class="p">({</span>
+        <span class="nx">width</span><span class="o">:</span> <span class="mi">800</span><span class="p">,</span>
+        <span class="nx">height</span><span class="o">:</span> <span class="mi">600</span>
+    <span class="p">});</span>
+    <span class="nx">win</span><span class="p">.</span><span class="nx">loadFile</span><span class="p">(</span><span class="s1">&#39;./index.html&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">whenReady</span><span class="p">().</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">createWindow</span><span class="p">();</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">管理窗口的生命周期</h3>
+<p>虽然你现在可以打开一个浏览器窗口，但你需要一些额外的模板代码使其看起来更像是各平台原生的。一般而言，你可以使用进程全局的platform属性来专门为某些操作系统运行代码。</p>
+<h4 id="-">关闭所有窗口时退出应用</h4>
+<p>在Windows和Linux上，关闭所有窗口通常会完全退出一个应用程序。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;window-all-closed&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">platform</span> <span class="o">!==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">quit</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">如果没有窗口则打开一个窗口</h4>
+<p>macOS应用通常即使在没有打开任何窗口的情况下也继续运行，并且没有窗口可用的情况下激活应用时会打开新的窗口。</p>
+<p>为了实现这一特性，需要监听app的activate事件，如果没有任何浏览器窗口是打开的，则调用createWindow方法。</p>
+<p>因为窗口无法在ready事件前创建，你应当在你的应用初始化后仅监听activate事件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">whenReady</span><span class="p">().</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">createWindow</span><span class="p">();</span>
+    <span class="c1">//</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;activate&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">BrowserWindow</span><span class="p">.</span><span class="nx">getAllWindows</span><span class="p">().</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">createWindow</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-node-js">通过预加载脚本从渲染器访问Node.js</h4>
+<h1 id="-">参考文档</h1>
+<p><a href="https://www.electronjs.org/zh/docs/latest/">https://www.electronjs.org/zh/docs/latest/</a></p>
+</body>
+</html>
