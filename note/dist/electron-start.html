@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Electron-开始</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1644423659019">
+  <title>Electron-快速入门</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1644509543326">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -12,11 +12,11 @@
     s.parentNode.insertBefore(hm, s);
 })();
 </script>
-<h1 id="electron-">Electron-开始</h1>
+<h1 id="electron-">Electron-快速入门</h1>
 <h2 id="electron-">Electron是什么？</h2>
 <p>Electron是一个使用JS，HTML和CSS构建桌面应用程序的框架。嵌入Chromium和Node.js到二进制的Electron中，允许使用Web开发技术创建跨平台应用。</p>
 <h2 id="electron-fiddle-">Electron Fiddle运行实例</h2>
-<p>Electron Fiddle是由Electron开发并由其维护者支持的程序，建议将其作为一个学习工具来安装。可以在开发过程中对Electron的api进行实验或对特性进行原型化。</p>
+<p>Electron Fiddle是由Electron开发并由其维护者支持的程序。建议将其作为一个学习工具来安装。可以在开发过程中对Electron的api进行实验或对特性进行原型化。</p>
 <h2 id="-">快速入门</h2>
 <h3 id="-">环境要求</h3>
 <p>需要安装Node.js，推荐使用最新的LTS版本。</p>
@@ -37,7 +37,7 @@ npm  i electron --save-dev
 
 </code></pre>
 <h3 id="-">运行主进程</h3>
-<p>任何Electron应用程序的入口都是main文件，这个文件控制了主进程，它运行在一个完整的Node.js环境，负责控制您应用的生命周期，显示原生页面，执行特殊操作并管理渲染器进程。</p>
+<p>任何Electron应用程序的入口都是main文件，这个文件控制了主进程，它运行在一个完整的Node.js环境，负责控制应用的生命周期，显示原生页面，执行特殊操作，管理渲染器进程。</p>
 <p>首先，添加HTML文件。</p>
 <pre><code class="lang-html"><div class="highlight"><pre><span class="cp">&lt;!DOCTYPE html&gt;</span>
 <span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
@@ -78,7 +78,7 @@ npm  i electron --save-dev
 <h3 id="-">管理窗口的生命周期</h3>
 <p>虽然你现在可以打开一个浏览器窗口，但你需要一些额外的模板代码使其看起来更像是各平台原生的。一般而言，你可以使用进程全局的platform属性来专门为某些操作系统运行代码。</p>
 <h4 id="-">关闭所有窗口时退出应用</h4>
-<p>在Windows和Linux上，关闭所有窗口通常会完全退出一个应用程序。</p>
+<p>在Windows和Linux上，关闭所有窗口通常会完全退出一个应用程序。在Mac上不会，所以需要特殊逻辑。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;window-all-closed&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">platform</span> <span class="o">!==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">app</span><span class="p">.</span><span class="nx">quit</span><span class="p">();</span>
@@ -88,7 +88,7 @@ npm  i electron --save-dev
 
 </code></pre>
 <h4 id="-">如果没有窗口则打开一个窗口</h4>
-<p>macOS应用通常即使在没有打开任何窗口的情况下也继续运行，并且没有窗口可用的情况下激活应用时会打开新的窗口。</p>
+<p>MacOS应用通常在没有打开任何窗口的情况下也继续运行，并且没有窗口可用的情况下激活应用时会打开新的窗口。</p>
 <p>为了实现这一特性，需要监听app的activate事件，如果没有任何浏览器窗口是打开的，则调用createWindow方法。</p>
 <p>因为窗口无法在ready事件前创建，你应当在你的应用初始化后仅监听activate事件。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">whenReady</span><span class="p">().</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
@@ -104,6 +104,44 @@ npm  i electron --save-dev
 
 </code></pre>
 <h4 id="-node-js">通过预加载脚本从渲染器访问Node.js</h4>
+<p>最后，要做的是输出Electron的版本号和它的依赖项到你的Web页面上。</p>
+<p>在主进程通过Node的全局process对象访问这个信息是微不足道的。然而，不能直接在主进程中编辑DOM，因为它无法访问渲染器文档上下文。它们存在于完全不同的进程。</p>
+<p>预加载脚本在渲染器进程加载之前加载，并有权限访问两个渲染器全局(window和document)和Node.js环境。</p>
+<p>创建一个名为preload.js的新脚本如下：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;DOMContentLoaded&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">replaceText</span> <span class="o">=</span> <span class="p">(</span><span class="nx">selector</span><span class="p">,</span> <span class="nx">text</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">element</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="nx">selector</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">element</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">element</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="nx">text</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">nameStr</span> <span class="nx">of</span> <span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">,</span> <span class="s1">&#39;chrome&#39;</span><span class="p">,</span> <span class="s1">&#39;electron&#39;</span><span class="p">])</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">nameStr</span> <span class="o">+</span> <span class="s1">&#39;Version&#39;</span><span class="p">;</span>
+        <span class="nx">replaceText</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">process</span><span class="p">.</span><span class="nx">versions</span><span class="p">[</span><span class="nx">nameStr</span><span class="p">]);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>要将此脚本附加到渲染器进程，需要在BrowserWindow构造器将预加载脚本传入webPerrerences.preload选项。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">win</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BrowserWindow</span><span class="p">({</span>
+    <span class="nx">width</span><span class="o">:</span> <span class="mi">800</span><span class="p">,</span>
+    <span class="nx">height</span><span class="o">:</span> <span class="mi">600</span><span class="p">,</span>
+    <span class="nx">webPreferences</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">preload</span><span class="o">:</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;./preload.js&#39;</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">将功能添加到网页</h3>
+<p>由于渲染器运行在正常的Web环境中，因此您可以在index.html中添加任意script标签，来包括您想要的任何脚本。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="o">&lt;</span><span class="nx">script</span> <span class="nx">src</span><span class="o">=</span><span class="s2">&quot;./renderer.js&quot;</span><span class="o">&gt;&lt;</span><span class="err">/script&gt;</span>
+</pre></div>
+
+</code></pre>
+<p>renderer.js中包含的代码可以使用与典型前端开发相同的JS和工具。</p>
 <h1 id="-">参考文档</h1>
 <p><a href="https://www.electronjs.org/zh/docs/latest/">https://www.electronjs.org/zh/docs/latest/</a></p>
 </body>
