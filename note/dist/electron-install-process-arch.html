@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron-安装和进程模型</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1644509575061">
+  <link rel="stylesheet" href="/note/note.css?ts=1644685701131">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -85,5 +85,58 @@
 </code></pre>
 <p>如果需要强制重新下载文件，需要将force_no_cache环境变量设置为true。</p>
 <h2 id="-">进程模型</h2>
+<p>Electron继承了来自Chromium的多进程架构，这使得此框架在架构上非常相似于一个现代的网页浏览器。</p>
+<h3 id="-">为什么不是单一进程</h3>
+<p>网页浏览器是个及其复杂的应用程序，除了显示网页内容的主要能力之外，还有很多次要职责，例如：管理多窗口和加载第三方扩展。</p>
+<p>早期，浏览器使用单个进程来处理所有这些功能，虽然这种模式打开每个标签页的开销较小，但同时意味着一个网站的崩溃或无响应会影响到整个浏览器。</p>
+<h3 id="-">多进程模型</h3>
+<p>为了解决这个问题，Chrome团队决定让每个标签页在自己的进程中渲染。然后，单个浏览器进程控制这些标签页进程，以及整个应用程序的生命周期。</p>
+<p>Electron中，您控制着两种类型的进程，主进程和渲染器。这类似于Chrome自己的进程和渲染器进程。</p>
+<h2 id="-">主进程</h2>
+<p>每个Electron应用都有一个单一的主进程，作为应用程序的入口点。主进程运行在Node.js环境中，具有require模块和使用所有NodeAPI的能力。</p>
+<h3 id="-">窗口管理</h3>
+<p>主进程的主要目的是使用BrowserWindow模块创建和管理应用程序窗口。</p>
+<p>BrowserWindow类的每个实例创建一个应用程序窗口，且在单独的渲染器进程中加载一个网页。您可以从主进程的window的webContent对象与网页对象进行交互。</p>
+<p>由于BrowserWindow模块是一个EventEmitter，所以您可以为各种用户事件添加处理程序。</p>
+<h3 id="-">应用程序生命周期</h3>
+<p>主进程还能通过Electron的app模块来控制您应用程序的生命周期。该模块提供了一整套的事件和方法，可以使你添加自定义的程序行为。</p>
+<h3 id="-api">原生API</h3>
+<p>为了使Electron的功能不仅仅限于对网页内容的封装，主进程也添加了自定义的API来与用户的操作系统进行交互。Eletron有着多种控制原生桌面功能的模块。例如菜单，对话框以及托盘图标。</p>
+<h2 id="-">渲染器进程</h2>
+<p>每个Electron应用都会为每个打开的BrowserWindow生成一个单独的渲染器进程。一个BrowserWindow中的所有用户界面和应用功能，都是用网页编写的。</p>
+<p>渲染器无权访问require或其它Node.js API。</p>
+<h3 id="-">预加载脚本</h3>
+<p>预加载preload脚本包含了那些执行于渲染器进程中，且先于网页内容开始加载的代码。这些脚本虽然运行在渲染器的环境中，却因能访问Node.js API而拥有更多的权限。</p>
+<p>预加载脚本可以在BrowserWindow构造方法中的webPreferences选项附加到主进程。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">win</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BrowserWindow</span><span class="p">({</span>
+    <span class="nx">webPreferences</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">preload</span><span class="o">:</span> <span class="s1">&#39;path/to/preload.js&#39;</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>预加载脚本与渲染器共享同一个全局Window接口，并且可以访问Node.js API。因为可以在window全局中暴露任意API来增强页面功能。</p>
+<p>虽然预加载脚本与其所附加的渲染器在全局共享着一个widnow变量，但不能直接附加任何变量到widnow之中，因为contextIsolation。</p>
+<p>语境隔离意味着预加载脚本与渲染器的主要运行环境是隔离开的，以避免泄漏任何具特权的API到您的网页内容代码中。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//preload.js</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">myAPI</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">desktop</span><span class="o">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+<span class="c1">//renderer.js</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">myAPI</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>取而代之，可以使用contextBridge模块来安全地进行交互。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">contextBridge</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;electron&#39;</span><span class="p">;</span>
+
+<span class="nx">contextBridge</span><span class="p">.</span><span class="nx">exposeInMainWorld</span><span class="p">(</span><span class="s1">&#39;myAPI&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">versions</span><span class="o">:</span> <span class="nx">process</span><span class="p">.</span><span class="nx">versions</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>此功能两个主要目的：1、通过暴露ipcRenderer到渲染进程，你可以使用IPC来调用主进程。2、添加自定义属性以实现桌面端较网页的增强功能。</p>
 </body>
 </html>

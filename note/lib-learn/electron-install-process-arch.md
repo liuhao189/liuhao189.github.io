@@ -106,5 +106,84 @@ npm install --verbose electron
 
 ## 进程模型
 
+Electron继承了来自Chromium的多进程架构，这使得此框架在架构上非常相似于一个现代的网页浏览器。
+
+### 为什么不是单一进程
+
+网页浏览器是个及其复杂的应用程序，除了显示网页内容的主要能力之外，还有很多次要职责，例如：管理多窗口和加载第三方扩展。
+
+早期，浏览器使用单个进程来处理所有这些功能，虽然这种模式打开每个标签页的开销较小，但同时意味着一个网站的崩溃或无响应会影响到整个浏览器。
+
+### 多进程模型
+
+为了解决这个问题，Chrome团队决定让每个标签页在自己的进程中渲染。然后，单个浏览器进程控制这些标签页进程，以及整个应用程序的生命周期。
+
+Electron中，您控制着两种类型的进程，主进程和渲染器。这类似于Chrome自己的进程和渲染器进程。
+
+## 主进程
+
+每个Electron应用都有一个单一的主进程，作为应用程序的入口点。主进程运行在Node.js环境中，具有require模块和使用所有NodeAPI的能力。
+
+### 窗口管理
+
+主进程的主要目的是使用BrowserWindow模块创建和管理应用程序窗口。
+
+BrowserWindow类的每个实例创建一个应用程序窗口，且在单独的渲染器进程中加载一个网页。您可以从主进程的window的webContent对象与网页对象进行交互。
+
+由于BrowserWindow模块是一个EventEmitter，所以您可以为各种用户事件添加处理程序。
+
+### 应用程序生命周期
+
+主进程还能通过Electron的app模块来控制您应用程序的生命周期。该模块提供了一整套的事件和方法，可以使你添加自定义的程序行为。
+
+### 原生API
+
+为了使Electron的功能不仅仅限于对网页内容的封装，主进程也添加了自定义的API来与用户的操作系统进行交互。Eletron有着多种控制原生桌面功能的模块。例如菜单，对话框以及托盘图标。
+
+## 渲染器进程
+
+每个Electron应用都会为每个打开的BrowserWindow生成一个单独的渲染器进程。一个BrowserWindow中的所有用户界面和应用功能，都是用网页编写的。
+
+渲染器无权访问require或其它Node.js API。
+
+### 预加载脚本
+
+预加载preload脚本包含了那些执行于渲染器进程中，且先于网页内容开始加载的代码。这些脚本虽然运行在渲染器的环境中，却因能访问Node.js API而拥有更多的权限。
+
+预加载脚本可以在BrowserWindow构造方法中的webPreferences选项附加到主进程。
+
+```js
+const win = new BrowserWindow({
+    webPreferences: {
+        preload: 'path/to/preload.js'
+    }
+})
+```
+
+预加载脚本与渲染器共享同一个全局Window接口，并且可以访问Node.js API。因为可以在window全局中暴露任意API来增强页面功能。
+
+虽然预加载脚本与其所附加的渲染器在全局共享着一个widnow变量，但不能直接附加任何变量到widnow之中，因为contextIsolation。
+
+语境隔离意味着预加载脚本与渲染器的主要运行环境是隔离开的，以避免泄漏任何具特权的API到您的网页内容代码中。
+
+```js
+//preload.js
+window.myAPI = {
+    desktop: true
+}
+//renderer.js
+console.log(window.myAPI)
+```
+
+取而代之，可以使用contextBridge模块来安全地进行交互。
 
 
+```js
+import { contextBridge } from 'electron';
+
+contextBridge.exposeInMainWorld('myAPI', {
+  versions: process.versions
+})
+```
+
+此功能两个主要目的：1、通过暴露ipcRenderer到渲染进程，你可以使用IPC来调用主进程。2、添加自定义属性以实现桌面端较网页的增强功能。
