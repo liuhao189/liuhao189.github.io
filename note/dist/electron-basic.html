@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Electron - 基础</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1644768924382">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="electron-">Electron - 基础</h1>
+<h2 id="dark-mode">Dark Mode</h2>
+<p>本地界面包括文件选择器、窗口边框、对话框、上下文菜单等，任何UI来自操作系统而非应用的界面，默认是从操作系统自定选择主题。</p>
+<p>CSS中可以使用[prefer-color-scheme]来指定暗黑模式下的展示。</p>
+<h2 id="macos-">macOS设置</h2>
+<p>在MacOS 10.14中，Apple为所有MacOS电脑引入了一个全新的系统级黑暗模式。如果你的应用具有深色模式，可以使用nativeTheme API来跟随系统的设置。</p>
+<h2 id="-">示例</h2>
+<p>1、CSS文件使用prefers-color-scheme 媒体查询来设置body的样式。</p>
+<p>2、preload.js中引入ipcRenderer来调用dark-mode:toggle相关的方法。</p>
+<p>3、main.js主进程中，引入icpMain来接收消息，引入nativeTheme来完成主题设置和获取。</p>
+</body>
+</html>
