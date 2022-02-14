@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DownloadItem类</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1644855300087">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="downloaditem-">DownloadItem类</h1>
+<p>控制远程资源的文件下载。</p>
+<p>Process:Main。此类不从electron模块导出，它只能作为Electron API中其它方法的返回值。</p>
+<p>DownloadItem是一个EventEmitter事件触发器，在Electron中代表一个下载项。它用于will-download事件以及Session类，并且允许用户控制下载项目。</p>
+<h2 id="-">实例事件</h2>
+<p>事件名：&#39;updated&#39;，回调参数：(event,state:&#39;progressing&#39;-进行中|&#39;interruped&#39;-已中断，可以恢复)。</p>
+<p>当下载正在执行但还没完成的时候发出。</p>
+<p>事件名：&#39;done&#39;，回调参数(event,state:&#39;completed&#39;|&#39;cancelled&#39;-使用cancel方法取消下载|&#39;interrupted&#39;-下载已经中断，无法恢复)。</p>
+<h2 id="-">实例方法</h2>
+<p>setSavePath(path)，该API仅能在will-download方法的回调中使用。如果path不存在，Electron将尝试递归创建目录。如果不设置，Electron将弹出保存对话框。</p>
+<p>getSavePath()，下载项保存路径。</p>
+<p>setSaveDialogOptions(options)，设置保存文件对话框选项。这个对象与dialog.showDialog的options参数有相同属性。仅在will-download方法回调中使用。</p>
+<p>pause，暂停下载。</p>
+<p>isPaused，是否已暂停下载。</p>
+<p>resume，继续下载，注意：为了支持断点续传，必须要从支持范围请求的服务器下载，并且提供Last-Modified和ETag的头部值，否则resume将重新下载。</p>
+<p>canResume，下载是否可以恢复。</p>
+<p>cancel，取消下载操作。</p>
+<p>getURL，下载项的源URL。</p>
+<p>getMimeType，MIME类型的文件。</p>
+<p>hasUserGesture，是否具有用户手势。</p>
+<p>getFileName，下载项目的文件名。注意：如果用户在提示的下载保存对话框中更改文件名称，保存的文件的实际名称将会不同。</p>
+<p>getTotalBytes，下载项目的总大小(以字节为单位)，大小未知，则返回0。</p>
+<p>getReceivedBytes，下载项目的接收字节。</p>
+<p>getContentDisposition，响应头中的Content-Disposition字段。</p>
+<p>getState，progressing | completed | cancelled | interrupted。</p>
+<p>getURLChain，项目的完整URL链，包括任何重定向。</p>
+<p>getLastModifiedTime，返回Last-ModifiedTime。</p>
+<p>getETag，返回ETag的值。</p>
+<p>getStartTime，自下载开始时的UNIX以来的秒数。</p>
+<h2 id="-">实例属性</h2>
+<p>savePath，决定了下载项的保存文件路径。仅在will-download回调函数中可用。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.electronjs.org/zh/docs/latest/api/download-item">https://www.electronjs.org/zh/docs/latest/api/download-item</a></p>
+</body>
+</html>

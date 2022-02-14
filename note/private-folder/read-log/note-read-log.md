@@ -36,3 +36,10 @@ https://zhuanlan.zhihu.com/p/42830778
 ## catalog-of-wealth-creation-mechanisms
 
 https://blog.rongarret.info/2009/10/catalog-of-wealth-creation-mechanisms.html
+
+## V8 snapshot相关
+
+https://zhuanlan.zhihu.com/p/31139813
+
+https://docs.google.com/document/d/1YEIBdH7ocJfm6PWISKw03szNAgnstA2B3e8PZr_-Gp4/edit#
+
