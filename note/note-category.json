@@ -48,6 +48,14 @@
         "distFileName": "commonAbility"
     },
     {
+        "id": "electronLearn",
+        "name": "Electron相关",
+        "path":[
+            "electron-learn"
+        ],
+        "distFileName":"eletronLearn"
+    },
+    {
         "id": "others",
         "name": "其它",
         "path": [
