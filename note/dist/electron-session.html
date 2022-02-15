@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron-Session</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1644937026280">
+  <link rel="stylesheet" href="/note/note.css?ts=1644941886638">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -26,6 +26,45 @@
 <p>defaultSession一个Session对象，该应用程序的默认session对象。</p>
 <h2 id="session-">Session类</h2>
 <p>Process:Main，获取和设置Session的属性，此类不从electron模块导出，它只能作为Electron API中其它方法的返回值。</p>
+<h3 id="-">实例事件</h3>
+<p>1、will-download，webContents中下载item的时候触发。</p>
+<p>2、extension-loaded，(ev,extension)在扩展插件加载完成后触发。行为包括：1、扩展插件通过Session.loadExtension中被加载；2、扩展插件正在被重新加载，由于崩溃，扩展插件被请求重新加载。</p>
+<p>3、extension-unload，扩展插件被卸载后触发，当Session.removeExtension被调用时也会触发。</p>
+<p>4、extension-ready，扩展插件加载完成，同时所有必要的浏览器状态也初始化完成，允许启动插件背景页面，将触发此事件。</p>
+<p>5、preconnect，渲染器进程已经预链接到URL后触发此事件。 dns-prefetch, preconnect, prefetch, and prerender。</p>
+<p>6、spellcheck-dictionary-initialized，字典初始化成功事件。</p>
+<p>7、spellcheck-dictionary-download-begin。</p>
+<p>8、spellcheck-dictionary-download-success。</p>
+<p>9、spellcheck-dictionary-download-failure。</p>
+<p>10、select-hid-device，当调用navigator.hid.requestDevice方法时，callback必须带上deviceId。</p>
+<p>11、hid-device-added，当新的HID设备变可用时触发。</p>
+<p>12、hid-device-removed，当HID设备移除时。</p>
+<p>13、select-serial-port，调用navigator.serial.requestPort时触发。</p>
+<p>14、serial-port-added。</p>
+<p>15、serial-port-removed。</p>
+<h3 id="-">实例方法</h3>
+<p>1、getCacheSize:Promise&lt;number&gt;，当前session会话缓存大小，</p>
+<p>2、clearCache:Promise&lt;void&gt;，清除session的HTTP缓存。</p>
+<p>3、clearStorageData([options])，options: {origin:&#39;协议://主机名:端口&#39;,storages:[&#39;appcache&#39;,&#39;cookies&#39;,&#39;filesystem&#39;,&#39;indexed&#39;,&#39;localstorage&#39;,&#39;shadercache&#39;,<br>&#39;websql&#39;,&#39;serviceworkers&#39;,&#39;cachestorage&#39;],quotas:[&#39;temporary&#39;,&#39;persistent&#39;,&#39;syncable&#39;]}。</p>
+<p>4、flushStorageData，写入任何未写入DOMStorage数据到磁盘。</p>
+<p>5、setProxy(config)，config: {<br>    mode:&#39;direct&#39;|&#39;auto_detect&#39;|&#39;pac_script&#39;| &#39;fixed_servers&#39;|&#39;system&#39;, //没有指定，根据其它选项自动判断。<br>    direct: 直接模式下，所有连接都是直接创建的，无需任何代理,<br>    auto_detect，代理配置由PAC脚本决定,<br>    pac_script，通过pacScript设置的脚本地址,<br>    fixed_servers，主要通过proxyRules来指定,<br>    system，代理配置从system取。<br>    pacScript: URL,<br>    proxyRules:string,<br>    proxyByPassRules:string,哪些url可以通过绕过代理<br>}</p>
+<p>6、resolveProxy(url)，解析url的代理信息。</p>
+<p>7、forceReloadProxyConfig，强制使用最新的代理配置。</p>
+<p>8、setDownloadPath，设置下载目录。</p>
+<p>9、enableNetworkEmulation(options)，offline:boolean，latency:number，downloadThroughput:number，uploadThroughput: number。</p>
+<p>10、preconnect(options)，url:string,numSockets:number[1,6]的区间，默认为1。</p>
+<p>11、closeAllConnections():Promise&lt;void&gt;。</p>
+<p>12、disableNetworkEmulation。</p>
+<p>13、setCertificateVerifyProc((request,callback)=&gt;{})，每当一个服务器证书请求验证，procHandler将被调用，为session设置证书验证过程。callback(0)接受证书，callback(-2)驳回证书，callback(null)将恢复为默认证书验证过程。</p>
+<p>此结果会被network service缓存。</p>
+<p>14、setPermissionRequestHandler(handler:(webContents,permission,cb,details)=&gt;{})，用于设置session的权限请求的处理程序，调用callback(true)将允许该权限。</p>
+<p>15、setPermissionCheckHandler(handler:(webContents,permissions,requestOrigin,details)=&gt;boolean)，用于返回权限请求的信息。</p>
+<p>16、setDevicePermissionHandler(handler:(details)=&gt;boolean)。</p>
+<p>17、clearHostResolverCache，清除主机解析程序的缓存。</p>
+<p>18、allowNTLMCredentialsForDomains，动态设置是否始终为 HTTP NTLM 发送凭据或协商身份验证。</p>
+<p>19、setUserAgent(userAgent[,acceptLanguages])覆盖当前会话的userAgent和acceptLanguages。不会影响现有的webContents，并且webContents.setUserAgent来重写会话范围的userAgent。</p>
+<p>20、isPersistent，是否是持续的。</p>
+<p>21、getUserAgent，返回userAgent。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://www.electronjs.org/zh/docs/latest/api/session">https://www.electronjs.org/zh/docs/latest/api/session</a></p>
 </body>
