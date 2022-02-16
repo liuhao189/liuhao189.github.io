@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BrowserWindow</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1645028341146">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="browserwindow">BrowserWindow</h1>
+<p>进程：主进程。创建并控制浏览器窗口。</p>
+<h2 id="-">自定义窗口</h2>
+<p>BrowserWindow类暴露了各种方法来修改应用窗口的外观和行为。详细信息，请参考<a href="https://www.electronjs.org/zh/docs/latest/tutorial/window-customization">自定义窗口</a>。</p>
+<h2 id="-">优雅地显示窗口</h2>
+<p>每次加载页面都是直接展示，用户突然就看到了，这体验很不好。可以用以下两种解决方案。</p>
+<h3 id="-ready-to-show-">使用ready-to-show事件</h3>
+<p>在加载页面时，渲染进程第一次完成绘制时，窗口没有被显示，渲染进程会发出ready-to-show事件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="kr">const</span> <span class="nx">win</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BrowserWindow</span><span class="p">({</span>
+    <span class="nx">width</span><span class="o">:</span> <span class="mi">800</span><span class="p">,</span>
+    <span class="nx">height</span><span class="o">:</span> <span class="mi">600</span><span class="p">,</span>
+    <span class="nx">webPreferences</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">preload</span><span class="o">:</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;preload.js&#39;</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="nx">show</span><span class="o">:</span> <span class="kc">false</span>
+  <span class="p">});</span>
+
+  <span class="nx">win</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="s1">&#39;ready-to-show&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">win</span><span class="p">.</span><span class="nx">show</span><span class="p">();</span>
+  <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>这个事件通常在did-finish-load事件之后发出，但是页面有许多远程资源时，它可能会在did-finish-load之前发出事件。</p>
+<p>注意：此事件意味着渲染器会被认为是可见的并绘制，即使show是false。如果您使用paintWhenInitiallyHidden:false，此事件将不会触发。</p>
+<h3 id="-backgroundcolor-">设置backgroundColor属性</h3>
+<p>对于一个复杂的应用，ready-to-show可能发出的太晚，会让应用感觉缓慢。这种情况下，可以设置背景色。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">{</span> <span class="nx">BrowserWindow</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;electron&#39;</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">win</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BrowserWindow</span><span class="p">({</span> <span class="nx">backgroundColor</span><span class="o">:</span> <span class="s1">&#39;#2e2c29&#39;</span> <span class="p">})</span>
+<span class="nx">win</span><span class="p">.</span><span class="nx">loadURL</span><span class="p">(</span><span class="s1">&#39;https://github.com&#39;</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">父子窗口</h2>
+<p>通过使用parent选项，你可以创建子窗口。child窗口总是显示在top窗口顶部。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">{</span> <span class="nx">BrowserWindow</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;electron&#39;</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">top</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BrowserWindow</span><span class="p">()</span>
+<span class="kr">const</span> <span class="nx">child</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BrowserWindow</span><span class="p">({</span> <span class="nx">parent</span><span class="o">:</span> <span class="nx">top</span> <span class="p">})</span>
+<span class="nx">child</span><span class="p">.</span><span class="nx">show</span><span class="p">()</span>
+<span class="nx">top</span><span class="p">.</span><span class="nx">show</span><span class="p">()</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>

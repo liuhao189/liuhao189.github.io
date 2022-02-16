@@ -115,7 +115,65 @@ Process:Main，获取和设置Session的属性，此类不从electron模块导�
 
 21、getUserAgent，返回userAgent。
 
+22、setSSLConfig(config:{minVersion:string,maxVerison:string,disabledCipherSuites:boolean})
 
+23、getBlobData(identifier:string-uuid):Promise<Buffer>。
+
+24、downloadURL(url:string)，下载url的资源，这个API会生成一个DownloadItem。
+
+注意：与webContents.downloadURL不同，这不会执行与页面来源相关的任何安全检查。
+
+25、createInterruptedDownload(options)，{ path:string,urlChain:string[], mimeType?:string, offset, length,lastModified?:string,eTag?:string,startTime:number}，允许从上一个Session恢复cancelled或interrputed下载。该API会生成一个DownloadItem，可使用will-download事件进行访问。DownloadItem将不具有任何与之关联的WebContents，并且允许初始状态将为interrupted。
+
+26、clearAuthCache，清空http的auth缓存。
+
+27、setPreloads(preloads:string[])，数组，该数组由所有需要进行预先加载的脚本的绝对路径组成。
+
+添加的脚本会在所有的关联的webContents上执行，会在普通的preload 脚本执行前。
+
+28、getPreloads():string[]，返回一个数组，这个数组由已经注册过的预加载脚本的路径组成。
+
+29、setSpellCheckerEnabled(enabled:boolean)。
+
+30、isSpellCheckerEnabled()。
+
+31、setSpellCheckerLanguages(languages:string[])。Mac上会自动探测语言，该API为no-op。
+
+32、getSpellCheckerLanguages():string[]，Mac上该API为no-op。
+
+33、setSpellCheckerDictionaryDownloadURL。
+
+34、listWordsInSpellCheckerDictionary。
+
+35、addWordToSpellCheckerDictionary。
+
+36、removeWordFromSpellCheckerDictionary。
+
+37、loadExtension(path,options?:{ allowFileAccess:boolean })，注意，应用的第二次执行不用再次loadExtension，该API不能在app模块的ready事件之前调用。
+
+38、removeExtension(extensionId)，不能在app.ready之前调用。
+
+39、getAllExtensions()，不能在app.ready之前调用。
+
+40、getStoragePath()，session保存数据的绝对路径，如果是内存，则返回null。
+
+## 实例属性
+
+1、availableSpellCheckerLanguages。
+
+2、spellCheckerEnabled。
+
+3、storagePath。
+
+4、cookies，只读。
+
+5、serviceWorkers，只读。
+
+6、webRequest，Session中使用的WebRequest对象。
+
+7、protocol，只读。Session中使用的Protocol对象。
+
+8、netLog，只读，Session中使用的NetLog对象。
 
 ## 参考文档
 
