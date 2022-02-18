@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>BrowserWindow</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1645114766572">
+  <link rel="stylesheet" href="/note/note.css?ts=1645202949372">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -101,5 +101,39 @@
 <p>16、fullscreen，macOS上明确设置为false时将隐藏全屏按钮。</p>
 <p>17、fullscreenable，窗口是否可以进入全屏状态，macOS上，最大化和全屏按钮是否可用。默认值为true。</p>
 <p>18、simpleFullscreen，默认false，macOS上使用pre-Lion全屏。</p>
+<p>19、skipTaskbar，是否在任务栏中显示窗口，默认为false。</p>
+<p>20、kiosk，窗口书否进入kiosk模式，默认为false。</p>
+<p>21、title，默认窗口标题，默认为Electron，如果由loadURL加载的HTML文件含有标签title，此属性将忽略。</p>
+<p>22、icon，NativeImage|String，在windows上推荐使用ico图标来获得最佳的视觉效果。</p>
+<p>23、show，窗口是否在创建时展示。</p>
+<p>24、paintWhenInitiallyHidden:boolean，当show为false并且渲染器刚刚被创建时，它是否应激活。默认为true。</p>
+<p>25、frame，boolean，设置为false时创建一个无边框窗口，默认为true。</p>
+<p>26、parent，指定父窗口，默认值为null。</p>
+<p>27、modal，默认false。</p>
+<p>28、acceptFirstMouse，单击非活动窗口是否同时触发点击进入里面的网页内容，macOS上为false。</p>
+<p>29、disableAutoHideCursor，默认false，打字时隐藏光标。</p>
+<p>30、autoHideMenuBar，默认false，自动隐藏菜单栏。除非按Alt键。</p>
+<p>31、enableLargerThanScreen，默认false，仅适用于MacOS，因为其它操作系统默认允许大于屏幕的窗口。</p>
+<p>32、backgroundColor，十六进制值，#66CD00，设置transparent为true方可支持alpha属性。</p>
+<p>33、hasShadow，默认为true，窗口是否有阴影。</p>
+<p>34、opacity，设置窗口初始的不透明度，目前仅支持window和macos。</p>
+<p>35、darkTheme，强制窗口使用深色模式。默认为false。只在部分GTL+3桌面环境有效。</p>
+<p>36、transparent，默认为false。</p>
+<p>37、type:string，默认为普通窗口，更多类型见下文。</p>
+<p>38、visualEffectSize:string，指定外观应如何反映macOS上的窗口活动状态，必须与vibrance属性一起使用。</p>
+<p>允许的值：followWindow，窗口处于激活状态时，后台应自动显示为激活状态。反之亦然。默认为该值。</p>
+<p>active，后台应一直显示为激活状态。</p>
+<p>inactive，后台应一直显示为未激活状态。</p>
+<p>39、titleBarStyle，可选值macOS或Windows，默认为default，分别返回macos和windows的标准标题栏。</p>
+<p>hidden，maxos窗口将一直拥有左上角标准控制器。windows上，与titleBarOverlay:true一起使用时，它将激活窗口空间叠加。否则不会显示窗口控件。</p>
+<p>hiddenInset，隐藏标题栏，显示小的控制按钮在窗口边缘。</p>
+<p>customButtonOnHover，仅在macOS上，才会出现隐藏的标题栏和全尺寸的内容窗口，当在窗口左上角hover时，显示小的控制按钮。</p>
+<p>40、trafficLightPosition，控制按钮在无边框窗口中的位置。</p>
+<p>41、roundedCorners，默认true，无框窗口在MacOS上是否圆角。</p>
+<p>42、thickFrame，对windows上的无框窗口使用WS_THICKFRAME样式，会增加标准窗口框架。默认true，设置为false移除窗口的阴影和动画。</p>
+<p>43、vibrancy，动态效果，仅macOS有效。</p>
+<p>44、zoomToPageWidth，，默认false，控制macOS上，为true，窗口放大到页面的宽度，为false，放大到屏幕的宽度。</p>
+<p>45、tabbingIdentifier，macOS的 10.12+上可使窗口在原生选项卡中打开，具有相同标识符的窗口将组合在一起。还会在窗口的标签栏中添加一个新选项卡按钮，允许app和窗口接收new-window-for-tab事件。</p>
+<p>46、webPreferences</p>
 </body>
 </html>
