@@ -43,3 +43,6 @@ https://zhuanlan.zhihu.com/p/31139813
 
 https://docs.google.com/document/d/1YEIBdH7ocJfm6PWISKw03szNAgnstA2B3e8PZr_-Gp4/edit#
 
+## 浏览器工作原理
+
+https://zhuanlan.zhihu.com/p/279920830
