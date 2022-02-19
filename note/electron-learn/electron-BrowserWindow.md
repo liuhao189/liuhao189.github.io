@@ -147,7 +147,7 @@ options:
 
 23、show，窗口是否在创建时展示。
 
-24、paintWhenInitiallyHidden:boolean，当show为false并且渲染器刚刚被创建时，它是否应激活。默认为true。
+24、paintWhenInitiallyHidden:boolean，当show为false并且渲染器刚刚被创建时，它是否应绘制。默认为true。
 
 25、frame，boolean，设置为false时创建一个无边框窗口，默认为true。
 
@@ -203,4 +203,118 @@ customButtonOnHover，仅在macOS上，才会出现隐藏的标题栏和全尺�
 
 45、tabbingIdentifier，macOS的 10.12+上可使窗口在原生选项卡中打开，具有相同标识符的窗口将组合在一起。还会在窗口的标签栏中添加一个新选项卡按钮，允许app和窗口接收new-window-for-tab事件。
 
-46、webPreferences
+46、webPreferences：属性比较多。
+
+47、webPreferences.devTools:boolean，是否开启DevTools，如果设置为false，则无法使用win.webContents.openDevTools打开DevTools，默认true。
+
+48、webPreferences.nodeIntegration:boolean，是否启用node集成。默认false。
+
+49、webPreferences.nodeIntegrationInWorker:boolean，是否在Web Worker中启用Node集成。默认false。
+
+50、webPreferences.nodeIntegrationInSubFrames:boolean，是否允许子页面iframe或子窗口中集成Node，预加载的脚本会被注入到每一个iframe，可以使用process.isMainFrame来判断当前是否在主框架中。
+
+51、webPreferences.preload:string，页面运行其它脚本之前预先加载指定的脚本，无论页面是否集成Node，此脚本都可以访问所有Node API。当Node integration关闭时，预加载的脚本将从全局范围重新引入node的全局引用标志。
+
+52、webPreferences.sandbox:boolean，如果设置该参数，沙箱的渲染器将与窗口关联，使它与Chromium OS-level的沙箱兼容，并禁用Node.js引擎。且预加载的脚本的API也有限制。
+
+53、webPreferences.session，设置页面的session，可以用partition选项来代替。同时设置了session和partition字符串，session的优先级更高。
+
+54、webPreferences.partition，通过session的partition字符串来设置界面session。
+
+55、webPreferences.zoomFactor:number，默认值1.0，页面的缩放系数。
+
+56、webPreferences.javascript:boolean，是否启用JS，默认true。
+
+57、webPreferences.webSecurity:boolean，设置false，禁用同源策略，默认为true。
+
+58、allowRunningInsecureContent:boolean，默认false，允许一个https页面运行来自http url的JS，CSS或plugins。
+
+59、images:boolean，是否允许记载图片，默认true。
+
+60、imageAnimationPolicy:string，指定如何运行图像动画。可以是animate，animateOnce或noAnimation，默认值为animate。
+
+61、textAreasAreResizable，默认true。
+
+62、webgl:boolean，默认true，是否启用WebGL。
+
+63、plugins:boolean，是否启用plugins，默认false。
+
+64、experimentalFeatures，默认false。
+
+65、scrollBounce，默认false，在macOS上启用弹力动画。
+
+66、enableBlinkFeaturesString，逗号分隔的需要启用的特性列表。
+
+67、disableBlinkFeatures，逗号分隔的需要禁用的特性列表。
+
+68、defaultFontFamily:{standard:string,serif,sansSerif,monospace,cursive,fantasy}。
+
+69、defaultFontSize，默认为16。
+
+70、defaultMonospaceFontSize，默认为13。
+
+71、minimumFontSize，默认为0。
+
+72、defaultEncoding，默认为ISO-8859-1。
+
+73、backgroundThrottling:boolean，是否页面不展示时限制动画和计时器。默认true。
+
+74、offscreen，是否绘制和渲染可视区域外的窗口，默认值为false。
+
+75、contextIsolation:boolean，默认true。是否在独立的JS环境中运行Electron API和指定的preload脚本。
+
+预加载脚本所运行的上下文环境只能访问其自身专用的docuemnt和window属性，其自身一系列内置的JS对象。这写对于已加载的内容是不可见的。
+
+Electron API只在预加载脚本中可用，在已加载脚本中不可用。该选项使用的是与Chrome内容脚本相同的技术。可以在devTools的Electron Isolated Context条目来访问这个上下文。
+
+76、nativeWindowOpen，是否使用原生的window.open，默认true。
+
+77、webviewTag，是否启用webview tag标签，默认false。注意，webview配置的preload脚本在执行时会启用nodeIntegration，应确保远程或不受信任的内容无法创建恶意的preload脚本。可以使用webContents上的will-attach-webview事件对preload脚本进行剥离，并验证和更改webview的初始设置。
+
+78、additionalArguments，当前应用程序的渲染器进程中process.argv的字符串列表。主要用于传递少部分数据到渲染器进程。
+
+79、safeDialogs，是否启用浏览器样式的持续对话框保护，默认false。
+
+80、safeDialogsMessage，安全对话框展示的消息。
+
+81、disableDialogs，默认false。
+
+82、navigateOnDragDrop，将文件或链接拖放到页面是否触发页面跳转，默认false。
+
+83、autoplayPolicy，自动播放策略，值可以是no-user-gesture-required，user-gesture-required，document-user-activation-required。 默认是no-user-gesture-required。
+
+84、disableHtmlFullscreenWindowResize:boolean，默认值false。
+
+85、accessibleTitle，提供给屏幕阅读器等辅助工具的替代标题字符串，对用户不直接可见。
+
+86、spellcheck，是否启用拼写检查器，默认true。
+
+87、enableWebSQL，默认true，是否启用WebSQL api。
+
+88、v8CacheOptions:string，强制blink使用V8代码缓存策略。
+
+none，禁用代码缓存。
+
+code，基于启发式代码缓存。
+
+bypassHeatCheck，绕过启发式代码缓存，但使用懒编译。
+
+bypassHeatCheckAndEagerCompile，编译是及时的，默认策略是code。
+
+89、enablePreferredSizeMode，是否启用首选大小模式。首选大小是包含文档布局所需的最小大小，默认false。
+
+90、titleBarOverlay:boolean|object，当使用无框窗口配置。默认为false。
+
+当使用minWidth/maxWidth/minHeight/maxHeight设置最小或最大窗口时，它只限制用户，它不会阻止你将不符合大小限制的值传递给setBounds和setSize或BrowserWindow的构造函数。
+
+type的选项与平台相关：
+
+Linux上，可能为desktop，dock，toolbar，splash，notification。
+
+MaxOS上，可能的类型为desktop，textured。
+
+Windows上，可能的的类型为toolbar。
+
+
+
+
