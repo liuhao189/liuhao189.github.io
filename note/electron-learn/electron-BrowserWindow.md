@@ -263,13 +263,15 @@ customButtonOnHover，仅在macOS上，才会出现隐藏的标题栏和全尺�
 
 75、contextIsolation:boolean，默认true。是否在独立的JS环境中运行Electron API和指定的preload脚本。
 
-预加载脚本所运行的上下文环境只能访问其自身专用的docuemnt和window属性，其自身一系列内置的JS对象。这写对于已加载的内容是不可见的。
+预加载脚本所运行的上下文环境只能访问其自身专用的docuemnt和window属性，其自身一系列内置的JS对象。这写对于已加载的JS是不可见的。
 
 Electron API只在预加载脚本中可用，在已加载脚本中不可用。该选项使用的是与Chrome内容脚本相同的技术。可以在devTools的Electron Isolated Context条目来访问这个上下文。
 
 76、nativeWindowOpen，是否使用原生的window.open，默认true。
 
 77、webviewTag，是否启用webview tag标签，默认false。注意，webview配置的preload脚本在执行时会启用nodeIntegration，应确保远程或不受信任的内容无法创建恶意的preload脚本。可以使用webContents上的will-attach-webview事件对preload脚本进行剥离，并验证和更改webview的初始设置。
+
+注意，webviewTag不建议使用。
 
 78、additionalArguments，当前应用程序的渲染器进程中process.argv的字符串列表。主要用于传递少部分数据到渲染器进程。
 
