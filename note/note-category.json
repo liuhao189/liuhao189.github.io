@@ -56,12 +56,12 @@
         "distFileName":"eletronLearn"
     },
     {
-        "id": "V8",
+        "id": "V8Learn",
         "name": "V8引擎相关",
         "path":[
-            "V8"
+            "V8-learn"
         ],
-        "distFileName":"V8"
+        "distFileName":"V8Learn"
     },
     {
         "id": "others",

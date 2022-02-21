@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>V8 bindings的设计(Isolte,Context,World,frames,DOM Wrappers)</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1645374810033">
+  <link rel="stylesheet" href="/note/note.css?ts=1645460059482">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,24 +13,70 @@
 })();
 </script>
 <h1 id="v8-bindings-isolte-context-world-frames-dom-wrappers-">V8 bindings的设计(Isolte,Context,World,frames,DOM Wrappers)</h1>
-<p>主要介绍V8绑定体系结构中的关键概念，但不包含DOM包装器的生存期管理。</p>
+<p>主要介绍V8 bindings体系结构中的关键概念，但不包含DOM包装器的生命周期管理部分。</p>
 <h2 id="isolate">isolate</h2>
 <p>Isolate是V8的一个实例的概念。在Blink中，isolates和threads是1:1的关系。一个Isolate和主线程关联，一个Isolate和worker线程关联。</p>
 <h2 id="context">Context</h2>
 <p>Context在V8中是一个全局变量作用域的概念。粗略得说，一个窗口对应一个上下文。每一个Context有它自己的全局变量和原型链。</p>
 <p>例子：iframe有自己独立的window对象。</p>
 <h2 id="entered-context-and-current-context">Entered context and current context</h2>
-<p>Isolate和Context的关系很有趣。一个Isolate必须在多个frames里运行JS，每一个frame有自己的context。</p>
-<p>这意味着某个isolate里的context的数量是随时间变化的，比例是1:N的关系。</p>
+<p>Isolate和Context的关系很有趣。一个Isolate可能在多个frames里运行JS，每一个frame有自己的context。</p>
+<p>这意味着某个isolate里的context的数量是随时间变化的，是1:N的关系。</p>
 <p>两种类型的运行时堆栈：</p>
 <p>1、JS函数的堆栈，是由V8管理的。当一个函数调用另一个函数时，被调用的函数被压入堆栈。当该函数返回时，该函数将从堆栈中pop。每一个函数都有一个关联的上下文，我们将当前运行函数的上下文称为当前上下文。</p>
 <p>2、第二种堆栈，操作颗粒度要粗很多。这个堆栈是由V8 binding管理的，不是由V8管理的。当V8 binding调用JS时，V8 binding进入上下文并将上下文push到stack。当JS执行结束后，stack会pop Context，然后将控制权交给V8 binding。</p>
-<p>entered上下文是当前JS执行开始的Context，当前上下文是当前运行的JS函数的Context。还有一种特殊的上下文，称为调试器上下文。如果调试器处于活动状态，debugger context会被插入到context堆栈。</p>
+<p>entered Context是当前JS执行开始的Context，current Context是当前运行的JS函数的Context。还有一种特殊的上下文，称为调试器上下文。如果调试器处于活动状态，debugger context会被插入到context堆栈。</p>
 <h2 id="world">World</h2>
-<p>World是为了在不同的Chrome插件的内容脚本沙盒DOM Wrappers而设计的一个概念。有三种world：一个main world，一个isolated world，一个worker world。</p>
+<p>World是为了在不同的Chrome插件的Content Scripts来沙盒化DOM Wrappers而设计的一个概念。有三种world：一个main world，一个isolated world，一个worker world。</p>
 <p>main world是正常的JS脚本执行的空间。</p>
-<p>isolate world是chrome插件的内容脚本执行的空间。1 main world : N isolated worlds。</p>
+<p>isolate world是chrome插件的Content Script执行的空间。1 main world : N isolated worlds。</p>
 <p>worker world有一个worker thread，但是没有isolate world。</p>
+<p>在同一个Isolate中的所有worlds都共享底层的C++ DOM对象，但是每个world都有自己的DOM Wrapper。所以所有Worlds可以操作相同的C++ DOM。</p>
+<p>每一个World有自己的Context，这意味这每一个世界有自己的全局变量和原型链。</p>
+<p>由于沙盒机制，在一个Isolate的每一个world都不共享任何JS对象。</p>
+<h2 id="isolates-contexts-worlds-and-frames-">isolates,contexts,worlds and frames的关系</h2>
+<p>1、DOM方面的需求，一个HTML页面可能有N个frames，每一个frame有它自己的Context。</p>
+<p>2、JS方面的需求，一个Isolate有M个worlds，每一个world有它自己的Context。</p>
+<p>因此，当我们执行有N个frames和M个worlds的页面时候，就会存在N*M个contexts。</p>
+<p>主线程在同一时刻只能有一个当前的context，但是在主线程在生命周期中可以有N*M个Contexts。</p>
+<p>另一方面，worker线程有0个frames和1个world，因此worker线程只有一个context，worker线程的context从不改变。</p>
+<h2 id="dom-wrappers-and-worlds">DOM Wrappers and Worlds</h2>
+<p>为了兼容性原因，我们需要确保只要底层的C++ DOM对象还活着时，就返回相同的DOM Wrapper给JS。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">div</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">);</span>
+<span class="nx">div</span><span class="p">.</span><span class="nx">foo</span> <span class="o">=</span> <span class="mi">1234</span><span class="p">;</span>  <span class="c1">// expando</span>
+<span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">);</span>
+<span class="nx">p</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">div</span><span class="p">);</span>
+<span class="nx">div</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+<span class="nx">gc</span><span class="p">();</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">p</span><span class="p">.</span><span class="nx">firstChild</span><span class="p">.</span><span class="nx">foo</span><span class="p">);</span>  <span class="c1">// This should be 1234, not undefined</span>
+</pre></div>
+
+</code></pre>
+<p>为了实现上面的需求，我们需要一个C++ DOM对象到DOM Wrappers的映射表。此外，还需要每个World有沙盒化的DOM Wrappers。</p>
+<p>为了满足需求，我们让每个世界都保存一个DOM包装器存储，这个存储存储了这个World的C++ DOM和DOM wrappers的映射关系。</p>
+<p>结果，在一个Isolate中，我们有多个DOM Wrapper存储。</p>
+<h2 id="dom-wrappers-context">DOM wrappers 和 Context</h2>
+<p>当你创建DOM wrappers，你需要选择正确的Context。如果选择了错误的Context，很可能导致JS对象泄露等安全问题。</p>
+<pre><code class="lang-html"><div class="highlight"><pre>// main.html
+<span class="nt">&lt;html&gt;&lt;body&gt;</span>
+<span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">&quot;iframe.html&quot;</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+<span class="nt">&lt;script&gt;</span>
+<span class="kd">var</span> <span class="nx">iframe</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s2">&quot;iframe&quot;</span><span class="p">);</span>
+<span class="nx">iframe</span><span class="p">;</span>  <span class="c1">// The wrapper of the iframe should be created in the context of the main frame.</span>
+<span class="nx">iframe</span><span class="p">.</span><span class="nx">contentDocument</span><span class="p">;</span>  <span class="c1">// The wrapper of the document should be created in the context of the iframe.</span>
+<span class="nx">iframe</span><span class="p">.</span><span class="nx">contentDocument</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s2">&quot;click&quot;</span><span class="p">,</span>
+    <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// The wrapper of the event should be created in the context of the iframe.</span>
+        <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">;</span>
+    <span class="p">});</span>
+<span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;&lt;/html&gt;</span>
+
+// iframe.html
+<span class="nt">&lt;script&gt;</span>
+<span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/bindings/core/v8/V8BindingDesign.md">https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/bindings/core/v8/V8BindingDesign.md</a></p>
 </body>
