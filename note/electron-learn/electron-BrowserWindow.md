@@ -317,6 +317,48 @@ MaxOS上，可能的类型为desktop，textured。
 
 Windows上，可能的的类型为toolbar。
 
+## 实例事件
+
+注意：某些事件仅在特定的操作系统上可用，这些方法会被标记出来。
+
+1、page-title-updated，(event,title,explicitSet)，调用event.preventDefault()将阻止更改标题。
+
+2、close，(event)，在窗口要关闭的时候触发。它在DOM的beforeunload和unload事件之前触发。调用event.preventDefault将阻止这个操作。在beforeunload的事件处理函数中，返回undefined之外的任何值都将取消关闭。
+
+3、closed，在窗口关闭时触发，应当移除相应窗口的引用对象，避免再次使用它。
+
+4、session-end，因为强制关机，机器重启，会话注销而导致窗口会话结束时触发。只在Windows中有。
+
+5、unresponsive，网页变得未响应时触发。
+
+6、responsive，未响应的页面变成响应式时触发。
+
+7、blur，窗口失去焦点。
+
+8、focus，窗口得到焦点。初始化时会有该事件。
+
+9、show，初始化时会有该事件。
+
+10、hide。
+
+11、ready-to-show，当页面已经渲染完成并且窗口可以被显示时触发。使用此事件，渲染器会认为是可见的绘制，即使show是false。如果使用paintWhenInitiallyHidden:false，此事件将永远不会被触发。
+
+12、maximize，unmaximize，minimize，最大化最小化事件。
+
+13、restore，从最小化状态恢复时触发。
+
+14、will-resize，MacOS和Windows。(event,newBounds,details:{edge:string,bottom|left|right|....})，调整窗口大小前触发，调用event.preventDefault阻止窗口大小调整。仅在手动调整窗口大小时触发，通过setBounds和setSize调整窗口将不会触发此事件。
+
+egde的值和平台有关：Windows平台可用8个角(bottom，top，left，right)，MacOS上可用值为bottom和right。
+
+15、resize，MacOS和Windows，调整窗口大小后触发。
+
+16、resized，MacOS和Windows，窗口完成调整大小后触发一次。通常在手动setBounds和setSize后调整窗口大小后触发。
+
+
+
+
+
 
 
 
