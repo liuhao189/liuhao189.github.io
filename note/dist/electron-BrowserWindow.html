@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>BrowserWindow</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1645547529078">
+  <title>Electron-BrowserWindow</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1645632967549">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -12,7 +12,7 @@
     s.parentNode.insertBefore(hm, s);
 })();
 </script>
-<h1 id="browserwindow">BrowserWindow</h1>
+<h1 id="electron-browserwindow">Electron-BrowserWindow</h1>
 <p>进程：主进程。创建并控制浏览器窗口。</p>
 <h2 id="-">自定义窗口</h2>
 <p>BrowserWindow类暴露了各种方法来修改应用窗口的外观和行为。详细信息，请参考<a href="https://www.electronjs.org/zh/docs/latest/tutorial/window-customization">自定义窗口</a>。</p>
@@ -210,5 +210,20 @@
 <p>egde的值和平台有关：Windows平台可用8个角(bottom，top，left，right)，MacOS上可用值为bottom和right。</p>
 <p>15、resize，MacOS和Windows，调整窗口大小后触发。</p>
 <p>16、resized，MacOS和Windows，窗口完成调整大小后触发一次。通常在手动setBounds和setSize后调整窗口大小后触发。</p>
+<p>17、will-move，MacOS和Windows，(event,newBounds)，窗口移动前触发，在Windows上，调用event.preventDefault将阻止窗口移动。</p>
+<p>通过API setBounds/setSize调整窗口大小不会触发此事件。</p>
+<p>18、move，窗口移动到新位置时触发。</p>
+<p>19、moved，MacOS和Windows，MacOS上，是move的别名。</p>
+<p>20、enter-full-screen，leave-full-screen。</p>
+<p>21、enter-html-full-screen,leave-html-full-screen。</p>
+<p>22、always-on-top-changed，(ev,isAlwaysOnTop)。</p>
+<p>23、app-command，Windows和Linux，(ev,command)请求一个应用程序命令时触发，典型的是键盘上的媒体键或浏览器命令，以及在Windows上的一些鼠标内置的后退按钮。</p>
+<p>命令是小写的，且APPCOMMAMD_将删除，下划线替换为连字符。例如：APPCOMMAND_BROWSER_BACKWARD将被browser-backward。</p>
+<p>24、scroll-touch-begin，scroll-touch-end，scroll-touch-edge，只在MacOS上有。</p>
+<p>25、swipe，(ev,direction)，MacOS，三指滑动时触发，可能的方向是up，right，down，left。主要为了处理旧的MacOS风格的触摸板滑动。</p>
+<p>26、rotate-gesture，MacOS，手势旋转，(ev,rotation)，处理在触摸板上的旋转。</p>
+<p>27、sheet-begin，sheet-end，MacOS，窗口打开和关闭sheet时触发。</p>
+<p>28、new-window-for-tab，MacOS，点击了系统的新标签按钮时触发。</p>
+<p>29、system-context-menu，Windows，(ev,point)，点击你窗口的非客户端区域时触发。非客户端区域指的是窗口标题栏或无边框窗口中被你声明为-webkit-app-region:drag的任意区域。调用event.preventDefault()将阻止菜单显示。</p>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# BrowserWindow
+# Electron-BrowserWindow
 
 进程：主进程。创建并控制浏览器窗口。
 
@@ -354,6 +354,37 @@ egde的值和平台有关：Windows平台可用8个角(bottom，top，left，rig
 15、resize，MacOS和Windows，调整窗口大小后触发。
 
 16、resized，MacOS和Windows，窗口完成调整大小后触发一次。通常在手动setBounds和setSize后调整窗口大小后触发。
+
+17、will-move，MacOS和Windows，(event,newBounds)，窗口移动前触发，在Windows上，调用event.preventDefault将阻止窗口移动。
+
+通过API setBounds/setSize调整窗口大小不会触发此事件。
+
+18、move，窗口移动到新位置时触发。
+
+19、moved，MacOS和Windows，MacOS上，是move的别名。
+
+20、enter-full-screen，leave-full-screen。
+
+21、enter-html-full-screen,leave-html-full-screen。
+
+22、always-on-top-changed，(ev,isAlwaysOnTop)。
+
+23、app-command，Windows和Linux，(ev,command)请求一个应用程序命令时触发，典型的是键盘上的媒体键或浏览器命令，以及在Windows上的一些鼠标内置的后退按钮。
+
+命令是小写的，且APPCOMMAMD_将删除，下划线替换为连字符。例如：APPCOMMAND_BROWSER_BACKWARD将被browser-backward。
+
+24、scroll-touch-begin，scroll-touch-end，scroll-touch-edge，只在MacOS上有。
+
+25、swipe，(ev,direction)，MacOS，三指滑动时触发，可能的方向是up，right，down，left。主要为了处理旧的MacOS风格的触摸板滑动。
+
+26、rotate-gesture，MacOS，手势旋转，(ev,rotation)，处理在触摸板上的旋转。
+
+27、sheet-begin，sheet-end，MacOS，窗口打开和关闭sheet时触发。
+
+28、new-window-for-tab，MacOS，点击了系统的新标签按钮时触发。
+
+29、system-context-menu，Windows，(ev,point)，点击你窗口的非客户端区域时触发。非客户端区域指的是窗口标题栏或无边框窗口中被你声明为-webkit-app-region:drag的任意区域。调用event.preventDefault()将阻止菜单显示。
+
 
 
 
