@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron-BrowserWindow</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1645632967549">
+  <link rel="stylesheet" href="/note/note.css?ts=1645719777298">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -225,5 +225,67 @@
 <p>27、sheet-begin，sheet-end，MacOS，窗口打开和关闭sheet时触发。</p>
 <p>28、new-window-for-tab，MacOS，点击了系统的新标签按钮时触发。</p>
 <p>29、system-context-menu，Windows，(ev,point)，点击你窗口的非客户端区域时触发。非客户端区域指的是窗口标题栏或无边框窗口中被你声明为-webkit-app-region:drag的任意区域。调用event.preventDefault()将阻止菜单显示。</p>
+<h2 id="-">静态方法</h2>
+<p>getAllWindows，返回BrowserWindow[]，所有打开的窗口的数组。</p>
+<p>getFocusedWindow，此应用程序中当前获得焦点的窗口，如果无就返回null。</p>
+<p>fromWebContents，返回拥有给定webContents的窗口，否则如果内容不属于一个窗口，返回null。</p>
+<p>fromBrowserView，拥有给定BrowserView的窗口，如果给定的视图没有附加到任何窗口，返回null。</p>
+<p>fromId，带有给定id的窗口。</p>
+<p>其实底层就维护了Windows数组，然后做筛选。</p>
+<h2 id="-">实例属性</h2>
+<p>win.webContents，只读，此窗口拥有的webContents对象，所有与网页相关的事件和操作都将通过它完成。</p>
+<p>win.id，只读，一个Integer属性代表了窗口的唯一ID。</p>
+<p>win.autoHideMenuBar，决定窗口菜单栏是否自动隐藏。</p>
+<p>win.simpleFullScreen，决定窗口是否处于pre-lion全屏模式。</p>
+<p>win.fullscreen，决定窗口是否处于全屏模式。</p>
+<p>win.focusable，MacOS和Windows，是否可以被选中。</p>
+<p>win.visibleOnAllWorkspaces，是否在所有工作区可见。Windows上始终返回false。</p>
+<p>win.shadow，是否显示阴影。</p>
+<p>win.menuBarVisible，Windows和Linux，决定菜单栏是否可见。</p>
+<p>win.kiosk，是否处于kiosk模式。</p>
+<p>win.documentEdited，MacOS，窗口文档是否已被编辑。</p>
+<p>win.representedFileName，MacOS，用于确定窗口代表的文件的路径名，显示在窗口的标题栏中。</p>
+<p>win.title，用于确定原生窗口的标题。</p>
+<p>win.minimizable，是否可被用户手动最小化。Linux上，Setter不会进行任何操作。</p>
+<p>win.maximizable，是否可被用户手动最大化。Linux上，Setter不会进行任何操作。</p>
+<p>win.fullScreenable，是否可全屏。</p>
+<p>win.resizable。</p>
+<p>win.closable，Linux上，setter不会进行任何操作。</p>
+<p>win.movable，Linux上不会进行任何操作。</p>
+<p>win.excludedFromShownWindowsMenu，MacOS，是否从应用程序菜单排除。</p>
+<p>win.accessibleTitle，屏幕阅读器等辅助设备提供的替代标题。</p>
+<h2 id="-">实例方法</h2>
+<p>1、destory，强制关闭窗口。除了closed之外，close，unload和beforeunload都不会触发。</p>
+<p>2、close，与用户手动单击窗口的关闭按钮效果相同。网页可能会取消这个操作。</p>
+<p>3、focus，聚焦于窗口。</p>
+<p>4、blur，取消窗口的聚焦。</p>
+<p>5、isFocused。</p>
+<p>6、isDestroyed。</p>
+<p>7、show，显示并聚焦窗口。</p>
+<p>8、showInactive，显示并不聚焦于窗口。</p>
+<p>9、hide。</p>
+<p>10、isVisible。</p>
+<p>11、isModal。</p>
+<p>12、maximize，unmaximize，isMaximized，minimize，restore，isMinimized。</p>
+<p>13、setFullScreen，isFullScreen，setSimpleFullScreen(MacOS)，isSimpleFullScreen(MacOS)。</p>
+<p>14、isNormal，未最大化，未最小化，不在全屏模式下。</p>
+<p>15、setAspectRatio(aspectRatio[, extraSize])，窗口保持长宽比，额外的大小允许开发人员有空间。</p>
+<p>extraSize是额外的大小，类似于padding之类的。当使用win.setSize时，宽高比不会被采用。</p>
+<p>16、setBackgroundColor。</p>
+<p>17、previewFile(path[,displayName])，MacOS，使用QuickLook预览的文件的绝对路径，因为QuickLook使用了路径上的文件名和文件扩展名来决定要打开的文件的内容类型。displayName，展示的文件名称。</p>
+<p>18、closeFilePreview，关闭当前的QuickLook面板。</p>
+<p>19、setBounds(bounds[,animate])，animate仅MacOS支持。</p>
+<p>20、getBounds，getBackgroundColor。</p>
+<p>21、setContentBounds(bounds[,animate])，仅MacOS支持animate。</p>
+<p>22、getContentBounds，getNormalBounds。</p>
+<p>23、setEnabled，isEnabled，禁用或启用窗口。</p>
+<p>24、setSize(width,height[,animate])，仅MacOS支持animate。如果不满足约束的尺寸，将对齐到约束的尺寸。</p>
+<p>25、getSize。</p>
+<p>26、setContentSize(width,height[,animate])，仅MacOS支持animate。</p>
+<p>27、getContentSize。</p>
+<p>28、setMinimumSize(width,height)，getMinimumSize。</p>
+<p>29、setMaximumSize(width, height)，getMaximumSize。</p>
+<p>30、setResizable，isResizable，setMovable:MacOS&amp;Windows，isMovable:MacOS&amp;Windows，setMinimizable:MacOS&amp;Windows，isMinimizable:MacOS&amp;Windows，setMaximizable:MacOS&amp;Windows。</p>
+<p>31、setFullScreenable，最大化按钮是切换全屏还是最大化窗口。</p>
 </body>
 </html>

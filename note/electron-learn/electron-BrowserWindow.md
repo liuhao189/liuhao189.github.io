@@ -385,11 +385,127 @@ egde的值和平台有关：Windows平台可用8个角(bottom，top，left，rig
 
 29、system-context-menu，Windows，(ev,point)，点击你窗口的非客户端区域时触发。非客户端区域指的是窗口标题栏或无边框窗口中被你声明为-webkit-app-region:drag的任意区域。调用event.preventDefault()将阻止菜单显示。
 
+## 静态方法
 
+getAllWindows，返回BrowserWindow[]，所有打开的窗口的数组。
 
+getFocusedWindow，此应用程序中当前获得焦点的窗口，如果无就返回null。
 
+fromWebContents，返回拥有给定webContents的窗口，否则如果内容不属于一个窗口，返回null。
 
+fromBrowserView，拥有给定BrowserView的窗口，如果给定的视图没有附加到任何窗口，返回null。
 
+fromId，带有给定id的窗口。
 
+其实底层就维护了Windows数组，然后做筛选。
 
+## 实例属性
+
+win.webContents，只读，此窗口拥有的webContents对象，所有与网页相关的事件和操作都将通过它完成。
+
+win.id，只读，一个Integer属性代表了窗口的唯一ID。
+
+win.autoHideMenuBar，决定窗口菜单栏是否自动隐藏。
+
+win.simpleFullScreen，决定窗口是否处于pre-lion全屏模式。
+
+win.fullscreen，决定窗口是否处于全屏模式。
+
+win.focusable，MacOS和Windows，是否可以被选中。
+
+win.visibleOnAllWorkspaces，是否在所有工作区可见。Windows上始终返回false。
+
+win.shadow，是否显示阴影。
+
+win.menuBarVisible，Windows和Linux，决定菜单栏是否可见。
+
+win.kiosk，是否处于kiosk模式。
+
+win.documentEdited，MacOS，窗口文档是否已被编辑。
+
+win.representedFileName，MacOS，用于确定窗口代表的文件的路径名，显示在窗口的标题栏中。
+
+win.title，用于确定原生窗口的标题。
+
+win.minimizable，是否可被用户手动最小化。Linux上，Setter不会进行任何操作。
+
+win.maximizable，是否可被用户手动最大化。Linux上，Setter不会进行任何操作。
+
+win.fullScreenable，是否可全屏。
+
+win.resizable。
+
+win.closable，Linux上，setter不会进行任何操作。
+
+win.movable，Linux上不会进行任何操作。
+
+win.excludedFromShownWindowsMenu，MacOS，是否从应用程序菜单排除。
+
+win.accessibleTitle，屏幕阅读器等辅助设备提供的替代标题。
+
+## 实例方法
+
+1、destory，强制关闭窗口。除了closed之外，close，unload和beforeunload都不会触发。
+
+2、close，与用户手动单击窗口的关闭按钮效果相同。网页可能会取消这个操作。
+
+3、focus，聚焦于窗口。
+
+4、blur，取消窗口的聚焦。
+
+5、isFocused。
+
+6、isDestroyed。
+
+7、show，显示并聚焦窗口。
+
+8、showInactive，显示并不聚焦于窗口。
+
+9、hide。
+
+10、isVisible。
+
+11、isModal。
+
+12、maximize，unmaximize，isMaximized，minimize，restore，isMinimized。
+
+13、setFullScreen，isFullScreen，setSimpleFullScreen(MacOS)，isSimpleFullScreen(MacOS)。
+
+14、isNormal，未最大化，未最小化，不在全屏模式下。
+
+15、setAspectRatio(aspectRatio[, extraSize])，窗口保持长宽比，额外的大小允许开发人员有空间。
+
+extraSize是额外的大小，类似于padding之类的。当使用win.setSize时，宽高比不会被采用。
+
+16、setBackgroundColor。
+
+17、previewFile(path[,displayName])，MacOS，使用QuickLook预览的文件的绝对路径，因为QuickLook使用了路径上的文件名和文件扩展名来决定要打开的文件的内容类型。displayName，展示的文件名称。
+
+18、closeFilePreview，关闭当前的QuickLook面板。
+
+19、setBounds(bounds[,animate])，animate仅MacOS支持。
+
+20、getBounds，getBackgroundColor。
+
+21、setContentBounds(bounds[,animate])，仅MacOS支持animate。
+
+22、getContentBounds，getNormalBounds。
+
+23、setEnabled，isEnabled，禁用或启用窗口。
+
+24、setSize(width,height[,animate])，仅MacOS支持animate。如果不满足约束的尺寸，将对齐到约束的尺寸。
+
+25、getSize。
+
+26、setContentSize(width,height[,animate])，仅MacOS支持animate。
+
+27、getContentSize。
+
+28、setMinimumSize(width,height)，getMinimumSize。
+
+29、setMaximumSize(width, height)，getMaximumSize。
+
+30、setResizable，isResizable，setMovable:MacOS&Windows，isMovable:MacOS&Windows，setMinimizable:MacOS&Windows，isMinimizable:MacOS&Windows，setMaximizable:MacOS&Windows。
+
+31、setFullScreenable，最大化按钮是切换全屏还是最大化窗口。
 
