@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron-BrowserWindow</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1645719777298">
+  <link rel="stylesheet" href="/note/note.css?ts=1645894029202">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -226,7 +226,7 @@
 <p>28、new-window-for-tab，MacOS，点击了系统的新标签按钮时触发。</p>
 <p>29、system-context-menu，Windows，(ev,point)，点击你窗口的非客户端区域时触发。非客户端区域指的是窗口标题栏或无边框窗口中被你声明为-webkit-app-region:drag的任意区域。调用event.preventDefault()将阻止菜单显示。</p>
 <h2 id="-">静态方法</h2>
-<p>getAllWindows，返回BrowserWindow[]，所有打开的窗口的数组。</p>
+<p>getAllWindows，返回BrowserWindow[]，所有创建的窗口的数组。</p>
 <p>getFocusedWindow，此应用程序中当前获得焦点的窗口，如果无就返回null。</p>
 <p>fromWebContents，返回拥有给定webContents的窗口，否则如果内容不属于一个窗口，返回null。</p>
 <p>fromBrowserView，拥有给定BrowserView的窗口，如果给定的视图没有附加到任何窗口，返回null。</p>
@@ -286,6 +286,62 @@
 <p>28、setMinimumSize(width,height)，getMinimumSize。</p>
 <p>29、setMaximumSize(width, height)，getMaximumSize。</p>
 <p>30、setResizable，isResizable，setMovable:MacOS&amp;Windows，isMovable:MacOS&amp;Windows，setMinimizable:MacOS&amp;Windows，isMinimizable:MacOS&amp;Windows，setMaximizable:MacOS&amp;Windows。</p>
-<p>31、setFullScreenable，最大化按钮是切换全屏还是最大化窗口。</p>
+<p>31、setFullScreenable，isFullScreenable,最大化按钮是切换全屏还是最大化窗口。</p>
+<p>32、setClosable，isClosable，MacOS&amp;Window，是否可以手动关闭窗口。</p>
+<p>33、setAlwaysOnTop(flag[,level][,relativeLevel])。</p>
+<p>flag:boolean；level，MacOS&amp;Windows，值包括normal，floating，torn-off-menu，modal-panel，main-menu，status，pop-up-menu，screen-saver。</p>
+<p>flag为true时，默认为floating，flag为false时，level默认为normal。从floating到status，会被至于Dock和Windows任务栏下方，从pop-up-menu到更高级别，窗口显示在Dock上方或windows任务栏上方。</p>
+<p>relativeLevel，MacOS，相对给定级别的层数。默认值为0，Apple不鼓励在屏幕保护程序之上设置高于1的级别。</p>
+<p>34、isAlwaysOnTop。</p>
+<p>35、moveAbove(mediaSourceId)，如果mediaSourceId不是window类型，或者如果窗口不存在，此方法会报错。</p>
+<p>36、moveTop()，将窗口移至顶部。</p>
+<p>37、center()，窗口移动到屏幕中央。</p>
+<p>38、setPosition(x,y[,animate])，窗口移动到x和y。</p>
+<p>39、getPosition。</p>
+<p>40、setTitle。</p>
+<p>41、getTitle。</p>
+<p>42、setSheetOffset(offsetY[,offsetX])，MacOS可用。</p>
+<p>43、flashFrame(flag:boolean)，启动或停止闪烁窗口，已吸引用户注意。</p>
+<p>44、setSkipTaskBar(skip:boolean)，窗口不显示在任务栏中。</p>
+<p>45、setKiosh(flag:boolean)。</p>
+<p>46、isTabletMode()，Windows，是否处于Win10平板模式。</p>
+<p>47、getMedisSourceId()，DesktopCapturerSource的id格式的窗口id。eg：window:1424:0。</p>
+<p>48、getNativeWindowHandle，返回Buffer，Windows上未HWND，macOS为NSView*，Linux为Window(unsigned long)。</p>
+<p>49、hookWindowMessage(message:int,callbacl:(wParam,lParam))，仅Windows，勾住窗口消息。</p>
+<p>50、isWindowMessageHooked(message)，仅Windows。</p>
+<p>51、unhookWindowMessage(message)，仅Windows。</p>
+<p>52、unhookAllWindowMessages()，仅Windows。</p>
+<p>53、setRepresentedFilename(fileName)，仅MacOS。</p>
+<p>54、getRepresentedFilename，仅MacOS。</p>
+<p>55、setDocumentEdited，isDocumentEdited，窗口文档是否可以编辑。设置为true则图标变成灰色。</p>
+<p>56、focusOnWebView，blurWebView。</p>
+<p>57、capturePage([rect])，捕获的区域，返回Promise&lt;NativeImage&gt;，完成后返回一个NativeImage。</p>
+<p>58、loadURL(url[,options])，options:{httpReferrer,userAgent,extraHeaders，postData,baseUrlForDataURL}。</p>
+<p>当页面加载完成(did-finish-load)后promise将resolve。如果页面加载失败(did-fail-load)，则reject。与WebContents.loadURL相同。</p>
+<p>URL可以是远程地址，也可以是file:// 协议的本地HTML文件的路径。为了确保文件网址格式正确，建议使用Node的url.format方法。</p>
+<p>59、loadFile(filePath,options?)，options:{query,search,hash}。filePath应该是与你的应用程序的根路径相关的HTML文件路径。</p>
+<p>60、win.reload，同WebContents.reload。</p>
+<p>61、win.setMenu，仅Windows和Linux。</p>
+<p>62、win.hideMenu，仅Windows和Linux。</p>
+<p>63、setProgressBar(progress,options?)，options仅Windows支持。</p>
+<p>64、setOverlayIcon(overlay,desc)，仅Windows。右下角任务栏的显示图标。desc，提供给屏幕阅读器的描述文字。</p>
+<p>65、setHasShadow，hasShadow。</p>
+<p>66、setOpacity，getOpacity，仅MacOS和Windows。</p>
+<p>67、setShape，实验性，仅Linux和Windows。</p>
+<p>68、setThumbarButtons(buttons)，仅Windows，将指定的一组按钮添加到菜单栏的缩略工具栏。</p>
+<p>69、setThumbnailClip，仅Windows，将窗口的区域设置为任务栏悬停在窗口上方时显示的缩略图像。</p>
+<p>70、setThumbnailToolTip，仅Windows。</p>
+<p>71、setAppDetails(options)，仅Windows。设置窗口任务栏按钮的属性。</p>
+<p>options: appId，窗口的App User Model ID，必须设置；appIconPath；appIconIndex，relaunchCommand，relaunchDisplayName。</p>
+<p>72、showDefinitionForSelection，仅MacOS，与WebContents.showDefinitionForSelection相同。</p>
+<p>73、setIcon。仅Windows和Linux。</p>
+<p>74、setWindowButtonVisibility，仅MacOS。</p>
+<p>75、setAutoHideMenuBar，isMenuBarAutoHide。</p>
+<p>76、setMenuBarVisibility，isMenuBarVisible，仅Windows和Linux。</p>
+<p>77、setVisibleOnAllWorkspaces，isVisibleOnAllWorkspaces。</p>
+<p>78、setIgnoreMouseEvents(ignore:boolean[,options:{forward:boolean}])，forward传递true，传递鼠标事件给Chromium，传递false，转发始终是禁用的。</p>
+<p>忽略窗口内的所有鼠标事件。如果此窗口是focused，可以接收键盘事件。</p>
+<p>79、setContentProtection，仅MacOS和Windows，防止窗口被其它应用捕捉。</p>
+<p>在 macOS 上，它将 NSWindow 的 sharingType 设置为 NSWindowSharingNone。 在 Windows 上，它以参数为 WDA_EXCLUDEFROMCAPTURE 调用 SetWindowDisplayAffinity 。 对于 Windows 10 2004以上版，本窗口将完全从抓取中移除，在低版本 Windows 上其行为就像是 WDA_MONITOR 捕捉了黑色窗口。</p>
 </body>
 </html>

@@ -387,7 +387,7 @@ egde的值和平台有关：Windows平台可用8个角(bottom，top，left，rig
 
 ## 静态方法
 
-getAllWindows，返回BrowserWindow[]，所有打开的窗口的数组。
+getAllWindows，返回BrowserWindow[]，所有创建的窗口的数组。
 
 getFocusedWindow，此应用程序中当前获得焦点的窗口，如果无就返回null。
 
@@ -507,5 +507,116 @@ extraSize是额外的大小，类似于padding之类的。当使用win.setSize�
 
 30、setResizable，isResizable，setMovable:MacOS&Windows，isMovable:MacOS&Windows，setMinimizable:MacOS&Windows，isMinimizable:MacOS&Windows，setMaximizable:MacOS&Windows。
 
-31、setFullScreenable，最大化按钮是切换全屏还是最大化窗口。
+31、setFullScreenable，isFullScreenable,最大化按钮是切换全屏还是最大化窗口。
 
+32、setClosable，isClosable，MacOS&Window，是否可以手动关闭窗口。
+
+33、setAlwaysOnTop(flag[,level][,relativeLevel])。
+
+flag:boolean；level，MacOS&Windows，值包括normal，floating，torn-off-menu，modal-panel，main-menu，status，pop-up-menu，screen-saver。
+
+flag为true时，默认为floating，flag为false时，level默认为normal。从floating到status，会被至于Dock和Windows任务栏下方，从pop-up-menu到更高级别，窗口显示在Dock上方或windows任务栏上方。
+
+relativeLevel，MacOS，相对给定级别的层数。默认值为0，Apple不鼓励在屏幕保护程序之上设置高于1的级别。
+
+34、isAlwaysOnTop。
+
+35、moveAbove(mediaSourceId)，如果mediaSourceId不是window类型，或者如果窗口不存在，此方法会报错。
+
+36、moveTop()，将窗口移至顶部。
+
+37、center()，窗口移动到屏幕中央。
+
+38、setPosition(x,y[,animate])，窗口移动到x和y。
+
+39、getPosition。
+
+40、setTitle。
+
+41、getTitle。
+
+42、setSheetOffset(offsetY[,offsetX])，MacOS可用。
+
+43、flashFrame(flag:boolean)，启动或停止闪烁窗口，已吸引用户注意。
+
+44、setSkipTaskBar(skip:boolean)，窗口不显示在任务栏中。
+
+45、setKiosh(flag:boolean)。
+
+46、isTabletMode()，Windows，是否处于Win10平板模式。
+
+47、getMedisSourceId()，DesktopCapturerSource的id格式的窗口id。eg：window:1424:0。
+
+48、getNativeWindowHandle，返回Buffer，Windows上未HWND，macOS为NSView*，Linux为Window(unsigned long)。
+
+49、hookWindowMessage(message:int,callbacl:(wParam,lParam))，仅Windows，勾住窗口消息。
+
+50、isWindowMessageHooked(message)，仅Windows。
+
+51、unhookWindowMessage(message)，仅Windows。
+
+52、unhookAllWindowMessages()，仅Windows。
+
+53、setRepresentedFilename(fileName)，仅MacOS。
+
+54、getRepresentedFilename，仅MacOS。
+
+55、setDocumentEdited，isDocumentEdited，窗口文档是否可以编辑。设置为true则图标变成灰色。
+
+56、focusOnWebView，blurWebView。
+
+57、capturePage([rect])，捕获的区域，返回Promise<NativeImage>，完成后返回一个NativeImage。
+
+58、loadURL(url[,options])，options:{httpReferrer,userAgent,extraHeaders，postData,baseUrlForDataURL}。
+
+当页面加载完成(did-finish-load)后promise将resolve。如果页面加载失败(did-fail-load)，则reject。与WebContents.loadURL相同。
+
+URL可以是远程地址，也可以是file:// 协议的本地HTML文件的路径。为了确保文件网址格式正确，建议使用Node的url.format方法。
+
+59、loadFile(filePath,options?)，options:{query,search,hash}。filePath应该是与你的应用程序的根路径相关的HTML文件路径。
+
+60、win.reload，同WebContents.reload。
+
+61、win.setMenu，仅Windows和Linux。
+
+62、win.hideMenu，仅Windows和Linux。
+
+63、setProgressBar(progress,options?)，options仅Windows支持。
+
+64、setOverlayIcon(overlay,desc)，仅Windows。右下角任务栏的显示图标。desc，提供给屏幕阅读器的描述文字。
+
+65、setHasShadow，hasShadow。
+
+66、setOpacity，getOpacity，仅MacOS和Windows。
+
+67、setShape，实验性，仅Linux和Windows。
+
+68、setThumbarButtons(buttons)，仅Windows，将指定的一组按钮添加到菜单栏的缩略工具栏。
+
+69、setThumbnailClip，仅Windows，将窗口的区域设置为任务栏悬停在窗口上方时显示的缩略图像。
+
+70、setThumbnailToolTip，仅Windows。
+
+71、setAppDetails(options)，仅Windows。设置窗口任务栏按钮的属性。
+
+options: appId，窗口的App User Model ID，必须设置；appIconPath；appIconIndex，relaunchCommand，relaunchDisplayName。
+
+72、showDefinitionForSelection，仅MacOS，与WebContents.showDefinitionForSelection相同。
+
+73、setIcon。仅Windows和Linux。
+
+74、setWindowButtonVisibility，仅MacOS。
+
+75、setAutoHideMenuBar，isMenuBarAutoHide。
+
+76、setMenuBarVisibility，isMenuBarVisible，仅Windows和Linux。
+
+77、setVisibleOnAllWorkspaces，isVisibleOnAllWorkspaces。
+
+78、setIgnoreMouseEvents(ignore:boolean[,options:{forward:boolean}])，forward传递true，传递鼠标事件给Chromium，传递false，转发始终是禁用的。
+
+忽略窗口内的所有鼠标事件。如果此窗口是focused，可以接收键盘事件。
+
+79、setContentProtection，仅MacOS和Windows，防止窗口被其它应用捕捉。
+
+在 macOS 上，它将 NSWindow 的 sharingType 设置为 NSWindowSharingNone。 在 Windows 上，它以参数为 WDA_EXCLUDEFROMCAPTURE 调用 SetWindowDisplayAffinity 。 对于 Windows 10 2004以上版，本窗口将完全从抓取中移除，在低版本 Windows 上其行为就像是 WDA_MONITOR 捕捉了黑色窗口。
