@@ -513,9 +513,9 @@ extraSize是额外的大小，类似于padding之类的。当使用win.setSize�
 
 33、setAlwaysOnTop(flag[,level][,relativeLevel])。
 
-flag:boolean；level，MacOS&Windows，值包括normal，floating，torn-off-menu，modal-panel，main-menu，status，pop-up-menu，screen-saver。
+flag:boolean；level，MacOS&Windows，值包括normal，floating，pop-off-menu，modal-panel，main-menu，status，pop-up-menu，screen-saver。
 
-flag为true时，默认为floating，flag为false时，level默认为normal。从floating到status，会被至于Dock和Windows任务栏下方，从pop-up-menu到更高级别，窗口显示在Dock上方或windows任务栏上方。
+flag为true时，默认为floating，flag为false时，level默认为normal。从floating到status，会被放置于Dock和Windows任务栏下方，从pop-up-menu到更高级别，窗口显示在Dock上方或windows任务栏上方。
 
 relativeLevel，MacOS，相对给定级别的层数。默认值为0，Apple不鼓励在屏幕保护程序之上设置高于1的级别。
 
@@ -620,3 +620,29 @@ options: appId，窗口的App User Model ID，必须设置；appIconPath；appIc
 79、setContentProtection，仅MacOS和Windows，防止窗口被其它应用捕捉。
 
 在 macOS 上，它将 NSWindow 的 sharingType 设置为 NSWindowSharingNone。 在 Windows 上，它以参数为 WDA_EXCLUDEFROMCAPTURE 调用 SetWindowDisplayAffinity 。 对于 Windows 10 2004以上版，本窗口将完全从抓取中移除，在低版本 Windows 上其行为就像是 WDA_MONITOR 捕捉了黑色窗口。
+
+80、setFocusable(focusable:boolean)，isFocusable，MacOS & Windows。
+
+81、setParentWindow(parent:BrowserWindow|null)，getParentWindow()。
+
+82、getChildWindows。
+
+83、setAutoHideCursor，MacOS，输入时是否隐藏光标。
+
+84、selectPreviousTab()，selectNextTab()，mergeAllWindows()，moveTabToNewWindow，toggleTabBar，MacOS，本地选项卡时，选择上一个选项卡。
+
+85、addTabbedWindow，MacOS，该窗口添加到一个窗口作为选项卡，位于窗口实例的选项卡之后。
+
+86、setVibrancy，MacOS，添加一个动态效果。
+
+87、setTrafficLightPosition(position:Point)，getTrafficLightPosition，MacOS。
+
+88、setTouchBar，MacOS。
+
+89、setBrowserView，getBrowserView，addBrowserView，removeBrowserView，setTopBrowserView，getBrowserViews，实验性，将BrowserView附加到win，如果已经附加了其它BrowserView，那么它们将会被从窗口中移除。
+
+BrowserView 相关的API目前为实验性质，可能会更改或删除。
+
+
+
+

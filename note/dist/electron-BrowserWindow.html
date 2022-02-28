@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron-BrowserWindow</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1645894029202">
+  <link rel="stylesheet" href="/note/note.css?ts=1646065734281">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -289,8 +289,8 @@
 <p>31、setFullScreenable，isFullScreenable,最大化按钮是切换全屏还是最大化窗口。</p>
 <p>32、setClosable，isClosable，MacOS&amp;Window，是否可以手动关闭窗口。</p>
 <p>33、setAlwaysOnTop(flag[,level][,relativeLevel])。</p>
-<p>flag:boolean；level，MacOS&amp;Windows，值包括normal，floating，torn-off-menu，modal-panel，main-menu，status，pop-up-menu，screen-saver。</p>
-<p>flag为true时，默认为floating，flag为false时，level默认为normal。从floating到status，会被至于Dock和Windows任务栏下方，从pop-up-menu到更高级别，窗口显示在Dock上方或windows任务栏上方。</p>
+<p>flag:boolean；level，MacOS&amp;Windows，值包括normal，floating，pop-off-menu，modal-panel，main-menu，status，pop-up-menu，screen-saver。</p>
+<p>flag为true时，默认为floating，flag为false时，level默认为normal。从floating到status，会被放置于Dock和Windows任务栏下方，从pop-up-menu到更高级别，窗口显示在Dock上方或windows任务栏上方。</p>
 <p>relativeLevel，MacOS，相对给定级别的层数。默认值为0，Apple不鼓励在屏幕保护程序之上设置高于1的级别。</p>
 <p>34、isAlwaysOnTop。</p>
 <p>35、moveAbove(mediaSourceId)，如果mediaSourceId不是window类型，或者如果窗口不存在，此方法会报错。</p>
@@ -343,5 +343,16 @@
 <p>忽略窗口内的所有鼠标事件。如果此窗口是focused，可以接收键盘事件。</p>
 <p>79、setContentProtection，仅MacOS和Windows，防止窗口被其它应用捕捉。</p>
 <p>在 macOS 上，它将 NSWindow 的 sharingType 设置为 NSWindowSharingNone。 在 Windows 上，它以参数为 WDA_EXCLUDEFROMCAPTURE 调用 SetWindowDisplayAffinity 。 对于 Windows 10 2004以上版，本窗口将完全从抓取中移除，在低版本 Windows 上其行为就像是 WDA_MONITOR 捕捉了黑色窗口。</p>
+<p>80、setFocusable(focusable:boolean)，isFocusable，MacOS &amp; Windows。</p>
+<p>81、setParentWindow(parent:BrowserWindow|null)，getParentWindow()。</p>
+<p>82、getChildWindows。</p>
+<p>83、setAutoHideCursor，MacOS，输入时是否隐藏光标。</p>
+<p>84、selectPreviousTab()，selectNextTab()，mergeAllWindows()，moveTabToNewWindow，toggleTabBar，MacOS，本地选项卡时，选择上一个选项卡。</p>
+<p>85、addTabbedWindow，MacOS，该窗口添加到一个窗口作为选项卡，位于窗口实例的选项卡之后。</p>
+<p>86、setVibrancy，MacOS，添加一个动态效果。</p>
+<p>87、setTrafficLightPosition(position:Point)，getTrafficLightPosition，MacOS。</p>
+<p>88、setTouchBar，MacOS。</p>
+<p>89、setBrowserView，getBrowserView，addBrowserView，removeBrowserView，setTopBrowserView，getBrowserViews，实验性，将BrowserView附加到win，如果已经附加了其它BrowserView，那么它们将会被从窗口中移除。</p>
+<p>BrowserView 相关的API目前为实验性质，可能会更改或删除。</p>
 </body>
 </html>
