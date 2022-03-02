@@ -121,7 +121,7 @@ appData，每个用户的应用程序数据目录，Windows为%APPDATA%，Linux�
 
 MacOS中为~/Library/Application Support目录。
 
-userData，存储应用程序设置文件的文件夹，默认是appData文件夹附件应用的名称。
+userData，存储应用程序设置文件的文件夹，默认是appData文件夹应用的名称。
 
 cache。
 
@@ -164,3 +164,97 @@ app.setPath(name,path)，重写name的路径为path。不存在的目录，会�
 app.getVersion()，如果应用程序的package.json文件找不到版本号，返回当前包或可执行文件的版本。
 
 app.getName()，应用程序的名称，package.json中的name。如果package.json存在productName字段，会优先返回该字段。
+
+app.setName(name)。
+
+app.getLocale()，使用Chromium的l10n_util库获取。如果要设置区域，需要在应用启动时使用命令行打开开关。
+
+注意：打包应用程序时，必须指定locales文件夹。在Windows上，必须要等ready事件触发之后，才能调用该方法。
+
+app.getLocaleCountryCode()，用户操作系统区域设置的双字母ISO 3166国家代码。该值取自本地操作系统API。
+
+app.addRecentDocument(path)，MacOS & Windows，将此path添加到最近打开的文件列表中。此列表由操作系统管理。在Windows上，您可以从任务栏访问此列表。MacOS上，从Dock菜单访问。
+
+app.clearRecentDocuments()，MacOS & Windows，清空最近打开的文档列表。
+
+app.setAsDefaultProtocolClient(protocol,[,path,args])，将当前可执行文件设置为协议的默认处理程序。
+
+参数说明：
+
+protocol: 协议的名称，不包含://。
+
+path，仅windows，Electron可执行文件的路径。
+
+args，可选，仅Windows，传递给可执行文件的参数。
+
+注意：在MacOS中，您只能注册添加到应用程序的info.plist中的协议，这个列表在运行时不能修改。一般在构建时写入。
+
+在Windows Store环境下，必须在清单中声明协议。
+
+app.removeAsDefaultProtocolClient(protocol[,path,args])。
+
+app.getApplicationNameForProtocol(url):string，获得处理协议的英语程序名称。如果没有则返回空字符串。
+
+注意：MacOS在~/Library/Preferences/com.apple.LaunchServices.plist中存储，Windows在注册表和LSCopyDefaultHandlerForURLScheme。
+
+app.getApplicationInfoForProtocol(url):{icon,path,name}，仅Mac和Windows，返回应用程序信息。
+
+app.setUserTasks(tasks)，仅Windows，添加tasks到Jump List的Tasks类别。任务栏扩展。
+
+app.getJumpListSettings()，app.setJumpList()。
+
+app.requestSingleInstanceLock()，此方法的返回值表示你的应用是否成功取得了锁。如果失败了，可以假设另一个应用程序已经取得了锁并仍在运行，你需要立即退出。并把参数发送给那个已经取得锁的进程。
+
+MacOS中，当用户尝试在Finder中打开app的第二个实例，系统会通过发出open-file和open-url事件来强制执行单个实例，但是用户在命令行中启动应用程序时，系统的单实例机制会被绕过。
+
+app.hasSingleInstanceLock()。
+
+app.releaseSingleInstanceLock，释放requestSingleInstanceLock创建的锁。
+
+app.setUserActivity(type[,userInfo][,webpageURL])，仅MacOS。
+
+getCurrentActivityType，invalidateCurrentActivity，resignCurrentActivity，updateCurrentActivity。仅MacOS。
+
+app.setAppUserModelId(id)，仅Windows，改变当前应用的Application User Model ID。
+
+注意：Windows 7 及更高版本系统中任务栏广泛使用应用程序用户模型 ID (AppUserModelIDs) ，以将进程、文件和窗口与特定应用程序关联。 在某些情况下，依赖系统分配给进程的内部 AppUserModelID 就足够了。 但是，拥有多个进程的应用程序或在主机进程中运行的应用程序可能需要显式标识自身，以便它可以在单个任务栏按钮下将其他不同的窗口分组，并控制该应用程序跳转列表。
+
+app.setActivationPolicy(policy:string)，仅MacOS。给定应用的激活策略。
+
+app.importCertificate(options,callback)，仅Linux。
+
+app.configureHostResolver(options)。
+
+参数：
+
+enableBuiltInResolver，内置解析器将尝试使用系统的DNS设置来进行DNS查询本身，MacOS默认开启，Windows系统和Linux些默认关闭。
+
+secureDnsMode，配置 DNS-over-HTTP 模式。
+
+secureDnsServers，一个 DNS-over-HTTP 服务器模板列表。
+
+enableAdditionalDnsQueryTypes，控制着是否添加额外的 DNS 查询类型。
+
+默认情况下，将按顺序排列：
+
+1、DNS-over-HTTPS。
+
+2、内置解析器。
+
+3、getaddrinfo。
+
+必须在app.ready事件触发后调用。
+
+app.disableHardwareAcceleration，只能在ready之前调用。
+
+app.disableDomainBlockingFor3DAPIs，默认情况下，如果GPU进程崩溃，Chromium会禁用3D API直到每个域的基础上重新启动。只能在ready之前调用。
+
+app.getAppMetrics()，包含所有与应用相关的进程的内存和CPU的使用统计的 ProcessMetric 对象的数组。
+
+app.getGPUFeatureStatus()，此信息仅在gpu-info-update事件触发后才可用。
+
+app.getGPUInfo(infoType:'basic'|'complete'):Primise<info>，返回GPU的版本和驱动程序信息。
+
+
+
+
