@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron-App</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1646237738547">
+  <link rel="stylesheet" href="/note/note.css?ts=1646325325917">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -98,7 +98,7 @@
 <p>app.setName(name)。</p>
 <p>app.getLocale()，使用Chromium的l10n_util库获取。如果要设置区域，需要在应用启动时使用命令行打开开关。</p>
 <p>注意：打包应用程序时，必须指定locales文件夹。在Windows上，必须要等ready事件触发之后，才能调用该方法。</p>
-<p>app.getLocaleCountryCode()，用户操作系统区域设置的双字母ISO 3166国家代码。该值取自本地操作系统API。</p>
+<p>app.getLocaleCountryCode()，用户操作系统区域设置的双字母ISO-3166国家代码。该值取自本地操作系统API。</p>
 <p>app.addRecentDocument(path)，MacOS &amp; Windows，将此path添加到最近打开的文件列表中。此列表由操作系统管理。在Windows上，您可以从任务栏访问此列表。MacOS上，从Dock菜单访问。</p>
 <p>app.clearRecentDocuments()，MacOS &amp; Windows，清空最近打开的文档列表。</p>
 <p>app.setAsDefaultProtocolClient(protocol,[,path,args])，将当前可执行文件设置为协议的默认处理程序。</p>
@@ -109,7 +109,7 @@
 <p>注意：在MacOS中，您只能注册添加到应用程序的info.plist中的协议，这个列表在运行时不能修改。一般在构建时写入。</p>
 <p>在Windows Store环境下，必须在清单中声明协议。</p>
 <p>app.removeAsDefaultProtocolClient(protocol[,path,args])。</p>
-<p>app.getApplicationNameForProtocol(url):string，获得处理协议的英语程序名称。如果没有则返回空字符串。</p>
+<p>app.getApplicationNameForProtocol(url):string，获得处理协议的应用程序名称，如果没有则返回空字符串。</p>
 <p>注意：MacOS在~/Library/Preferences/com.apple.LaunchServices.plist中存储，Windows在注册表和LSCopyDefaultHandlerForURLScheme。</p>
 <p>app.getApplicationInfoForProtocol(url):{icon,path,name}，仅Mac和Windows，返回应用程序信息。</p>
 <p>app.setUserTasks(tasks)，仅Windows，添加tasks到Jump List的Tasks类别。任务栏扩展。</p>
@@ -121,7 +121,7 @@
 <p>app.setUserActivity(type[,userInfo][,webpageURL])，仅MacOS。</p>
 <p>getCurrentActivityType，invalidateCurrentActivity，resignCurrentActivity，updateCurrentActivity。仅MacOS。</p>
 <p>app.setAppUserModelId(id)，仅Windows，改变当前应用的Application User Model ID。</p>
-<p>注意：Windows 7 及更高版本系统中任务栏广泛使用应用程序用户模型 ID (AppUserModelIDs) ，以将进程、文件和窗口与特定应用程序关联。 在某些情况下，依赖系统分配给进程的内部 AppUserModelID 就足够了。 但是，拥有多个进程的应用程序或在主机进程中运行的应用程序可能需要显式标识自身，以便它可以在单个任务栏按钮下将其他不同的窗口分组，并控制该应用程序跳转列表。</p>
+<p>注意：Windows 7 及更高版本系统中任务栏广泛使用应用程序用户模型ID(AppUserModelIDs)，以将进程、文件和窗口与特定应用程序关联。在某些情况下，依赖系统分配给进程的内部    AppUserModelID就足够了。 但是，拥有多个进程的应用程序或在主机进程中运行的应用程序可能需要显式标识自身，以便它可以在单个任务栏按钮下将其他不同的窗口分组，并控制该应用程序跳转列表。</p>
 <p>app.setActivationPolicy(policy:string)，仅MacOS。给定应用的激活策略。</p>
 <p>app.importCertificate(options,callback)，仅Linux。</p>
 <p>app.configureHostResolver(options)。</p>
@@ -136,9 +136,44 @@
 <p>3、getaddrinfo。</p>
 <p>必须在app.ready事件触发后调用。</p>
 <p>app.disableHardwareAcceleration，只能在ready之前调用。</p>
-<p>app.disableDomainBlockingFor3DAPIs，默认情况下，如果GPU进程崩溃，Chromium会禁用3D API直到每个域的基础上重新启动。只能在ready之前调用。</p>
+<p>app.disableDomainBlockingFor3DAPIs，默认情况下，如果GPU进程崩溃，Chromium会禁用3D API直到每个域上重新启动。只能在ready之前调用。</p>
 <p>app.getAppMetrics()，包含所有与应用相关的进程的内存和CPU的使用统计的 ProcessMetric 对象的数组。</p>
 <p>app.getGPUFeatureStatus()，此信息仅在gpu-info-update事件触发后才可用。</p>
 <p>app.getGPUInfo(infoType:&#39;basic&#39;|&#39;complete&#39;):Primise&lt;info&gt;，返回GPU的版本和驱动程序信息。</p>
+<p>app.setBadgeCount([count])，app.getBadgeCount()，仅MacOS和Linux，计数器角标。</p>
+<p>app.isUnityRunning()，仅Linux，是否为Unity启动器。</p>
+<p>app.getLoginItemSettings([options:{path,args}])，仅MacOS和Windows。</p>
+<p>返回值：Object：{openAtLogin，openAtLogin(仅MacOS)，wasOpenedAtLogin(仅MacOS)，wasOpenedAsHidden(MacOS)，restoreState(MacOS)，<br>executableWillLaunchAtLogin(Windows)，launchItems(Windows)}。</p>
+<p>app.setLoginItemSettings(settings)，仅MacOS和Windows。</p>
+<p>settings:{<br>    openAtLogin,<br>    openAsHidden，(都MacOS)，<br>    path，args，enabled，name（仅Windows），<br>}</p>
+<p>如果需要在Windows上使用Squirrel的autoUpdater，你需要将启动路径设置为Update.exe，并传递指定应用程序的名称的参数。</p>
+<p>app.isAccessibilitySupportEnabled()，仅MacOS和Windows。</p>
+<p>app.setAccessibilitySupportEnabled(enabled)，仅MacOS和Windows。该API必须在ready事件触发后调用，渲染访问权限树可能会严重影响应用性能。</p>
+<p>app.showAboutPanel()，显示应用程序的关于面板选项。</p>
+<p>app.setAbountPanelOptions(options)。</p>
+<p>options:{<br>    applicationName,<br>    applicationVersion,<br>    copyright,<br>    version,<br>    credits,<br>    authors,<br>    website,<br>    iconPath,<br>}</p>
+<p>在MacOS上会覆盖.plist文件中定义的值。</p>
+<p>isEmojiPanelSupported，showEmojiPanel(仅MacOS和Windows)。</p>
+<p>startAccessingSecurityScopedResource(bookmarkData)，MacOS。</p>
+<p>bookmarkData: {<br>    bookmarkData:base64编码的安全作用域的书签数据<br>}</p>
+<p>返回Stop的Function，该函数必须在你完成访问安全作用域文件后调用一次。如果忘记停止访问书签，内核资源将会泄露，并且你的应用将失去完全到达沙盒之外的能力，直到应用重启。</p>
+<p>app.enableSandbox，在应用程序上启用完全沙盒模式。 这意味着所有渲染器都将以沙盒的方式运行，无论 WebPreence 中 sandbox 标志的值是什么。只能在应用程序ready之前调用。</p>
+<p>app.isInApplicationsFolder()，MacOS，应用程序当前是否从系统应用程序文件夹运行。</p>
+<p>app.moveToApplicationsFolder([options])，MacOS。</p>
+<p>options:{<br>    conflictHandler(conflictType:&#39;exists&#39;|&#39;existedAndRunning&#39;)，移动失败处理器<br>}</p>
+<p>返回移动是否成功。移动成功，你的应用将退出并重新启动。</p>
+<p>注意：如果并非是用户造成操作失败，这个方法会抛出错误。处理器返回的 boolean 返回 false 将确保不采取进一步行动，返回 true 将导致默认行为同时方法继续执行。</p>
+<p>app.isSecureKeyboardEntryEnabled，setSecureKeyboardEntryEnabled，MacOS。</p>
+<p>通过使用此API，可以防止密码和其它敏感信息等重要信息被其它进程截获。</p>
+<h2 id="-">属性</h2>
+<p>accessibilitySupportEnabled，MacOS和Windows。</p>
+<p>applicationMenu，用户可以传递Menu来给此属性赋值。</p>
+<p>badgeCount，仅Linux和MacOS。</p>
+<p>commandLine，只读，允许您读取和操作Chromium使用的命令行参数。</p>
+<p>dock，只读，仅MacOS，对应用图标进行操作。</p>
+<p>isPackaged，只读。</p>
+<p>name。</p>
+<p>userAgentFallback，全局回退的用户代理字符串。当用户代理在webContents 或 session 级别没有被设置时，将使用此用户代理。</p>
+<p>runningUnderARM64Translation，仅MacOS和Windows，当前是否正在使用ARM64运行环境。</p>
 </body>
 </html>
