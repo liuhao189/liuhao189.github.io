@@ -261,14 +261,14 @@ app.isUnityRunning()，仅Linux，是否为Unity启动器。
 
 app.getLoginItemSettings([options:{path,args}])，仅MacOS和Windows。
 
-返回值：Object：{openAtLogin，openAtLogin(仅MacOS)，wasOpenedAtLogin(仅MacOS)，wasOpenedAsHidden(MacOS)，restoreState(MacOS)，
+返回值：Object：{openAtLogin，openAsHidden(仅MacOS)，wasOpenedAtLogin(仅MacOS)，wasOpenedAsHidden(MacOS)，restoreState(MacOS)，
 executableWillLaunchAtLogin(Windows)，launchItems(Windows)}。
 
 app.setLoginItemSettings(settings)，仅MacOS和Windows。
 
 settings:{
     openAtLogin,
-    openAsHidden，(都MacOS)，
+    openAsHidden，(仅MacOS)，
     path，args，enabled，name（仅Windows），
 }
 
@@ -280,18 +280,7 @@ app.setAccessibilitySupportEnabled(enabled)，仅MacOS和Windows。该API必须�
 
 app.showAboutPanel()，显示应用程序的关于面板选项。
 
-app.setAbountPanelOptions(options)。
-
-options:{
-    applicationName,
-    applicationVersion,
-    copyright,
-    version,
-    credits,
-    authors,
-    website,
-    iconPath,
-}
+app.setAbountPanelOptions(options)。options:{applicationName,applicationVersion,copyright,version,credits,authors,website,iconPath}。
 
 在MacOS上会覆盖.plist文件中定义的值。
 
@@ -305,7 +294,7 @@ bookmarkData: {
 
 返回Stop的Function，该函数必须在你完成访问安全作用域文件后调用一次。如果忘记停止访问书签，内核资源将会泄露，并且你的应用将失去完全到达沙盒之外的能力，直到应用重启。
 
-app.enableSandbox，在应用程序上启用完全沙盒模式。 这意味着所有渲染器都将以沙盒的方式运行，无论 WebPreence 中 sandbox 标志的值是什么。只能在应用程序ready之前调用。
+app.enableSandbox，在应用程序上启用完全沙盒模式。 这意味着所有渲染器都将以沙盒的方式运行，无论WebPreence中sandbox标志的值是什么。只能在应用程序ready之前调用。
 
 app.isInApplicationsFolder()，MacOS，应用程序当前是否从系统应用程序文件夹运行。
 
@@ -313,11 +302,9 @@ app.moveToApplicationsFolder([options])，MacOS。
 
 options:{
     conflictHandler(conflictType:'exists'|'existedAndRunning')，移动失败处理器
-}
+}返回移动是否成功。移动成功，你的应用将退出并重新启动。
 
-返回移动是否成功。移动成功，你的应用将退出并重新启动。
-
-注意：如果并非是用户造成操作失败，这个方法会抛出错误。处理器返回的 boolean 返回 false 将确保不采取进一步行动，返回 true 将导致默认行为同时方法继续执行。
+注意：如果并非是用户造成的操作失败，这个方法会抛出错误。处理器返回的boolean返回false将确保不采取进一步行动，返回true将导致默认行为同时方法继续执行。
 
 app.isSecureKeyboardEntryEnabled，setSecureKeyboardEntryEnabled，MacOS。
 
@@ -342,3 +329,4 @@ name。
 userAgentFallback，全局回退的用户代理字符串。当用户代理在webContents 或 session 级别没有被设置时，将使用此用户代理。
 
 runningUnderARM64Translation，仅MacOS和Windows，当前是否正在使用ARM64运行环境。
+

@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron-App</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1646325325917">
+  <link rel="stylesheet" href="/note/note.css?ts=1646499517646">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -143,26 +143,24 @@
 <p>app.setBadgeCount([count])，app.getBadgeCount()，仅MacOS和Linux，计数器角标。</p>
 <p>app.isUnityRunning()，仅Linux，是否为Unity启动器。</p>
 <p>app.getLoginItemSettings([options:{path,args}])，仅MacOS和Windows。</p>
-<p>返回值：Object：{openAtLogin，openAtLogin(仅MacOS)，wasOpenedAtLogin(仅MacOS)，wasOpenedAsHidden(MacOS)，restoreState(MacOS)，<br>executableWillLaunchAtLogin(Windows)，launchItems(Windows)}。</p>
+<p>返回值：Object：{openAtLogin，openAsHidden(仅MacOS)，wasOpenedAtLogin(仅MacOS)，wasOpenedAsHidden(MacOS)，restoreState(MacOS)，<br>executableWillLaunchAtLogin(Windows)，launchItems(Windows)}。</p>
 <p>app.setLoginItemSettings(settings)，仅MacOS和Windows。</p>
-<p>settings:{<br>    openAtLogin,<br>    openAsHidden，(都MacOS)，<br>    path，args，enabled，name（仅Windows），<br>}</p>
+<p>settings:{<br>    openAtLogin,<br>    openAsHidden，(仅MacOS)，<br>    path，args，enabled，name（仅Windows），<br>}</p>
 <p>如果需要在Windows上使用Squirrel的autoUpdater，你需要将启动路径设置为Update.exe，并传递指定应用程序的名称的参数。</p>
 <p>app.isAccessibilitySupportEnabled()，仅MacOS和Windows。</p>
 <p>app.setAccessibilitySupportEnabled(enabled)，仅MacOS和Windows。该API必须在ready事件触发后调用，渲染访问权限树可能会严重影响应用性能。</p>
 <p>app.showAboutPanel()，显示应用程序的关于面板选项。</p>
-<p>app.setAbountPanelOptions(options)。</p>
-<p>options:{<br>    applicationName,<br>    applicationVersion,<br>    copyright,<br>    version,<br>    credits,<br>    authors,<br>    website,<br>    iconPath,<br>}</p>
+<p>app.setAbountPanelOptions(options)。options:{applicationName,applicationVersion,copyright,version,credits,authors,website,iconPath}。</p>
 <p>在MacOS上会覆盖.plist文件中定义的值。</p>
 <p>isEmojiPanelSupported，showEmojiPanel(仅MacOS和Windows)。</p>
 <p>startAccessingSecurityScopedResource(bookmarkData)，MacOS。</p>
 <p>bookmarkData: {<br>    bookmarkData:base64编码的安全作用域的书签数据<br>}</p>
 <p>返回Stop的Function，该函数必须在你完成访问安全作用域文件后调用一次。如果忘记停止访问书签，内核资源将会泄露，并且你的应用将失去完全到达沙盒之外的能力，直到应用重启。</p>
-<p>app.enableSandbox，在应用程序上启用完全沙盒模式。 这意味着所有渲染器都将以沙盒的方式运行，无论 WebPreence 中 sandbox 标志的值是什么。只能在应用程序ready之前调用。</p>
+<p>app.enableSandbox，在应用程序上启用完全沙盒模式。 这意味着所有渲染器都将以沙盒的方式运行，无论WebPreence中sandbox标志的值是什么。只能在应用程序ready之前调用。</p>
 <p>app.isInApplicationsFolder()，MacOS，应用程序当前是否从系统应用程序文件夹运行。</p>
 <p>app.moveToApplicationsFolder([options])，MacOS。</p>
-<p>options:{<br>    conflictHandler(conflictType:&#39;exists&#39;|&#39;existedAndRunning&#39;)，移动失败处理器<br>}</p>
-<p>返回移动是否成功。移动成功，你的应用将退出并重新启动。</p>
-<p>注意：如果并非是用户造成操作失败，这个方法会抛出错误。处理器返回的 boolean 返回 false 将确保不采取进一步行动，返回 true 将导致默认行为同时方法继续执行。</p>
+<p>options:{<br>    conflictHandler(conflictType:&#39;exists&#39;|&#39;existedAndRunning&#39;)，移动失败处理器<br>}返回移动是否成功。移动成功，你的应用将退出并重新启动。</p>
+<p>注意：如果并非是用户造成的操作失败，这个方法会抛出错误。处理器返回的boolean返回false将确保不采取进一步行动，返回true将导致默认行为同时方法继续执行。</p>
 <p>app.isSecureKeyboardEntryEnabled，setSecureKeyboardEntryEnabled，MacOS。</p>
 <p>通过使用此API，可以防止密码和其它敏感信息等重要信息被其它进程截获。</p>
 <h2 id="-">属性</h2>
