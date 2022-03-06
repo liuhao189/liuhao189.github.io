@@ -71,7 +71,7 @@ Gatsby Cloud和Surge是两个部署的选项。
 
 ### 使用全局样式
 
-主要实在gatsby-browser.js中引入全局样式文件。
+主要是在gatsby-browser.js中引入全局样式文件。
 
 ```js
 //gatsby-browser.js
@@ -80,12 +80,15 @@ import './src/styles/global.css';
 
 ### CSS模块
 
-CSS模块因为可以让你更加安全的书写CSS，所以最近比较流行。CSS模块会自动生成独一无二的class和animation名字，所以你不用担心选择器名字冲突。
+CSS模块可以让你更加安全的书写CSS，最近比较流行。CSS模块会自动生成独一无二的class和animation名字，所以你不用担心选择器名字冲突。
 
 Gatsby原生支持CSS模块。
 
 ```js
 import * as ContainerStyles from './styles/container.module.css';
+//如果是TS，需要包含global.d.ts
+declare module '*.scss';
+declare module '*.css';
 ```
 
 ### CSS-in-JS
@@ -104,4 +107,108 @@ npm i sass gatsby-plugin-sass --save-dev
 // gatsby-config.js
 plugins: ['gatsby-plugin-sass']
 ```
+
+## 创建嵌套布局组件
+
+主要学习Gatsby plugins和创建布局组件。
+
+Gatby的插件一般是一个独立的npm包。Gatsby设计时就考虑到了利用插件来扩展功能，插件几乎可以做任何事。
+
+布局组件主要是书写页面通用模块位置的组件，经常需要跨页面使用。eg：共享的header和footer。
+
+### 使用插件
+
+Gatsby已经有数百个插件，https://v2.gatsbyjs.com/plugins。
+
+插件的使用主要包括两步：1、安装；2、配置。
+
+```js
+npm i gatsby-plugin-typography react-typography typography typography-theme-fairy-gates --save-dev
+```
+
+然后在gatsby-config.js中添加插件和配置插件。
+
+```js
+plugins: [
+    resolve: 'gatsby-plugin-typography',
+    options: {
+        pathToConfigModule: 'src/utils/typography'
+    }
+]
+```
+
+## Gatsby中的数据
+
+深入到Gatsby的数据层，这是gatsby提供的比较强大的功能。可以让你从MarkDown，WorkPress，CMSs，其它数据源来创建页面。
+
+注意：Gatsby的数据层使用GraphQL。
+
+一个网站有四部分：1、HTML；2、CSS；3、JS；4、Data。
+
+什么是数据？在Gatsby中，在React组件以外的东西都是数据。
+
+之前的教程中，你直接书写文本和添加图片到组件中。但是，在实际项目中，你更多的需要在组件外存储数据。eg：基于WordPress的网站，数据在WordPress中，你拉取数据到需要的组件中。
+
+数据也可以在其它类型的文件中，MarkDown，CSV，DataBase或API。Gatsby的数据层使你可以从这些数据源拉取数据到你的组件中。
+
+### 使用GraphQL
+
+在gatsby-config.js文件中，添加siteMetadata对象。
+
+```js
+module.exports = {
+    siteMetadata: {
+        title: `Title from siteMetadata`
+    }
+}
+```
+
+```tsx
+import { graphql } from 'gatsby';
+export const query = graphql`
+    query {
+        site {
+            siteMetadata {
+                title
+            }
+        }
+    }
+`;
+
+export default const About: React.FC = ({ data }) => {
+    return (
+        <Container>
+            <div style={{ 'color': 'red' }}>
+                <h1>About {data.site.siteMetadata.title}</h1>
+                <h1>I am about component.</h1>
+            </div>
+        </Container>
+    )
+}
+```
+
+### 使用StaticQuery
+
+StaticQuery是Gatsby V2开始引入的API，StaticQuery可以用于非页面组件。
+
+```tsx
+import { useStaticQuery, graphql } from 'gatsby';
+const Container: React.FC = ({ children }) => {
+    const data = useStaticQuery(graphql`
+        query {
+            site {
+                siteMetadata {
+                    title
+                }
+            }
+        }
+    `);
+    //...
+}
+```
+
+## source插件
+
+主要讲怎样使用GraphQL和source插件来把数据添加到你的Gatsby网站中。
+
 
