@@ -130,16 +130,18 @@ npm i gatsby-plugin-typography react-typography typography typography-theme-fair
 
 ```js
 plugins: [
-    resolve: 'gatsby-plugin-typography',
-    options: {
-        pathToConfigModule: 'src/utils/typography'
+    {
+        resolve: 'gatsby-plugin-typography',
+        options: {
+            pathToConfigModule: 'src/utils/typography'
+        }
     }
 ]
 ```
 
 ## Gatsby中的数据
 
-深入到Gatsby的数据层，这是gatsby提供的比较强大的功能。可以让你从MarkDown，WorkPress，CMSs，其它数据源来创建页面。
+深入到Gatsby的数据层，这是gatsby提供的比较强大的功能。可以让你从MarkDown，WorkPress，CMS，或其它数据源中来创建页面。
 
 注意：Gatsby的数据层使用GraphQL。
 
@@ -163,7 +165,7 @@ module.exports = {
 }
 ```
 
-```tsx
+```ts
 import { graphql } from 'gatsby';
 export const query = graphql`
     query {
@@ -191,7 +193,7 @@ export default const About: React.FC = ({ data }) => {
 
 StaticQuery是Gatsby V2开始引入的API，StaticQuery可以用于非页面组件。
 
-```tsx
+```ts
 import { useStaticQuery, graphql } from 'gatsby';
 const Container: React.FC = ({ children }) => {
     const data = useStaticQuery(graphql`
@@ -211,4 +213,49 @@ const Container: React.FC = ({ children }) => {
 
 主要讲怎样使用GraphQL和source插件来把数据添加到你的Gatsby网站中。
 
+### GraphiQL
 
+GraphiQL是GraphQL的集成开发环境。可以通过http://localhost:8000/__graphql来访问。
+
+### source插件
+
+Gatsby网站的数据可以来自任何地方，API，Database，CMS，local files，etc。
+
+Source插件从source获取数据。eg：fs source插件知道如何从文件系统获得数据。Wordpress插件知道如何从WordPress API来获得数据。
+
+
+```bash
+npm i gatsby-source-filesystem
+```
+
+```js
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `images`,
+        path: `${__dirname}/src/images`,
+      },
+    },
+```
+
+然后你在GraphQL中就可以看到file和allFile了。
+
+## transformer插件
+
+transformer插件主要用于转换source插件得到的原始内容。
+
+eg：markdown文件，Markdown容易书写，但是分享或发布时，需要转换为HTML。
+
+```bash
+npm i gatsby-transformer-remark --save-dev
+```
+
+```js
+plugins: [
+    `gatsby-transformer-remark`
+]
+```
+
+然后可以使用GraphQL来查询markdown转换后的html。
+
+## 使用API来从Data创建页面
