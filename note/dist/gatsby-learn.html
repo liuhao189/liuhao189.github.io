@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Gatsby.js文档</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1646665958483">
+  <link rel="stylesheet" href="/note/note.css?ts=1646756334304">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -103,16 +103,18 @@
 </code></pre>
 <p>然后在gatsby-config.js中添加插件和配置插件。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
-    <span class="nx">resolve</span><span class="o">:</span> <span class="s1">&#39;gatsby-plugin-typography&#39;</span><span class="p">,</span>
-    <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
-        <span class="nx">pathToConfigModule</span><span class="o">:</span> <span class="s1">&#39;src/utils/typography&#39;</span>
+    <span class="p">{</span>
+        <span class="nx">resolve</span><span class="o">:</span> <span class="s1">&#39;gatsby-plugin-typography&#39;</span><span class="p">,</span>
+        <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">pathToConfigModule</span><span class="o">:</span> <span class="s1">&#39;src/utils/typography&#39;</span>
+        <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
 
 </code></pre>
 <h2 id="gatsby-">Gatsby中的数据</h2>
-<p>深入到Gatsby的数据层，这是gatsby提供的比较强大的功能。可以让你从MarkDown，WorkPress，CMSs，其它数据源来创建页面。</p>
+<p>深入到Gatsby的数据层，这是gatsby提供的比较强大的功能。可以让你从MarkDown，WorkPress，CMS，或其它数据源中来创建页面。</p>
 <p>注意：Gatsby的数据层使用GraphQL。</p>
 <p>一个网站有四部分：1、HTML；2、CSS；3、JS；4、Data。</p>
 <p>什么是数据？在Gatsby中，在React组件以外的东西都是数据。</p>
@@ -172,5 +174,134 @@
 </code></pre>
 <h2 id="source-">source插件</h2>
 <p>主要讲怎样使用GraphQL和source插件来把数据添加到你的Gatsby网站中。</p>
+<h3 id="graphiql">GraphiQL</h3>
+<p>GraphiQL是GraphQL的集成开发环境。可以通过<a href="http://localhost:8000/__graphql来访问。">http://localhost:8000/__graphql来访问。</a></p>
+<h3 id="source-">source插件</h3>
+<p>Gatsby网站的数据可以来自任何地方，API，Database，CMS，local files，etc。</p>
+<p>Source插件从source获取数据。eg：fs source插件知道如何从文件系统获得数据；Wordpress插件知道如何从WordPress-API来获得数据。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i gatsby-source-filesystem
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="p">{</span>
+      <span class="nx">resolve</span><span class="o">:</span> <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">source</span><span class="o">-</span><span class="nx">filesystem</span><span class="err">`</span><span class="p">,</span>
+      <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">name</span><span class="o">:</span> <span class="err">`</span><span class="nx">images</span><span class="err">`</span><span class="p">,</span>
+        <span class="nx">path</span><span class="o">:</span> <span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">__dirname</span><span class="p">}</span><span class="o">/</span><span class="nx">src</span><span class="o">/</span><span class="nx">images</span><span class="err">`</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+</pre></div>
+
+</code></pre>
+<p>然后你在GraphQL中就可以看到file和allFile了。</p>
+<h2 id="transformer-">transformer插件</h2>
+<p>transformer插件主要用于转换source插件得到的原始内容。</p>
+<p>eg：markdown文件，Markdown容易书写，但是分享或发布时，需要转换为HTML。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i gatsby-transformer-remark --save-dev
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
+    <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">transformer</span><span class="o">-</span><span class="nx">remark</span><span class="err">`</span>
+<span class="p">]</span>
+</pre></div>
+
+</code></pre>
+<p>然后可以使用GraphQL来查询markdown转换后的html。</p>
+<h2 id="-api-data-">使用API来从Data创建页面</h2>
+<p>Gstsby允许你在构建时使用GraphQL来查询数据，然后将查询结构map到页面。</p>
+<p>为了创建markdown页面，你需要使用两个Gatsby的API，onCreateNode和createPages。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//这会在node中添加slug属性。</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">onCreateNode</span> <span class="o">=</span> <span class="p">({</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">getNode</span><span class="p">,</span> <span class="nx">actions</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">internal</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s1">&#39;MarkdownRemark&#39;</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">createNodeField</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">actions</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="nx">slug</span> <span class="o">=</span> <span class="nx">createFilePath</span><span class="p">({</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">getNode</span><span class="p">,</span> <span class="nx">basePath</span><span class="o">:</span> <span class="s2">&quot;pages&quot;</span> <span class="p">});</span>
+    <span class="nx">createNodeField</span><span class="p">({</span>
+      <span class="nx">node</span><span class="p">,</span>
+      <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;slug&#39;</span><span class="p">,</span>
+      <span class="nx">value</span><span class="o">:</span> <span class="nx">slug</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-template">创建template</h3>
+<p>Gatsby中，使用程序来创建页面也是由React组件驱动的。所以你需要创建一个React组件作为页面模板。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">graphql</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;gatsby&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">React</span> <span class="nx">from</span> <span class="s1">&#39;react&#39;</span><span class="p">;</span>
+
+<span class="kr">interface</span> <span class="nx">IMarkdownData</span> <span class="p">{</span>
+    <span class="nx">markdownRemark</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">frontmatter</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">title</span><span class="o">:</span> <span class="nx">string</span>
+        <span class="p">},</span>
+        <span class="nx">html</span><span class="o">:</span> <span class="nx">string</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">BlogPost</span><span class="o">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span><span class="o">&lt;</span><span class="p">{</span> <span class="nx">data</span><span class="o">:</span> <span class="nx">IMarkdownData</span> <span class="p">}</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">({</span> <span class="nx">data</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">post</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">markdownRemark</span><span class="p">;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">post</span><span class="p">.</span><span class="nx">frontmatter</span><span class="p">.</span><span class="nx">title</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+            <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">dangerouslySetInnerHTML</span><span class="o">=</span><span class="p">{{</span> <span class="nx">__html</span><span class="o">:</span> <span class="nx">post</span><span class="p">.</span><span class="nx">html</span> <span class="p">}}</span><span class="o">&gt;&lt;</span><span class="err">/div&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;)</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">BlogPost</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">query</span> <span class="o">=</span> <span class="nx">graphql</span><span class="err">`</span>
+ <span class="nx">query</span><span class="p">(</span><span class="nx">$slug</span><span class="o">:</span><span class="nb">String</span><span class="o">!</span><span class="p">)</span> <span class="p">{</span>
+     <span class="nx">markdownRemark</span><span class="p">(</span> <span class="nx">fields</span> <span class="o">:</span> <span class="p">{</span> <span class="nx">slug</span> <span class="o">:</span> <span class="p">{</span> <span class="nx">eq</span><span class="o">:</span> <span class="nx">$slug</span> <span class="p">}</span> <span class="p">})</span> <span class="p">{</span>
+         <span class="nx">html</span> 
+         <span class="nx">frontmatter</span> <span class="p">{</span>
+             <span class="nx">title</span>
+         <span class="p">}</span>
+     <span class="p">}</span>
+ <span class="p">}</span>
+<span class="err">`</span>
+</pre></div>
+
+</code></pre>
+<h3 id="oncreatepage-api">onCreatePage API</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">createPages</span> <span class="o">=</span> <span class="nx">async</span> <span class="p">({</span> <span class="nx">actions</span><span class="p">,</span> <span class="nx">graphql</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">createPage</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">actions</span>
+  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">graphql</span><span class="p">(</span><span class="err">`</span>
+    <span class="nx">query</span> <span class="p">{</span>
+      <span class="nx">allMarkdownRemark</span> <span class="p">{</span>
+        <span class="nx">edges</span> <span class="p">{</span>
+          <span class="nx">node</span> <span class="p">{</span>
+            <span class="nx">fields</span> <span class="p">{</span>
+              <span class="nx">slug</span>
+            <span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="err">`</span><span class="p">);</span>
+
+  <span class="nx">result</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">allMarkdownRemark</span><span class="p">.</span><span class="nx">edges</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(({</span> <span class="nx">node</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">createPage</span><span class="p">({</span>
+      <span class="nx">path</span><span class="o">:</span> <span class="nx">node</span><span class="p">.</span><span class="nx">fields</span><span class="p">.</span><span class="nx">slug</span><span class="p">,</span>
+      <span class="nx">component</span><span class="o">:</span> <span class="nx">path</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="err">`</span><span class="p">.</span><span class="o">/</span><span class="nx">src</span><span class="o">/</span><span class="nx">templates</span><span class="o">/</span><span class="nx">blog</span><span class="o">-</span><span class="nx">post</span><span class="p">.</span><span class="nx">tsx</span><span class="err">`</span><span class="p">),</span>
+      <span class="nx">context</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">slug</span><span class="o">:</span> <span class="nx">node</span><span class="p">.</span><span class="nx">fields</span><span class="p">.</span><span class="nx">slug</span>
+      <span class="p">}</span>
+    <span class="p">})</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">准备发布网站</h2>
+<h3 id="-build">创建一个线上build</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>gatsby build
+<span class="c">#本地启动server</span>
+gatsby serve
+</pre></div>
+
+</code></pre>
 </body>
 </html>

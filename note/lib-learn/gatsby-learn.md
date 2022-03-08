@@ -221,8 +221,7 @@ GraphiQL是GraphQL的集成开发环境。可以通过http://localhost:8000/__gr
 
 Gatsby网站的数据可以来自任何地方，API，Database，CMS，local files，etc。
 
-Source插件从source获取数据。eg：fs source插件知道如何从文件系统获得数据。Wordpress插件知道如何从WordPress API来获得数据。
-
+Source插件从source获取数据。eg：fs source插件知道如何从文件系统获得数据；Wordpress插件知道如何从WordPress-API来获得数据。
 
 ```bash
 npm i gatsby-source-filesystem
@@ -259,3 +258,104 @@ plugins: [
 然后可以使用GraphQL来查询markdown转换后的html。
 
 ## 使用API来从Data创建页面
+
+Gstsby允许你在构建时使用GraphQL来查询数据，然后将查询结构map到页面。
+
+为了创建markdown页面，你需要使用两个Gatsby的API，onCreateNode和createPages。
+
+```js
+//这会在node中添加slug属性。
+exports.onCreateNode = ({ node, getNode, actions }) => {
+  if (node.internal.type === 'MarkdownRemark') {
+
+    const { createNodeField } = actions;
+    const slug = createFilePath({ node, getNode, basePath: "pages" });
+    createNodeField({
+      node,
+      name: 'slug',
+      value: slug
+    })
+  }
+}
+```
+
+### 创建template
+
+Gatsby中，使用程序来创建页面也是由React组件驱动的。所以你需要创建一个React组件作为页面模板。
+
+```js
+import { graphql } from 'gatsby';
+import React from 'react';
+
+interface IMarkdownData {
+    markdownRemark: {
+        frontmatter: {
+            title: string
+        },
+        html: string
+    }
+}
+
+const BlogPost: React.FC<{ data: IMarkdownData }> = ({ data }) => {
+    const post = data.markdownRemark;
+    return (
+        <>
+            <h1>{post.frontmatter.title}</h1>
+            <div dangerouslySetInnerHTML={{ __html: post.html }}></div>
+        </>)
+}
+
+export default BlogPost;
+
+export const query = graphql`
+ query($slug:String!) {
+     markdownRemark( fields : { slug : { eq: $slug } }) {
+         html 
+         frontmatter {
+             title
+         }
+     }
+ }
+`
+```
+
+### onCreatePage API
+
+```js
+exports.createPages = async ({ actions, graphql }) => {
+  const { createPage } = actions
+  const result = await graphql(`
+    query {
+      allMarkdownRemark {
+        edges {
+          node {
+            fields {
+              slug
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  result.data.allMarkdownRemark.edges.forEach(({ node }) => {
+    createPage({
+      path: node.fields.slug,
+      component: path.resolve(`./src/templates/blog-post.tsx`),
+      context: {
+        slug: node.fields.slug
+      }
+    })
+  });
+}
+```
+
+## 准备发布网站
+
+### 创建一个线上build
+
+```bash
+gatsby build
+#本地启动server
+gatsby serve
+```
