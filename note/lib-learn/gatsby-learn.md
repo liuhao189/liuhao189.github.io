@@ -319,7 +319,7 @@ export const query = graphql`
 `
 ```
 
-### onCreatePage API
+### createPage API
 
 ```js
 exports.createPages = async ({ actions, graphql }) => {
