@@ -2,17 +2,17 @@
 
 ## 环境变量
 
-所有的项目和OS环境变量只在构建时可用或Node.js运行时。它们不应该在客户端代码运行时可用，客户端代码在构建时会被环境遍历的值替换。这通过Webpack的DefinePlugin实现。
+所有的项目和OS环境变量只在构建时可用或Node.js运行时。它们不应该在客户端代码运行时可用，客户端代码在构建时会被环境变量的值替换。这通过Webpack的DefinePlugin实现。
 
 一旦环境变量嵌入到客户端代码中，它们就可以通过process.env全局变量来访问。
 
-注意：因为这写变量在构建时进行嵌入，当你改变它们的时候，你需要重启和重构建你的网站。
+注意：因为环境变量在构建时被嵌入，当你改变它们的时候，你需要重启和重构建你的网站。
 
 ### 定义客户端环境变量
 
 你可以在根目录定义.env.development或.env.production文件。
 
-除了在.env.*中的环境遍历，你还可以定义定义OS Env变量，OS Env变量中以GATSBY_开头的可以在客户端浏览器代码中访问。
+除了在.env.*中的环境变量，你还可以定义OS Env变量，OS Env变量中以GATSBY_开头的可以在客户端浏览器代码中访问。
 
 ```js
 //gatsby-config.js
@@ -29,7 +29,7 @@ Gatsby在构建时运行若干个Node.js的脚本，明显的是gatsby-config.js
 MY_ENV_VAR=foo npm run develop
 ```
 
-在node中使用这些变量，需要下面的代码：
+在node中使用这些变量.env.*中的环境变量，需要下面的代码：
 
 ```js
 // gatsby-config.js
@@ -46,9 +46,9 @@ ENABLE_GATSBY_REFRESH_ENDPOINT。
 
 ### 构建时变量
 
-Gatsby在构建步骤中使用额外的环境变量来调整构建结果。eg：添加CI=true的环境变量，Gatsby会根据环境定制终端输出(去掉终端的进度条)。
+Gatsby在构建步骤中使用额外的环境变量来调整构建结果。eg：添加CI=true的环境变量，Gatsby会根据环境定制终端输出(比如去掉终端的进度条)。
 
-Gatsby根据物理CPU数量，来调整最佳并行级别。在虚拟机中，可以使用GATSBY_CPU_COUNT的环境变量来并行度。
+Gatsby根据物理CPU数量，来调整最佳并行级别，在VM中，可以使用GATSBY_CPU_COUNT的环境变量来设置并行度。
 
 ## 路由和页面
 
@@ -65,4 +65,66 @@ Gatsby根据物理CPU数量，来调整最佳并行级别。在虚拟机中，�
 3、在gatsby-node.js中使用createPages方法（插件也可以实现createPages来创建页面）。
 
 ### 在src/pages中定义routes
+
+每一个在src/pages里的js文件都会生成网页，这些页面的路径跟文件路径一致。
+
+如果文件以index.js命名，文件名称会被命名为上级文件夹名称。
+
+### 使用File System Route API
+
+你还可以基于nodes的列表创建多个页面。
+
+```bash
+# src/pages/products/{Product.name}.js 
+```
+
+### 使用gatsby-node.js
+
+如果需要更多的控制，eg：通过pageContext传递数据或修改path，你可以使用Gatsby Node APIs。
+
+具体可以参见markdown文件生成页面的例子。
+
+### 路由冲突
+
+当生成的页面path一致时，Gatsby会在构建时生成一个警告，但是编译依然会成功。后面的页面会覆盖前面的页面。
+
+### 嵌套路由
+
+可以在src/pages中添加文件夹目录结构来反映多级的URL。
+
+### 页面间通过Link跳转
+
+为了在页面之间跳转，你可以使用gatsby-link。使用gatsby-link可以给你性能优势（预加载和前端路由）。
+
+另外，也可以通过a标签来跳转，这会重新刷新整个页面。
+
+Gatsby在大多数情况下回记录滚动的位置。
+
+### 性能和预取资源
+
+为了提高性能，Gatsby会在当前页面预取link对应的资源。经过测试，Gatsby在鼠标hover到Link时，就开始预取。
+
+## 通用布局组件
+
+你可以学到如何创建和使用布局组件，怎样避免布局组件卸载和重渲染。
+
+通用布局组件是什么？通用布局组件是跨多个页面共享的组件。
+
+推荐在src/components里创建布局组件。
+
+然后按常规组件引入布局组件使用即可。
+
+### 怎么防止布局组件重新渲染
+
+Gatsby默认情况不控制，当顶级组件在页面间变化时，React会整个重现渲染。这意味着共享的组件会unmout和remount。这会破坏CSS过度效果和清空组件内部的React状态。
+
+你可以设置一个在页面间包裹的页面，这个组件在页面跳转时，不会被unmounted。主要通过Browser API的wrapPageElement来实现。
+
+另外你也可以使用gataby-plugin-layout来避免布局组件unmounted，这个插件替你实现了wrapPageElement API。
+
+
+
+## 参考文档
+
+https://v2.gatsbyjs.com/docs/how-to/routing/
 
