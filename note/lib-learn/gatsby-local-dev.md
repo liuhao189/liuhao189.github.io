@@ -98,7 +98,7 @@ Gatsby根据物理CPU数量，来调整最佳并行级别，在VM中，可以使
 
 另外，也可以通过a标签来跳转，这会重新刷新整个页面。
 
-Gatsby在大多数情况下回记录滚动的位置。
+Gatsby在大多数情况下会记录滚动的位置。
 
 ### 性能和预取资源
 
@@ -122,7 +122,66 @@ Gatsby默认情况不控制，当顶级组件在页面间变化时，React会整
 
 另外你也可以使用gataby-plugin-layout来避免布局组件unmounted，这个插件替你实现了wrapPageElement API。
 
+### WrapPageElement
 
+主要是在gatsby-browser.js里增加wrapPageElement的导出。
+
+```js
+export const wrapPageElement = (apiContext, pluginOptions) => {
+  console.log('apiContext', apiContext);
+  console.log('pluginOptions', pluginOptions);
+  return (<WrapElement {...apiContext.props}>{apiContext.element}</WrapElement>);
+}
+```
+
+# 样式
+
+有很多种方式向你的网站添加样式，可以通过Global CSS，Modular Stylesheets，CSS-in-JS，这些Gatsby都支持。
+
+### 共享组件中添加CSS
+
+共享布局组件主要是在页面间共享的组件，包括样式，头组件和其它公共组件。
+
+```js
+//src/components/layout.js
+import React from "react"
+import "./layout.css"; //全局样式文件
+export default function Layout({ children }) {
+  return <div>{children}</div>
+}
+```
+
+### 在gatsby-browser.js中添加CSS
+
+```js
+import "./src/styles/global.css"
+```
+
+### 在组件中引入CSS
+
+直接引用即可。
+
+### CSS的缺陷
+
+主要是名字冲突和无意识的继承CSS属性的问题。BEM等可以部分解决这个问题，但是CSS Modules和CSS-in-JS是更好的方案。
+
+## CSS Modules
+
+组件作用域的CSS可以允许你在没有副作用的情况下书写传统CSS，不用担心选择器冲突和影响其它组价。
+
+Gatsby默认就支持CSS Modules。
+
+### 什么是CSS Modules
+
+CSS模块非常流行，因为它可以生成独一无二的class和animation名字，同时可以让你在JS对象中访问这些名字。
+
+```js
+import * as  ContainerStyles from './styles/wrap-page.module.css';
+```
+
+### 什么时候使用CSS Modules
+
+CSS Module强烈推荐使用。因为这可以让你编写常规的，可复用的CSS文件，同时只打包需要的CSS可以获得性能提升。
 
 ## 参考文档
 
