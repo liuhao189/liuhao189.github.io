@@ -46,3 +46,15 @@ https://docs.google.com/document/d/1YEIBdH7ocJfm6PWISKw03szNAgnstA2B3e8PZr_-Gp4/
 ## 浏览器工作原理
 
 https://zhuanlan.zhihu.com/p/279920830
+
+## IndexedDB performance is bad
+
+https://bugs.chromium.org/p/chromium/issues/detail?id=1025456#c15
+
+## rxdb-info IndexedDB is slow
+
+https://rxdb.info/slow-indexeddb.html
+
+## js-self-profiling-api-in-practice
+
+https://calendar.perfplanet.com/2021/js-self-profiling-api-in-practice/#js-self-profiling-the-api
