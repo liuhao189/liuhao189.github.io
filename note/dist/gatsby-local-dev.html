@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Gatsby本地开发 & 路由和页面</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1647016568768">
+  <link rel="stylesheet" href="/note/note.css?ts=1647188380267">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -83,7 +83,7 @@
 <p>然后按常规组件引入布局组件使用即可。</p>
 <h3 id="-">怎么防止布局组件重新渲染</h3>
 <p>Gatsby默认情况不控制，当顶级组件在页面间变化时，React会整个重现渲染。这意味着共享的组件会unmout和remount。这会破坏CSS过度效果和清空组件内部的React状态。</p>
-<p>你可以设置一个在页面间包裹的页面，这个组件在页面跳转时，不会被unmounted。主要通过Browser API的wrapPageElement来实现。</p>
+<p>你可以设置一个在页面间包裹的组件，这个组件在页面跳转时，不会被unmounted。主要通过Browser API的wrapPageElement来实现。</p>
 <p>另外你也可以使用gataby-plugin-layout来避免布局组件unmounted，这个插件替你实现了wrapPageElement API。</p>
 <h3 id="wrappageelement">WrapPageElement</h3>
 <p>主要是在gatsby-browser.js里增加wrapPageElement的导出。</p>
@@ -108,7 +108,7 @@
 </pre></div>
 
 </code></pre>
-<h3 id="-gatsby-browser-js-css">在gatsby-browser.js中添加CSS</h3>
+<h3 id="-gatsby-browser-js-css">在gatsby-browser.js中添加全局CSS</h3>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="s2">&quot;./src/styles/global.css&quot;</span>
 </pre></div>
 
@@ -116,9 +116,9 @@
 <h3 id="-css">在组件中引入CSS</h3>
 <p>直接引用即可。</p>
 <h3 id="css-">CSS的缺陷</h3>
-<p>主要是名字冲突和无意识的继承CSS属性的问题。BEM等可以部分解决这个问题，但是CSS Modules和CSS-in-JS是更好的方案。</p>
+<p>主要是名字冲突和无意识的继承CSS属性的问题，BEM等可以部分解决这个问题，但是CSS Modules和CSS-in-JS是更好的方案。</p>
 <h2 id="css-modules">CSS Modules</h2>
-<p>组件作用域的CSS可以允许你在没有副作用的情况下书写传统CSS，不用担心选择器冲突和影响其它组价。</p>
+<p>组件作用域的CSS可以允许你在没有副作用的情况下书写传统CSS，不用担心选择器冲突或影响其它组件。</p>
 <p>Gatsby默认就支持CSS Modules。</p>
 <h3 id="-css-modules">什么是CSS Modules</h3>
 <p>CSS模块非常流行，因为它可以生成独一无二的class和animation名字，同时可以让你在JS对象中访问这些名字。</p>
@@ -128,6 +128,81 @@
 </code></pre>
 <h3 id="-css-modules">什么时候使用CSS Modules</h3>
 <p>CSS Module强烈推荐使用。因为这可以让你编写常规的，可复用的CSS文件，同时只打包需要的CSS可以获得性能提升。</p>
+<h2 id="css-in-js-">CSS-in-JS来增强样式</h2>
+<p>CSS-in-JS指的是通过JS来书写样式，而不是通过额外的CSS文件。这样可以很方便做到组件作用域，避免未使用的样式代码，更好的性能（没有CSS选择器），更好地动态修改样式。</p>
+<p>组件层面：你必须使用组件来添加样式，契合了React的所有都是组件的理念。</p>
+<p>作用域：组件内作用域。</p>
+<p>动态：样式可以更方便得随组件状态。</p>
+<p>类库：许多CSS-in-JS的类库会生成独一无二的className，自动添加浏览器厂商的前缀，懒加载CSS等功能。</p>
+<p>gatsby默认不支持CSS-in-JS，需要引入第三方库。</p>
+<h2 id="-sass">使用Sass</h2>
+<p>安装gatsby-plugin-sass和sass。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i sass gatsby-plugin-sass --save-dev
+</pre></div>
+
+</code></pre>
+<p>在gatsby-config.js中包括插件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">plugins</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;gatsby-plugin-sass&#39;</span><span class="p">]</span>
+</pre></div>
+
+</code></pre>
+<h1 id="-">添加本地图片和媒体资源</h1>
+<p>两种方式来引入资源文件：1、直接在gatsby模板，页面和组件中引用；2、使用static folder，在某些场景下比较有用。</p>
+<h2 id="-webpack-">在webpack中引入资源</h2>
+<p>可以在JS模块中使用import来引入一个文件，import的结果为文件最终的路径。这个路径可以作为src，href的值。</p>
+<p>对于svg、jpg、jpeg、png、gif、mp4、webm、wav、mp3、m4a、acc和oga文件，为了减少额外的服务器请求，import的页面少于10000字节会直接返回一个Data URI而不是path。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">girlImg</span> <span class="nx">from</span> <span class="s1">&#39;./../images/girl.jpeg&#39;</span><span class="p">;</span>
+<span class="c1">// 这段代码会让webpack将image文件拷贝到public文件夹，同时提供正确的path。</span>
+</pre></div>
+
+</code></pre>
+<p>也可以在CSS中import文件。</p>
+<pre><code class="lang-css"><div class="highlight"><pre><span class="nt">background-image</span><span class="o">:</span> <span class="nt">url</span><span class="o">(</span><span class="s2">&quot;./../images/girl.jpeg&quot;</span><span class="o">)</span>
+</pre></div>
+
+</code></pre>
+<p>webpack会找到所有的在CSS中的相对引用(以./开始的)，然后将最终的路径替换下。</p>
+<p>文件路径后webpack会自动添加内容hash值。</p>
+<p>如果你使用scss，import是相对于与入口scss文件的。</p>
+<h2 id="-graphql-gatsby-source-filesystem-">使用GraphQL和gatsby-source-filesystem来查询文件</h2>
+<p>你可以使用GraphQL来import文件，这也会导致将这些文件拷贝到public文件夹。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">React</span> <span class="nx">from</span> <span class="s2">&quot;react&quot;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">useStaticQuery</span><span class="p">,</span> <span class="nx">graphql</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&quot;gatsby&quot;</span>
+<span class="kr">import</span> <span class="nx">Layout</span> <span class="nx">from</span> <span class="s2">&quot;../components/layout&quot;</span>
+<span class="kr">const</span> <span class="nx">DownloadsPage</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">useStaticQuery</span><span class="p">(</span><span class="nx">graphql</span><span class="err">`</span>
+    <span class="p">{</span>
+      <span class="nx">allFile</span><span class="p">(</span><span class="nx">filter</span><span class="o">:</span> <span class="p">{</span> <span class="nx">extension</span><span class="o">:</span> <span class="p">{</span> <span class="nx">eq</span><span class="o">:</span> <span class="s2">&quot;pdf&quot;</span> <span class="p">}</span> <span class="p">})</span> <span class="p">{</span>
+        <span class="nx">edges</span> <span class="p">{</span>
+          <span class="nx">node</span> <span class="p">{</span>
+            <span class="nx">publicURL</span>
+            <span class="nx">name</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="err">`</span><span class="p">)</span>
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">Layout</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">All</span> <span class="nx">PDF</span> <span class="nx">Downloads</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+      <span class="o">&lt;</span><span class="nx">ul</span><span class="o">&gt;</span>
+        <span class="p">{</span><span class="nx">data</span><span class="p">.</span><span class="nx">allFile</span><span class="p">.</span><span class="nx">edges</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">file</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="p">(</span>
+            <span class="o">&lt;</span><span class="nx">li</span> <span class="nx">key</span><span class="o">=</span><span class="p">{</span><span class="err">`</span><span class="nx">pdf</span><span class="o">-</span><span class="nx">$</span><span class="p">{</span><span class="nx">index</span><span class="p">}</span><span class="err">`</span><span class="p">}</span><span class="o">&gt;</span>
+              <span class="o">&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="p">{</span><span class="nx">file</span><span class="p">.</span><span class="nx">node</span><span class="p">.</span><span class="nx">publicURL</span><span class="p">}</span> <span class="nx">download</span><span class="o">&gt;</span>
+                <span class="p">{</span><span class="nx">file</span><span class="p">.</span><span class="nx">node</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span>
+              <span class="o">&lt;</span><span class="err">/a&gt;</span>
+            <span class="o">&lt;</span><span class="err">/li&gt;</span>
+          <span class="p">)</span>
+        <span class="p">})}</span>
+      <span class="o">&lt;</span><span class="err">/ul&gt;</span>
+    <span class="o">&lt;</span><span class="err">/Layout&gt;</span>
+  <span class="p">)</span>
+<span class="p">}</span>
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">DownloadsPage</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="https://v2.gatsbyjs.com/docs/how-to/routing/">https://v2.gatsbyjs.com/docs/how-to/routing/</a></p>
 </body>

@@ -118,7 +118,7 @@ Gatsby在大多数情况下会记录滚动的位置。
 
 Gatsby默认情况不控制，当顶级组件在页面间变化时，React会整个重现渲染。这意味着共享的组件会unmout和remount。这会破坏CSS过度效果和清空组件内部的React状态。
 
-你可以设置一个在页面间包裹的页面，这个组件在页面跳转时，不会被unmounted。主要通过Browser API的wrapPageElement来实现。
+你可以设置一个在页面间包裹的组件，这个组件在页面跳转时，不会被unmounted。主要通过Browser API的wrapPageElement来实现。
 
 另外你也可以使用gataby-plugin-layout来避免布局组件unmounted，这个插件替你实现了wrapPageElement API。
 
@@ -151,7 +151,7 @@ export default function Layout({ children }) {
 }
 ```
 
-### 在gatsby-browser.js中添加CSS
+### 在gatsby-browser.js中添加全局CSS
 
 ```js
 import "./src/styles/global.css"
@@ -163,11 +163,11 @@ import "./src/styles/global.css"
 
 ### CSS的缺陷
 
-主要是名字冲突和无意识的继承CSS属性的问题。BEM等可以部分解决这个问题，但是CSS Modules和CSS-in-JS是更好的方案。
+主要是名字冲突和无意识的继承CSS属性的问题，BEM等可以部分解决这个问题，但是CSS Modules和CSS-in-JS是更好的方案。
 
 ## CSS Modules
 
-组件作用域的CSS可以允许你在没有副作用的情况下书写传统CSS，不用担心选择器冲突和影响其它组价。
+组件作用域的CSS可以允许你在没有副作用的情况下书写传统CSS，不用担心选择器冲突或影响其它组件。
 
 Gatsby默认就支持CSS Modules。
 
@@ -182,6 +182,102 @@ import * as  ContainerStyles from './styles/wrap-page.module.css';
 ### 什么时候使用CSS Modules
 
 CSS Module强烈推荐使用。因为这可以让你编写常规的，可复用的CSS文件，同时只打包需要的CSS可以获得性能提升。
+
+
+## CSS-in-JS来增强样式
+
+CSS-in-JS指的是通过JS来书写样式，而不是通过额外的CSS文件。这样可以很方便做到组件作用域，避免未使用的样式代码，更好的性能（没有CSS选择器），更好地动态修改样式。
+
+组件层面：你必须使用组件来添加样式，契合了React的所有都是组件的理念。
+
+作用域：组件内作用域。
+
+动态：样式可以更方便得随组件状态。
+
+类库：许多CSS-in-JS的类库会生成独一无二的className，自动添加浏览器厂商的前缀，懒加载CSS等功能。
+
+gatsby默认不支持CSS-in-JS，需要引入第三方库。
+
+## 使用Sass
+
+安装gatsby-plugin-sass和sass。
+
+```bash
+npm i sass gatsby-plugin-sass --save-dev
+```
+
+在gatsby-config.js中包括插件。
+
+```js
+plugins:['gatsby-plugin-sass']
+```
+
+# 添加本地图片和媒体资源
+
+两种方式来引入资源文件：1、直接在gatsby模板，页面和组件中引用；2、使用static folder，在某些场景下比较有用。
+
+## 在webpack中引入资源
+
+可以在JS模块中使用import来引入一个文件，import的结果为文件最终的路径。这个路径可以作为src，href的值。
+
+对于svg、jpg、jpeg、png、gif、mp4、webm、wav、mp3、m4a、acc和oga文件，为了减少额外的服务器请求，import的页面少于10000字节会直接返回一个Data URI而不是path。
+
+```js
+import girlImg from './../images/girl.jpeg';
+// 这段代码会让webpack将image文件拷贝到public文件夹，同时提供正确的path。
+```
+
+也可以在CSS中import文件。
+
+```css
+background-image: url("./../images/girl.jpeg")
+```
+webpack会找到所有的在CSS中的相对引用(以./开始的)，然后将最终的路径替换下。
+
+文件路径后webpack会自动添加内容hash值。
+
+如果你使用scss，import是相对于与入口scss文件的。
+
+## 使用GraphQL和gatsby-source-filesystem来查询文件
+
+你可以使用GraphQL来import文件，这也会导致将这些文件拷贝到public文件夹。
+
+```js
+import React from "react"
+import { useStaticQuery, graphql } from "gatsby"
+import Layout from "../components/layout"
+const DownloadsPage = () => {
+  const data = useStaticQuery(graphql`
+    {
+      allFile(filter: { extension: { eq: "pdf" } }) {
+        edges {
+          node {
+            publicURL
+            name
+          }
+        }
+      }
+    }
+  `)
+  return (
+    <Layout>
+      <h1>All PDF Downloads</h1>
+      <ul>
+        {data.allFile.edges.map((file, index) => {
+          return (
+            <li key={`pdf-${index}`}>
+              <a href={file.node.publicURL} download>
+                {file.node.name}
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </Layout>
+  )
+}
+export default DownloadsPage
+```
 
 ## 参考文档
 
