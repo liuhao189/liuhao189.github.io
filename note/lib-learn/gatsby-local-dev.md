@@ -192,7 +192,7 @@ CSS-in-JS指的是通过JS来书写样式，而不是通过额外的CSS文件。
 
 作用域：组件内作用域。
 
-动态：样式可以更方便得随组件状态。
+动态：样式可以更方便得跟随组件状态变化。
 
 类库：许多CSS-in-JS的类库会生成独一无二的className，自动添加浏览器厂商的前缀，懒加载CSS等功能。
 
@@ -214,7 +214,7 @@ plugins:['gatsby-plugin-sass']
 
 # 添加本地图片和媒体资源
 
-两种方式来引入资源文件：1、直接在gatsby模板，页面和组件中引用；2、使用static folder，在某些场景下比较有用。
+两种方式来引入资源文件：1、直接在gatsby引用模板，页面和组件中引用；2、使用static folder，在某些场景下比较有用。
 
 ## 在webpack中引入资源
 
@@ -232,9 +232,7 @@ import girlImg from './../images/girl.jpeg';
 ```css
 background-image: url("./../images/girl.jpeg")
 ```
-webpack会找到所有的在CSS中的相对引用(以./开始的)，然后将最终的路径替换下。
-
-文件路径后webpack会自动添加内容hash值。
+webpack会找到所有的在CSS中的相对引用(以./开始的)，然后将最终的路径替换下。文件路径中webpack会自动添加内容hash值。
 
 如果你使用scss，import是相对于与入口scss文件的。
 
@@ -278,6 +276,53 @@ const DownloadsPage = () => {
 }
 export default DownloadsPage
 ```
+
+## 使用Gatsby Image来避免图片过大
+
+安装gatsby-transformer-sharp和gatsby-plugin-sharp来转换和处理图片。
+
+gatsby-image包含一个组件，它内部支持Gatsby的GraphQL查询。它将Gatsby的原生图片处理能力和图片加载技术结合起来。
+
+gatsby-image并不总能替换<img/>，它需要固定宽高的图片，或充满父级元素的图片。
+
+gatsby-image：
+
+1、使用IntersectionObserver API来懒加载图片。
+
+2、image的位置不会在图片加载过程中变动，主要是因为固定宽高。
+
+3、可以使用占位符图片，一个灰色的背景或模糊不清的图片。
+
+```bash
+npm i gatsby-transformer-sharp gatsby-plugin-sharp gatsby-image
+```
+
+### 图片的问题
+
+大的，没有优化的图片会减慢你的网站，降低用户体验。
+
+你需要做的工作很多：
+
+1、调整大图到你设计的大小。
+
+2、为智能手机或平板生成许多小尺寸的图片。
+
+3、压缩jpeg和png。
+
+4、懒加载图片以提高首屏时间和减少流量损耗。
+
+5、使用图片占位符，在图片加载时展示部分信息。
+
+6、固定图片的位置，以免图片加载后布局大变动。
+
+这些会耗费大量的人力。
+
+### 解决方案
+
+
+
+
+
 
 ## 参考文档
 

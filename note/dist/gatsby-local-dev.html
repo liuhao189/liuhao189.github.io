@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Gatsby本地开发 & 路由和页面</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1647188380267">
+  <link rel="stylesheet" href="/note/note.css?ts=1647274136214">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -132,7 +132,7 @@
 <p>CSS-in-JS指的是通过JS来书写样式，而不是通过额外的CSS文件。这样可以很方便做到组件作用域，避免未使用的样式代码，更好的性能（没有CSS选择器），更好地动态修改样式。</p>
 <p>组件层面：你必须使用组件来添加样式，契合了React的所有都是组件的理念。</p>
 <p>作用域：组件内作用域。</p>
-<p>动态：样式可以更方便得随组件状态。</p>
+<p>动态：样式可以更方便得跟随组件状态变化。</p>
 <p>类库：许多CSS-in-JS的类库会生成独一无二的className，自动添加浏览器厂商的前缀，懒加载CSS等功能。</p>
 <p>gatsby默认不支持CSS-in-JS，需要引入第三方库。</p>
 <h2 id="-sass">使用Sass</h2>
@@ -147,7 +147,7 @@
 
 </code></pre>
 <h1 id="-">添加本地图片和媒体资源</h1>
-<p>两种方式来引入资源文件：1、直接在gatsby模板，页面和组件中引用；2、使用static folder，在某些场景下比较有用。</p>
+<p>两种方式来引入资源文件：1、直接在gatsby引用模板，页面和组件中引用；2、使用static folder，在某些场景下比较有用。</p>
 <h2 id="-webpack-">在webpack中引入资源</h2>
 <p>可以在JS模块中使用import来引入一个文件，import的结果为文件最终的路径。这个路径可以作为src，href的值。</p>
 <p>对于svg、jpg、jpeg、png、gif、mp4、webm、wav、mp3、m4a、acc和oga文件，为了减少额外的服务器请求，import的页面少于10000字节会直接返回一个Data URI而不是path。</p>
@@ -161,8 +161,7 @@
 </pre></div>
 
 </code></pre>
-<p>webpack会找到所有的在CSS中的相对引用(以./开始的)，然后将最终的路径替换下。</p>
-<p>文件路径后webpack会自动添加内容hash值。</p>
+<p>webpack会找到所有的在CSS中的相对引用(以./开始的)，然后将最终的路径替换下。文件路径中webpack会自动添加内容hash值。</p>
 <p>如果你使用scss，import是相对于与入口scss文件的。</p>
 <h2 id="-graphql-gatsby-source-filesystem-">使用GraphQL和gatsby-source-filesystem来查询文件</h2>
 <p>你可以使用GraphQL来import文件，这也会导致将这些文件拷贝到public文件夹。</p>
@@ -203,6 +202,29 @@
 </pre></div>
 
 </code></pre>
+<h2 id="-gatsby-image-">使用Gatsby Image来避免图片过大</h2>
+<p>安装gatsby-transformer-sharp和gatsby-plugin-sharp来转换和处理图片。</p>
+<p>gatsby-image包含一个组件，它内部支持Gatsby的GraphQL查询。它将Gatsby的原生图片处理能力和图片加载技术结合起来。</p>
+<p>gatsby-image并不总能替换&lt;img/&gt;，它需要固定宽高的图片，或充满父级元素的图片。</p>
+<p>gatsby-image：</p>
+<p>1、使用IntersectionObserver API来懒加载图片。</p>
+<p>2、image的位置不会在图片加载过程中变动，主要是因为固定宽高。</p>
+<p>3、可以使用占位符图片，一个灰色的背景或模糊不清的图片。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i gatsby-transformer-sharp gatsby-plugin-sharp gatsby-image
+</pre></div>
+
+</code></pre>
+<h3 id="-">图片的问题</h3>
+<p>大的，没有优化的图片会减慢你的网站，降低用户体验。</p>
+<p>你需要做的工作很多：</p>
+<p>1、调整大图到你设计的大小。</p>
+<p>2、为智能手机或平板生成许多小尺寸的图片。</p>
+<p>3、压缩jpeg和png。</p>
+<p>4、懒加载图片以提高首屏时间和减少流量损耗。</p>
+<p>5、使用图片占位符，在图片加载时展示部分信息。</p>
+<p>6、固定图片的位置，以免图片加载后布局大变动。</p>
+<p>这些会耗费大量的人力。</p>
+<h3 id="-">解决方案</h3>
 <h2 id="-">参考文档</h2>
 <p><a href="https://v2.gatsbyjs.com/docs/how-to/routing/">https://v2.gatsbyjs.com/docs/how-to/routing/</a></p>
 </body>
