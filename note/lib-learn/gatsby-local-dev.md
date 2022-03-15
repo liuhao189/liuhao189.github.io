@@ -303,11 +303,11 @@ npm i gatsby-transformer-sharp gatsby-plugin-sharp gatsby-image
 
 你需要做的工作很多：
 
-1、调整大图到你设计的大小。
+1、调整大图到页面设计的大小。
 
-2、为智能手机或平板生成许多小尺寸的图片。
+2、为智能手机或平板生成小尺寸图片。
 
-3、压缩jpeg和png。
+3、压缩jpeg和png，去掉额外的信息。
 
 4、懒加载图片以提高首屏时间和减少流量损耗。
 
@@ -319,12 +319,66 @@ npm i gatsby-transformer-sharp gatsby-plugin-sharp gatsby-image
 
 ### 解决方案
 
+```js
+    `gatsby-plugin-image`,
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `images`,
+        path: `${__dirname}/src/images`,
+      },
+    },
+    `gatsby-plugin-sharp`,
+    `gatsby-transformer-sharp`,
+```
 
+```js
+export const query = graphql`
+    query MyQuery {
+        file(relativePath:{eq:"cat.jpeg"}){
+            childImageSharp {
+               gatsbyImageData(width:200,placeholder:BLURRED,formats:[AUTO,WEBP,AVIF])
+            }
+        }
+    }
+`
+```
 
+## Static Folder
+
+Gatsby推荐在JS文件中直接引用资源文件。因为下面的优点：
+
+1、脚本和样式可以压缩并打包到一起，避免额外的网络请求。
+
+2、缺少的文件会在编译时报错，而不是用户端报404错误。
+
+3、打包时文件会带内容hash值，不用担心浏览器缓存旧版本。
+
+还存在下面的缺点：
+
+1、static文件夹里的内容都不会被额外的处理。eg：压缩，裁剪。
+
+### 在模块系统之外添加assets
+
+你可以在项目根目录创建一个static文件夹。里面的每一个文件夹会被拷贝到public文件夹。
+
+### 什么场景下使用static文件夹
+
+正常情况我们推荐使用stylesheets，images和字体资源。static文件夹在下列场景下有一些作用：
+
+1、你需要一个特定名称的文件，eg：manifest.webmanifest。
+
+2、你有数千张图片，需要动态引用它们的路径。
+
+3、你想包含一个小段的JS，在打包的JS文件之外。
+
+4、一些类库跟webpack不兼容，需要使用script tag。
+
+5、一些很难用GraphQL处理的json文件。
 
 
 
 ## 参考文档
 
-https://v2.gatsbyjs.com/docs/how-to/routing/
+https://v2.gatsbyjs.com/docs
 

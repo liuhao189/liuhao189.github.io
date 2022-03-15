@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Gatsby本地开发 & 路由和页面</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1647274136214">
+  <link rel="stylesheet" href="/note/note.css?ts=1647361445753">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -217,15 +217,56 @@
 <h3 id="-">图片的问题</h3>
 <p>大的，没有优化的图片会减慢你的网站，降低用户体验。</p>
 <p>你需要做的工作很多：</p>
-<p>1、调整大图到你设计的大小。</p>
-<p>2、为智能手机或平板生成许多小尺寸的图片。</p>
-<p>3、压缩jpeg和png。</p>
+<p>1、调整大图到页面设计的大小。</p>
+<p>2、为智能手机或平板生成小尺寸图片。</p>
+<p>3、压缩jpeg和png，去掉额外的信息。</p>
 <p>4、懒加载图片以提高首屏时间和减少流量损耗。</p>
 <p>5、使用图片占位符，在图片加载时展示部分信息。</p>
 <p>6、固定图片的位置，以免图片加载后布局大变动。</p>
 <p>这些会耗费大量的人力。</p>
 <h3 id="-">解决方案</h3>
+<pre><code class="lang-js"><div class="highlight"><pre>    <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">plugin</span><span class="o">-</span><span class="nx">image</span><span class="err">`</span><span class="p">,</span>
+    <span class="p">{</span>
+      <span class="nx">resolve</span><span class="o">:</span> <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">source</span><span class="o">-</span><span class="nx">filesystem</span><span class="err">`</span><span class="p">,</span>
+      <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">name</span><span class="o">:</span> <span class="err">`</span><span class="nx">images</span><span class="err">`</span><span class="p">,</span>
+        <span class="nx">path</span><span class="o">:</span> <span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">__dirname</span><span class="p">}</span><span class="o">/</span><span class="nx">src</span><span class="o">/</span><span class="nx">images</span><span class="err">`</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">plugin</span><span class="o">-</span><span class="nx">sharp</span><span class="err">`</span><span class="p">,</span>
+    <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">transformer</span><span class="o">-</span><span class="nx">sharp</span><span class="err">`</span><span class="p">,</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">export</span> <span class="kr">const</span> <span class="nx">query</span> <span class="o">=</span> <span class="nx">graphql</span><span class="err">`</span>
+    <span class="nx">query</span> <span class="nx">MyQuery</span> <span class="p">{</span>
+        <span class="nx">file</span><span class="p">(</span><span class="nx">relativePath</span><span class="o">:</span><span class="p">{</span><span class="nx">eq</span><span class="o">:</span><span class="s2">&quot;cat.jpeg&quot;</span><span class="p">}){</span>
+            <span class="nx">childImageSharp</span> <span class="p">{</span>
+               <span class="nx">gatsbyImageData</span><span class="p">(</span><span class="nx">width</span><span class="o">:</span><span class="mi">200</span><span class="p">,</span><span class="nx">placeholder</span><span class="o">:</span><span class="nx">BLURRED</span><span class="p">,</span><span class="nx">formats</span><span class="o">:</span><span class="p">[</span><span class="nx">AUTO</span><span class="p">,</span><span class="nx">WEBP</span><span class="p">,</span><span class="nx">AVIF</span><span class="p">])</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="err">`</span>
+</pre></div>
+
+</code></pre>
+<h2 id="static-folder">Static Folder</h2>
+<p>Gatsby推荐在JS文件中直接引用资源文件。因为下面的优点：</p>
+<p>1、脚本和样式可以压缩并打包到一起，避免额外的网络请求。</p>
+<p>2、缺少的文件会在编译时报错，而不是用户端报404错误。</p>
+<p>3、打包时文件会带内容hash值，不用担心浏览器缓存旧版本。</p>
+<p>还存在下面的缺点：</p>
+<p>1、static文件夹里的内容都不会被额外的处理。eg：压缩，裁剪。</p>
+<h3 id="-assets">在模块系统之外添加assets</h3>
+<p>你可以在项目根目录创建一个static文件夹。里面的每一个文件夹会被拷贝到public文件夹。</p>
+<h3 id="-static-">什么场景下使用static文件夹</h3>
+<p>正常情况我们推荐使用stylesheets，images和字体资源。static文件夹在下列场景下有一些作用：</p>
+<p>1、你需要一个特定名称的文件，eg：manifest.webmanifest。</p>
+<p>2、你有数千张图片，需要动态引用它们的路径。</p>
+<p>3、你想包含一个小段的JS，在打包的JS文件之外。</p>
+<p>4、一些类库跟webpack不兼容，需要使用script tag。</p>
+<p>5、一些很难用GraphQL处理的json文件。</p>
 <h2 id="-">参考文档</h2>
-<p><a href="https://v2.gatsbyjs.com/docs/how-to/routing/">https://v2.gatsbyjs.com/docs/how-to/routing/</a></p>
+<p><a href="https://v2.gatsbyjs.com/docs">https://v2.gatsbyjs.com/docs</a></p>
 </body>
 </html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gatsby-插件和主题</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1647361445753">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="gatsby-">Gatsby-插件和主题</h1>
+<p>Gatsby有丰富的插件生态，从CMS集成到图片优化。</p>
+<h2 id="-">怎样使用插件</h2>
+<p>gatsby的插件是Node的包，所以你可以使用npm安装它们。</p>
+<p>eg：gatsby-transformer-json可以将json文件添加到gatsby的数据层。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">i</span> <span class="nx">gatsby</span><span class="o">-</span><span class="nx">transformer</span><span class="o">-</span><span class="nx">json</span>
+</pre></div>
+
+</code></pre>
+<p>然后在gatsby-config中添加和配置即可。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
+    <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">transformer</span><span class="o">-</span><span class="nx">json</span><span class="err">`</span>
+<span class="p">]</span>
+</pre></div>
+
+</code></pre>
+<p>plugin可以传递参数。注意options参数会被序列化为字符串，所以它们不能是函数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="nx">resolve</span><span class="o">:</span> <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">source</span><span class="o">-</span><span class="nx">filesystem</span><span class="err">`</span><span class="p">,</span>
+        <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">path</span><span class="o">:</span> <span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">__dirname</span><span class="p">}</span><span class="o">/</span><span class="nx">src</span><span class="o">/</span><span class="nx">data</span><span class="o">/</span><span class="err">`</span><span class="p">,</span>
+            <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;data&#39;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">怎样创建通用插件</h2>
+<p>plugin一般是一个npm包。通用插件的理念更注重插件的组成，而不是根据功能选择特定的标签（source，transformer，local）。</p>
+<h3 id="-">初始化你的插件项目</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm init
+</pre></div>
+
+</code></pre>
+<p>在插件中创建一个gatsby-node.js文件，这可以让你使用gatsby node APIS。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># in plugin project</span>
+npm link
+<span class="c"># in use project</span>
+npm link your-plugin-name
+</pre></div>
+
+</code></pre>
+<h2 id="-source-">怎样创建source插件</h2>
+<p>该插件将数据源，优化远程图片，在数据源之间创建外键。</p>
+<p>数据源插件将远程或本地的数据转换为gatsby的nodes。</p>
+<p>数据源插件可以将任何数据转换Gatsby可以处理的格式。</p>
+<p>注意：如果你的数据在本地文件系统中，你一般不需要创建source插件。你可以使用gatsby-source-filesystem，然后使用transformer plugins即可。</p>
+</body>
+</html>
