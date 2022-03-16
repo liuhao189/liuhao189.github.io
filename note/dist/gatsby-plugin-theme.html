@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Gatsby-插件和主题</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1647361445753">
+  <link rel="stylesheet" href="/note/note.css?ts=1647448043891">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,15 +13,15 @@
 })();
 </script>
 <h1 id="gatsby-">Gatsby-插件和主题</h1>
-<p>Gatsby有丰富的插件生态，从CMS集成到图片优化。</p>
+<p>Gatsby拥有丰富的插件生态，从CMS集成到图片优化。</p>
 <h2 id="-">怎样使用插件</h2>
-<p>gatsby的插件是Node的包，所以你可以使用npm安装它们。</p>
+<p>gatsby的插件是npm的包，你可以使用npm安装它们。</p>
 <p>eg：gatsby-transformer-json可以将json文件添加到gatsby的数据层。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">i</span> <span class="nx">gatsby</span><span class="o">-</span><span class="nx">transformer</span><span class="o">-</span><span class="nx">json</span>
 </pre></div>
 
 </code></pre>
-<p>然后在gatsby-config中添加和配置即可。</p>
+<p>然后在gatsby-config中添加和配置options即可。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
     <span class="err">`</span><span class="nx">gatsby</span><span class="o">-</span><span class="nx">transformer</span><span class="o">-</span><span class="nx">json</span><span class="err">`</span>
 <span class="p">]</span>
@@ -57,9 +57,75 @@ npm link your-plugin-name
 
 </code></pre>
 <h2 id="-source-">怎样创建source插件</h2>
-<p>该插件将数据源，优化远程图片，在数据源之间创建外键。</p>
-<p>数据源插件将远程或本地的数据转换为gatsby的nodes。</p>
-<p>数据源插件可以将任何数据转换Gatsby可以处理的格式。</p>
+<p>该类插件可以添加数据源，优化远程图片，在数据源之间创建外键。数据源插件将远程或本地的数据转换为gatsby的nodes。数据源插件可以将任何数据转换Gatsby可以处理的格式。</p>
 <p>注意：如果你的数据在本地文件系统中，你一般不需要创建source插件。你可以使用gatsby-source-filesystem，然后使用transformer plugins即可。</p>
+<p>插件行为：</p>
+<p>1、向demo API Server发起请求。</p>
+<p>2、将API的响应转换为Gatsby的node系统数据。</p>
+<p>3、链接这些node的数据。</p>
+<p>4、接受options来控制插件行为。</p>
+<p>5、优化图片大小。</p>
+<h3 id="-">使用本地插件</h3>
+<p>可以使用require.resolve。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span><span class="nx">require</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="s1">&#39;../source-plugin&#39;</span><span class="p">)]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>也可以使用npm link或yarn worksapces。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// 插件内gatsby-node.js来打印启动信息</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">onPreInit</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Loaded</span> <span class="nx">source</span><span class="o">-</span><span class="nx">plugin</span><span class="err">`</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-sourcenodes-createnode-node">通过sourceNodes的createNode方法创建node</h3>
+<p>gatsby-node.js文件添加下面的代码。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">sourceNodes</span> <span class="o">=</span> <span class="nx">async</span> <span class="p">({</span> <span class="nx">actions</span><span class="p">,</span> <span class="nx">createContentDigest</span><span class="p">,</span> <span class="nx">createNodeId</span><span class="p">,</span> <span class="nx">getNodesByType</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">createNode</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">actions</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">posts</span><span class="o">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nx">desc</span><span class="o">:</span> <span class="s1">&#39;Hello World&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="nx">id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="nx">desc</span><span class="o">:</span> <span class="s1">&#39;Second post&#39;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+    <span class="kr">const</span> <span class="nx">POST_NODE_TYPE</span> <span class="o">=</span> <span class="s1">&#39;Post&#39;</span><span class="p">;</span>
+    <span class="nx">data</span><span class="p">.</span><span class="nx">posts</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">post</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">createNode</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="p">...</span><span class="nx">post</span><span class="p">,</span>
+                <span class="nx">id</span><span class="o">:</span> <span class="nx">createNodeId</span><span class="p">(</span><span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">POST_NODE_TYPE</span><span class="p">}</span><span class="o">-</span><span class="nx">$</span><span class="p">{</span><span class="nx">post</span><span class="p">.</span><span class="nx">id</span><span class="p">}</span><span class="err">`</span><span class="p">),</span>
+                <span class="nx">parent</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nx">children</span><span class="o">:</span> <span class="p">[],</span>
+                <span class="nx">internal</span><span class="o">:</span> <span class="p">{</span>
+                    <span class="nx">type</span><span class="o">:</span> <span class="nx">POST_NODE_TYPE</span><span class="p">,</span>
+                    <span class="nx">content</span><span class="o">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">post</span><span class="p">),</span>
+                    <span class="nx">contentDigest</span><span class="o">:</span> <span class="nx">createContentDigest</span><span class="p">(</span><span class="nx">post</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>你实现了gatsby的sourceNodes接口，gatsby启动时会执行该接口，并且把gatsby的和create nodes相关的帮助方法作为参数传递进去。</p>
+<p>你需要提供node的必需字段，eg：nodeId，contentDigest(gatsby用来监控脏nodes的，或nodes变更)。</p>
+<p>然后你遍历一些数据，调用createNode。</p>
+<h3 id="-">从远端获取数据</h3>
+<p>可以使用Node.js的内建http.get，axios，node-fetch等类库来获取服务器的数据。</p>
+<h3 id="-url-remotefilenode">从URL创建remoteFileNode</h3>
+<p>为了优化URL的图片，File nodes数据需要添加。然后你就可以安装gatsby-plugin-sharp和gatsby-transformer-sharp来处理图片文件。</p>
+<p>gatsby-plugin-sharp和gatsby-transformer-sharp也会为gatsby-image添加需要的nodes数据。</p>
+<p>需要实现一个onCreateNode接口，Node创建时会调用该接口。然后调用gatsby-source-filesystem的createRemoteFileNode方法，该方法会从远端下载文件并创建File Node。</p>
+<h2 id="-">参考文档</h2>
 </body>
 </html>
