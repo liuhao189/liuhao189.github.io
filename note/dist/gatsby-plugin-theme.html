@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Gatsby-插件和主题</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1647448043891">
+  <link rel="stylesheet" href="/note/note.css?ts=1647534762416">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -126,6 +126,24 @@ npm link your-plugin-name
 <p>为了优化URL的图片，File nodes数据需要添加。然后你就可以安装gatsby-plugin-sharp和gatsby-transformer-sharp来处理图片文件。</p>
 <p>gatsby-plugin-sharp和gatsby-transformer-sharp也会为gatsby-image添加需要的nodes数据。</p>
 <p>需要实现一个onCreateNode接口，Node创建时会调用该接口。然后调用gatsby-source-filesystem的createRemoteFileNode方法，该方法会从远端下载文件并创建File Node。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">onCreateNode</span> <span class="o">=</span> <span class="nx">async</span> <span class="p">({</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">actions</span><span class="o">:</span> <span class="p">{</span> <span class="nx">createNode</span> <span class="p">},</span> <span class="nx">createNodeId</span><span class="p">,</span> <span class="nx">getCache</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">internal</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="nx">POST_NODE_TYPE</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">fileNode</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">createRemoteFileNode</span><span class="p">({</span>
+            <span class="nx">url</span><span class="o">:</span> <span class="nx">node</span><span class="p">.</span><span class="nx">imgUrl</span><span class="p">,</span>
+            <span class="nx">parentNodeId</span><span class="o">:</span> <span class="nx">node</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+            <span class="nx">createNode</span><span class="p">,</span>
+            <span class="nx">createNodeId</span><span class="p">,</span>
+            <span class="nx">getCache</span>
+        <span class="p">})</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">fileNode</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">node</span><span class="p">.</span><span class="nx">remoteImage__NODE</span> <span class="o">=</span> <span class="nx">fileNode</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 </body>
 </html>

@@ -147,7 +147,23 @@ gatsby-plugin-sharp和gatsby-transformer-sharp也会为gatsby-image添加需要�
 
 需要实现一个onCreateNode接口，Node创建时会调用该接口。然后调用gatsby-source-filesystem的createRemoteFileNode方法，该方法会从远端下载文件并创建File Node。
 
+```js
+exports.onCreateNode = async ({ node, actions: { createNode }, createNodeId, getCache }) => {
 
+    if (node.internal.type === POST_NODE_TYPE) {
+        const fileNode = await createRemoteFileNode({
+            url: node.imgUrl,
+            parentNodeId: node.id,
+            createNode,
+            createNodeId,
+            getCache
+        })
+        if (fileNode) {
+            node.remoteImage__NODE = fileNode.id;
+        }
+    }
+}
+```
 
 ## 参考文档
 

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rollup打包器</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1647534762416">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="rollup-">Rollup打包器</h1>
+<p>Rollup是一个JS模块打包器，可以将小块代码编译程大块复杂的代码。eg：libray或应用程序。</p>
+<p>Rollup对代码模块使用新的标准化格式，这主要指的是ES6模块。</p>
+<h2 id="-">快速入门指南</h2>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i rollup -g
+rollup -v
+</pre></div>
+
+</code></pre>
+<p>Rollup可以通过命令行接口配合配置文件来调用，也可以使用JS API来调用。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># iife</span>
+rollup main.js --file bundle.js --format iife
+<span class="c"># cjs</span>
+rollup main.js --file bundle.js --format cjs
+<span class="c"># umd umd需要一个名字</span>
+rollup main.js --file bundle.js --format umd --name <span class="s1">&#39;myBundle&#39;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">为什么使用</h2>
+<p>将项目拆分成小的单独文件，这样开发软件通常会很简单，因为这通常会消除无法预知的相互影响，以及显著降低了所要解决的问题的复杂度。</p>
+<h2 id="tree-shaking">Tree-shaking</h2>
+<p>除了使用ES6模块之外，Rollup还静态分析代码中的import，并将排除任何未实际使用的代码。这允许您架构于现有工具和模块之上，而不会增加额外的依赖或使项目的大小膨胀。</p>
+<p>显式得import和export语句的方式，它远比在编译后的输出代码中，简单地运行自动minifier检测未使用的变量更有效。</p>
+<h2 id="-">兼容性</h2>
+<p>Rollup可以通过插件导入已存在的CommonJS模块。</p>
+<h2 id="-es6-">发布ES6模块</h2>
+<p>为了确保你的ES6模块可以直接与运行在CommonJS中的工具使用。你可以使用Rollup编译为UMD或CommonJS格式。</p>
+<p>然后在package.json文件的main属性中指向当前编译的版本。如果你的package.json中有module字段，Rollup和Webpack2这样的ES6感知工具将会直接导入ES6模块版本。</p>
+<h2 id="-">命令行接口</h2>
+<p>一般场景下，直接使用rollup的命令行命令即可。你可以提供一个rollup config文件来简化命令行的使用。config 文件也可以更好的支持高级功能。</p>
+<p>一般配置文件在项目根目录，命名为rollup.config.js。在后台，rollup在使用rollup.config.js之前将其编译为CommonJS的格式。</p>
+<p>如果你想直接使用CommonJS的方式来书写rollup.config.js，你可以将文件名改为rollup.config.cjs。</p>
+<p>在NodeJS 13++的版本上，可以命名为rollup.config.mjs，也可以避免rollup编译，来直接使用ES module的版本。</p>
+<p>你可以使用其它语言来书写rollup.config文件。eg：typescript。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># 需要先安装 @rollup/plugin-typescript</span>
+rollup --config rollup.config.ts --configPlugin typescript
+</pre></div>
+
+</code></pre>
+<h2 id="-">配置文件</h2>
+<h3 id="-">核心功能</h3>
+<p>1、external：string | RegExp | (id:string,parentId:string,isResolved:boolean) =&gt; boolean。</p>
+<p>id应该是：1、外部依赖的名字，import语句中的名字。2、resolved ID，类似文件的绝对路径。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// rollup.config.js</span>
+<span class="kr">import</span> <span class="nx">path</span> <span class="nx">from</span> <span class="s1">&#39;path&#39;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
+  <span class="c1">//...,</span>
+  <span class="nx">external</span><span class="o">:</span> <span class="p">[</span>
+    <span class="s1">&#39;some-externally-required-library&#39;</span><span class="p">,</span>
+    <span class="nx">path</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span> <span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;src/some-local-file-that-should-not-be-bundled.js&#39;</span> <span class="p">),</span>
+    <span class="sr">/node_modules/</span>
+  <span class="p">]</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>注意，如果你想通过/node_modules/过滤掉import的包，eg：import { rollup } from &#39;rollup&#39;。你首先需要安装@rollup/plugin-node-resolve。</p>
+<p>命令行中指定参数时：</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>rollup -i src/main.js ... -e foo,bar,baz
+</pre></div>
+
+</code></pre>
+<p>function(id,parent,isResolved)，id是模块id，parent是import模块的模块id，isResolved是否resolved。</p>
+<p>当创建iife或umd格式的包时，你需要在output.global中提供global变量名来替换引用的地方。</p>
+<p>当使用相对路径import包时，rollup会内部解析为绝对路径，所以不同的import可以合并到一个import。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// input</span>
+<span class="c1">// src/main.js (entry point)</span>
+<span class="kr">import</span> <span class="nx">x</span> <span class="nx">from</span> <span class="s1">&#39;../external.js&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="s1">&#39;./nested/nested.js&#39;</span><span class="p">;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+
+<span class="c1">// src/nested/nested.js</span>
+<span class="c1">// the import would point to the same file if it existed</span>
+<span class="kr">import</span> <span class="nx">x</span> <span class="nx">from</span> <span class="s1">&#39;../../external.js&#39;</span><span class="p">;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+
+<span class="c1">// output</span>
+<span class="c1">// the different imports are merged</span>
+<span class="kr">import</span> <span class="nx">x</span> <span class="nx">from</span> <span class="s1">&#39;../external.js&#39;</span><span class="p">;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>
