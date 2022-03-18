@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gatsby SSR Api</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1647602138086">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="gatsby-ssr-api">Gatsby SSR Api</h1>
+<p>gatsby-ssr.js可以让你修改被SSR的HTML文件的内容。在项目根目录创建gatsby-ssr.js。</p>
+<p>注意：wrapPageElement和wrapRootElement API同时存在于browser API和SSR API，一个文件中使用了，另外一个也要使用。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="nx">React</span> <span class="nx">from</span> <span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">WrapElement</span> <span class="nx">from</span> <span class="s1">&#39;./src/components/wrap-page&#39;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">wrapPageElement</span> <span class="o">=</span> <span class="p">({</span> <span class="nx">element</span><span class="p">,</span> <span class="nx">props</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="o">&lt;</span><span class="nx">WrapElement</span> <span class="p">{...</span><span class="nx">props</span> <span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span> <span class="nx">element</span> <span class="p">}</span> <span class="o">&lt;</span><span class="err">/WrapElement&gt;);</span>
+<span class="p">};</span>
+
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">onRenderBody</span><span class="o">=</span> <span class="p">({</span><span class="nx">setBodyAttributes</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">setBodyAttributes</span><span class="p">({</span>
+    <span class="nx">className</span><span class="o">:</span><span class="s1">&#39;my-body-class-changed&#39;</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="onprerenderhtml">onPreRenderHTML</h2>
+<p>function: (apiCallbackContext:object, pluginOptions: pluginOptions) =&gt; undefined</p>
+<p>在Gatsby的SSR之外，创建HTML文件之前，你可以修改传递给html.js的内容。</p>
+<p>apiCallbackContext属性：</p>
+<p>1、pathname，渲染页面的路径。</p>
+<p>2、getHeadComponents。</p>
+<p>3、replaceHeadComponents。</p>
+<p>4、getPreBodyComponents。</p>
+<p>5、replacePreBodyComponents。</p>
+<p>6、getPostBodyComponents。</p>
+<p>7、replacePostBodyComponents。</p>
+<p>pluginOptions的属性：</p>
+<p>gatsby-config.js的配置。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//</span>
+<span class="kr">export</span> <span class="kr">const</span> <span class="nx">onPreRenderHTML</span><span class="o">=</span> <span class="p">(</span><span class="nx">apiCallbackContext</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span><span class="nx">getHeadComponents</span><span class="p">,</span><span class="nx">replaceHeadComponents</span><span class="p">,</span> <span class="nx">pathname</span><span class="p">}</span> <span class="o">=</span> <span class="nx">apiCallbackContext</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">headComponents</span> <span class="o">=</span> <span class="nx">getHeadComponents</span><span class="p">();</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;pathname is &#39;</span><span class="p">,</span><span class="nx">pathname</span><span class="p">);</span>
+  <span class="nx">headComponents</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">elem</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">elem</span><span class="p">.</span><span class="nx">key</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">elem</span><span class="p">));</span>
+  <span class="p">});</span>
+  <span class="nx">replaceHeadComponents</span><span class="p">([...</span><span class="nx">headComponents</span><span class="p">,</span><span class="o">&lt;</span><span class="nx">script</span> <span class="nx">key</span><span class="o">=</span><span class="s1">&#39;scriptAdded&#39;</span> <span class="nx">dangerouslySetInnerHTML</span><span class="o">=</span><span class="p">{{</span> <span class="nx">__html</span><span class="o">:</span> <span class="s1">&#39;console.log(&quot;Script added!&quot;)&#39;</span> <span class="p">}}</span><span class="o">&gt;&lt;</span><span class="err">/script&gt;])</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="onrenderbody">onRenderBody</h2>
+<p>function: ({apiCallbackContext:object, pluginOptions:pluginOptions}) =&gt; undefined</p>
+<p>在每一个页面SSR之后，你可以在html.js渲染之前修改head和body组件。</p>
+<p>gatsby使用双段渲染。它遍历你的pages，首先渲染body，然后拿着body的HTML字符串传给html.js来完成渲染。</p>
+<p>能够将自定义组件发送到html.js很方便。因为有多个插件可以实现这个replaceRenderer，但是只有一个插件可以接管rendering。所以，如果你的插件要接管rendering，使用此API。</p>
+<p>apiCallbackContext参数属性：</p>
+<p>1、pathname。</p>
+<p>2、setHeadComponents。</p>
+<p>3、setHtmlAttributes。</p>
+<p>4、setBodyAttributes。</p>
+<p>5、setPreBodyComponents。</p>
+<p>6、setPostBodyComponents。</p>
+<p>7、setBodyProps。</p>
+<h2 id="replacerender">replaceRender</h2>
+<p>function:({apiCallbackContext:object,pluginOptios:pluginOptions}) =&gt; undefined</p>
+<p>替换默认的server renderer。对需要集成Redux，css-in-js等需要自定义启动的库很有用。</p>
+<p>apiCallbackContext的属性：pathname，bodyComponent，replaceBodyHTMLString，setHeadComponents，setHtmlAttributes，setBodyAttributes，setPreBodyComponents，<br>setPostBodyComponents，setBodyProps。</p>
+<h2 id="wrappageelement">wrapPageElement</h2>
+<p>function: (apiCallbackContext:object, pluginOptions:pluginOptions)=&gt;ReactNode</p>
+<p>主要是设置跨页面的wrapper components。这个组件在页面变更时，不会unmounted。</p>
+<p>apiCallbackContext属性：element：gatsby创建的页面的Element，props。</p>
+<p>return的值：ReactNode。</p>
+<h2 id="wraprootelement">wrapRootElement</h2>
+<p>function:(apiCallbackContext,pluginOptions)=&gt;ReactNode</p>
+<p>允许插件包裹根元素，通常用于设置应用程序范围的Provider组件。</p>
+<p>apiCallbackContext属性：element。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://v2.gatsbyjs.com/docs/reference/config-files/gatsby-ssr/">https://v2.gatsbyjs.com/docs/reference/config-files/gatsby-ssr/</a></p>
+</body>
+</html>
