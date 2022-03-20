@@ -1,6 +1,6 @@
 # Rollup打包器
 
-Rollup是一个JS模块打包器，可以将小块代码编译程大块复杂的代码。eg：libray或应用程序。
+Rollup是一个JS模块打包器，可以将小块代码编译成大块复杂的代码。eg：libray或应用程序。
 
 Rollup对代码模块使用新的标准化格式，这主要指的是ES6模块。
 
@@ -10,7 +10,7 @@ Rollup对代码模块使用新的标准化格式，这主要指的是ES6模块�
 npm i rollup -g
 rollup -v
 ```
-Rollup可以通过命令行接口配合配置文件来调用，也可以使用JS API来调用。
+Rollup可以通过命令行+配置文件来使用，也可以使用JS-API来使用。
 
 ```bash
 # iife
@@ -39,11 +39,11 @@ Rollup可以通过插件导入已存在的CommonJS模块。
 
 为了确保你的ES6模块可以直接与运行在CommonJS中的工具使用。你可以使用Rollup编译为UMD或CommonJS格式。
 
-然后在package.json文件的main属性中指向当前编译的版本。如果你的package.json中有module字段，Rollup和Webpack2这样的ES6感知工具将会直接导入ES6模块版本。
+然后在package.json文件的main属性中指向当前编译的版本。如果你的package.json中有module字段，Rollup和Webpack2这样的ES6打包工具将会直接导入ES6模块版本。
 
 ## 命令行接口
 
-一般场景下，直接使用rollup的命令行命令即可。你可以提供一个rollup config文件来简化命令行的使用。config 文件也可以更好的支持高级功能。
+一般场景下，直接使用rollup的命令行命令即可。你可以提供一个rollup config文件来简化命令行的使用。config文件也可以更好的支持高级功能。
 
 一般配置文件在项目根目录，命名为rollup.config.js。在后台，rollup在使用rollup.config.js之前将其编译为CommonJS的格式。
 
