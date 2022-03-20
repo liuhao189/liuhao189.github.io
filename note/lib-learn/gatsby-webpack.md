@@ -4,9 +4,9 @@
 
 自定义webpack配置主要在gatsby-node的onCreateWebpackConfig中定义。
 
-在Gatsby创建它的webpack配置时，这个方法会被调用。你设置的webpack配置会使用webpack-merge和默认的webpack配置合并。
+在Gatsby在创建webpack配置时，这个方法会被调用。你设置的webpack配置会使用webpack-merge和默认的webpack配置合并。
 
-gatsby在整个构建中需要用到数个webpack配置，gatsby在调用onCreateWebpackConfig时会传入stage作为build type。
+gatsby在整个构建中需要用数次用到webpack配置，gatsby在调用onCreateWebpackConfig时会传入stage作为build type。
 
 stage的值：
 
