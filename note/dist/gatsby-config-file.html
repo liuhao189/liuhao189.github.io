@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gatsby配置文件</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1647875668366">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="gatsby-">Gatsby配置文件</h1>
+<p>在配置文件中，gatsby提供了一系列API来控制Gatsby的启动，构建，客户端运行时的行为。这允许添加数据源，创建页面，修改生成的页面。</p>
+<h2 id="gatsby-config-api">Gatsby-config API</h2>
+<p>Gatsby-config定义网站的metadata，插件，其它配置。Gatsby-config应该导出一个Object。</p>
+<p>配置属性有：</p>
+<p>1、siteMetadata:object。</p>
+<p>如果想在整个网站的多个页面之间复用一些通用数据，你可以在siteMetadata中存储数据。这些数据在组件中可以使用GraphQL来获取数据。</p>
+<p>2、plugins:[]。</p>
+<p>plugin是实现了Gatsby API的npm包。可以简单添加plugin的名称，如果要配置plugin，则需要声明为对象模式。</p>
+<p>3、flags。</p>
+<p>flags可以允许开启实验性或即将到来的新功能，主要用于功能和特性配置。</p>
+<p>4、pathPrefix。</p>
+<p>如果site不部署到域名的根目录，可以设置一个子目录。eg:<a href="http://www.xxx.com/blogs/，需要配置pathPrefix">www.xxx.com/blogs/，需要配置pathPrefix</a>: &#39;blogs/&#39;。</p>
+<p>5、polyfill。</p>
+<p>Gatsby中使用了ES6的Promise API。一些老旧浏览器不支持，所以gatsby默认包含了Promise的polyfill。设置为false，可以禁用。</p>
+<p>6、mapping。</p>
+<p>创建在node类型中的mapping关系。</p>
+<p>7、proxy。</p>
+<p>主要是在开发时设置代理。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">proxy</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">prefix</span><span class="o">:</span> <span class="s1">&#39;/api&#39;</span><span class="p">,</span>
+    <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;https://examplesite.com/api/&#39;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>8、developMiddleare。</p>
+<p>一些时候，你需要更加细粒度和更灵活的配置dev server。Gatsby暴露了Express.js服务器接口。</p>
+<h2 id="gatsby-node-api">Gatsby Node API</h2>
+<p>文件位置：根目录的gatsby-node.js文件。</p>
+<p>在构建process中会运行一次。你可以使用它来动态创建页面，在GraphQL中添加nodes，或响应build的生命周期方法。</p>
+<p>如果你的方法是异步操作(文件IO，DB访问，调用远程接口)，你需要返回Promise，或使用callback参数（第三个参数）。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// Async/await</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">createPages</span> <span class="o">=</span> <span class="nx">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// do async work</span>
+  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">fetchExternalData</span><span class="p">()</span>
+<span class="p">}</span>
+<span class="c1">// Promise API</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">createPages</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// do async work</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+<span class="c1">// Callback API</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">createPages</span> <span class="o">=</span> <span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">pluginOptions</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// do async work</span>
+  <span class="nx">cb</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="apis">APIS</h3>
+<h4 id="createpages">createPages</h4>
+<p>主要是添加页面。在数据源插件和转换插件运行后执行，你可以在页面中查询数据。</p>
+<p>参数：actions：{ createPages }，graphql，reporter。</p>
+<p>return：void，但是可以返回Promise。</p>
+</body>
+</html>

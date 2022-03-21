@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>自定义Gatsby html.js</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1647875668366">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="-gatsby-html-js">自定义Gatsby html.js</h1>
+<p>gatsby使用一个React组件来服务端渲染&lt;head&gt;和页面的其它部分。</p>
+<p>大多数网站都应该使用默认的html.js。如果你想自定义html.js，首先需要先把默认的html.js拷贝到src目录下。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>cp .cache/default-html.js src/html.js
+</pre></div>
+
+</code></pre>
+<p>如果你想在每个页面的head和footer插入自定义元素，你可以使用html.js。</p>
+<p>注意：如果gatsby-ssr.js的API无法完成你的需求，才应该考虑修改html.js。</p>
+<h2 id="-">必须的属性</h2>
+<p>很多属性是必须的。eg：headComponents，preBodyComponents，body和postBodyComponents。</p>
+<h2 id="-head-html">在head中插入HTML</h2>
+<p>在html.js组件中渲染的DOM是静态的。如果你需要动态修改head内的元素，推荐React Helment。</p>
+<h2 id="-footer-html">在footer中插入HTML</h2>
+<p>如果你想在footer中插入HTML，html.js是比较好的方式。</p>
+<p>注意：如果写插件，可以考虑setPostBodyComponents属性。</p>
+<h2 id="-">挂载元素</h2>
+<p>如果你看见&quot;Uncaught Error: _registerComponent(...): Target container is not a DOM element&quot;，这通常意味着你的html.js的body里没有id为__gatsby的元素。</p>
+<h2 id="-js-">添加JS脚本</h2>
+<p>你可以使用React的dangerouslySetInnerHTML属性添加自定义JS脚本到你的HTML文档中。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="o">&lt;</span><span class="nx">script</span> <span class="nx">dangerouslySetInnerHTML</span><span class="o">=</span> <span class="p">{{</span>
+  <span class="nx">__html</span><span class="o">:</span> <span class="err">`</span>
+    <span class="kd">var</span> <span class="nx">name</span> <span class="o">=</span> <span class="s1">&#39;world&#39;</span><span class="p">;</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Hello &#39;</span> <span class="o">+</span> <span class="nx">name</span><span class="p">);</span>
+  <span class="err">`</span>
+<span class="p">}}</span><span class="o">&gt;</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>
