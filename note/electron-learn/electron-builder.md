@@ -1,6 +1,6 @@
 # electron-builder
 
-一个完整的打包和编译可发布的Electron-App的工具。开箱就支持macOS，Windows和Linux，并支持自动更新。
+一个集打包，编译，和发布包的Electron-App的工具，默认就支持MacOS，Windows和Linux，并支持自动更新。
 
 功能：
 
@@ -8,7 +8,7 @@
 
 原生模块依赖重编译，Electron是支持Node.js的原生模块的，但是Electron跟Node.js可能会有不同的ABI(Application binary interface)。你使用的原生模块需要重新编译。
 
-devDependencies不会被包含（你不用显式忽略)；
+devDependencies不会被包含（你不用显式忽略)。
 
 支持两个package.json结构，从Version 8开始，electron-builder只编译线上的依赖，所以可以不用两个package.json的结构。
 
@@ -16,7 +16,7 @@ devDependencies不会被包含（你不用显式忽略)；
 
 MacOS和Windows上的代码签名是支持的。Windows支持两种方式SHA1&SHA256。
 
-在Macos的开发机上，将自动使用keychain中有效且适当的身份。
+在MacOS的开发机上，将自动使用keychain中有效且适当的身份。
 
 3、支持自定更新。
 
@@ -75,9 +75,16 @@ npm i electron-builder --dev
 
 node_modules/electron-builder/out/index.d.ts提供了TS类型的声明。
 
+## 只pack可分发的格式
+
+```bash
+# 用于之前pack过的文件夹
+./node_modules/.bin/electron-builder --prepackaged <packed dir>
+```
+
 ## Debug
 
-设置DEBUG环境遍历可以debug electron-builder的构建流程。
+设置DEBUG环境变量可以debug electron-builder的构建流程。
 
 ```bash
 # mac & linux
@@ -87,6 +94,26 @@ set DEBUG=electron-builder
 # windows powershell
 $env:DEBUG=electron-builder
 ```
+
+## 命令行参数
+
+```bash
+electron-builder build
+# Build [default]
+electron-builder install-app-deps 
+# Install app deps
+electron-builder node-gyp-rebuild
+# rebuild own native code
+electron-builder create-self-signed-cert
+# 为windows apps创建自签名的app
+electron-builder start
+# 使用electron-webpack在dev模块下运行应用
+
+# Building options
+--mac, -m, -o, --macos
+# 为macOS构建，接受数组为值，可选值为default，dmg，mas，mas-dev，pkg，7z，zip，tar.xz，tar.lz，tar.gz，tar.bz2，dir。默认为default，包括zip和dmg。
+```
+
 
 
 ## 参考文档

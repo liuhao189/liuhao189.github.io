@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>electron-builder</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1647879632045">
+  <link rel="stylesheet" href="/note/note.css?ts=1647965925670">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,15 +13,15 @@
 })();
 </script>
 <h1 id="electron-builder">electron-builder</h1>
-<p>一个完整的打包和编译可发布的Electron-App的工具。开箱就支持macOS，Windows和Linux，并支持自动更新。</p>
+<p>一个集打包，编译，和发布包的Electron-App的工具，默认就支持MacOS，Windows和Linux，并支持自动更新。</p>
 <p>功能：</p>
 <p>1、npm包管理：</p>
 <p>原生模块依赖重编译，Electron是支持Node.js的原生模块的，但是Electron跟Node.js可能会有不同的ABI(Application binary interface)。你使用的原生模块需要重新编译。</p>
-<p>devDependencies不会被包含（你不用显式忽略)；</p>
+<p>devDependencies不会被包含（你不用显式忽略)。</p>
 <p>支持两个package.json结构，从Version 8开始，electron-builder只编译线上的依赖，所以可以不用两个package.json的结构。</p>
 <p>2、支持在CI服务器或开发机器上代码签名。</p>
 <p>MacOS和Windows上的代码签名是支持的。Windows支持两种方式SHA1&amp;SHA256。</p>
-<p>在Macos的开发机上，将自动使用keychain中有效且适当的身份。</p>
+<p>在MacOS的开发机上，将自动使用keychain中有效且适当的身份。</p>
 <p>3、支持自定更新。</p>
 <p>4、众多的打包格式：所有平台：7z，zip，tar.xz，tar.lz，tar.gz，tar.bz2，dir(未打包目录)。</p>
 <p>macOS：dmg，pkg，mas，mas-dev。</p>
@@ -57,14 +57,38 @@
 <p>4、在package.json中添加scripts。</p>
 <h2 id="-">代码中使用</h2>
 <p>node_modules/electron-builder/out/index.d.ts提供了TS类型的声明。</p>
+<h2 id="-pack-">只pack可分发的格式</h2>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># 用于之前pack过的文件夹</span>
+./node_modules/.bin/electron-builder --prepackaged &lt;packed dir&gt;
+</pre></div>
+
+</code></pre>
 <h2 id="debug">Debug</h2>
-<p>设置DEBUG环境遍历可以debug electron-builder的构建流程。</p>
+<p>设置DEBUG环境变量可以debug electron-builder的构建流程。</p>
 <pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># mac &amp; linux</span>
 <span class="nv">DEBUG</span><span class="o">=</span>electron-builder
 <span class="c"># windows cmd</span>
 <span class="nb">set </span><span class="nv">DEBUG</span><span class="o">=</span>electron-builder
 <span class="c"># windows powershell</span>
 <span class="nv">$env</span>:DEBUG<span class="o">=</span>electron-builder
+</pre></div>
+
+</code></pre>
+<h2 id="-">命令行参数</h2>
+<pre><code class="lang-bash"><div class="highlight"><pre>electron-builder build
+<span class="c"># Build [default]</span>
+electron-builder install-app-deps 
+<span class="c"># Install app deps</span>
+electron-builder node-gyp-rebuild
+<span class="c"># rebuild own native code</span>
+electron-builder create-self-signed-cert
+<span class="c"># 为windows apps创建自签名的app</span>
+electron-builder start
+<span class="c"># 使用electron-webpack在dev模块下运行应用</span>
+
+<span class="c"># Building options</span>
+--mac, -m, -o, --macos
+<span class="c"># 为macOS构建，接受数组为值，可选值为default，dmg，mas，mas-dev，pkg，7z，zip，tar.xz，tar.lz，tar.gz，tar.bz2，dir。默认为default，包括zip和dmg。</span>
 </pre></div>
 
 </code></pre>
