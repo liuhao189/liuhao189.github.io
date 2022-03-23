@@ -1,4 +1,4 @@
-# Gatsby SSR Api
+# Gatsby SSR Api & 渲染选项
 
 gatsby-ssr.js可以让你修改被SSR的HTML文件的内容。在项目根目录创建gatsby-ssr.js。
 
@@ -128,8 +128,8 @@ export async function getServerData(context) {
         props: {
           list:
             [
-            { id: 1 },
-            { id: 2 }
+              { id: 1 },
+              { id: 2 }
             ]
         }
     }
@@ -158,16 +158,15 @@ Server-rendered页面会在gatsby develop和gatsby serve中运行。每次请求
 
 服务端渲染需要NodeJS服务器，你可以简单得使用gatsby serve来搭建一个服务器。但是你需要自己关注监控，日志，崩溃恢复等工作。
 
-使用开箱即用的弹性扩容的gatsby-cloud是比较好得方案。
+使用开箱即用且可以弹性扩容的gatsby-cloud是比较好的方案。
 
 ## 怎么工作的
 
 每一次请求过来，服务器会运行getServerData，然后将这个数据传递给React组件，然后返回HTML给用户。默认情况下是没有缓存的，你可以自己设计Cache-Control头。
 
-当你直接访问页面时，你会得到HTML。如果你通过Gatsby的Link组件访问，响应回事JSON，Gatsby route会用这个在客户端渲染页面。
+当你直接访问页面时，你会得到HTML。如果你通过Gatsby的Link组件访问，响应会是JSON，Gatsby-route会用这个在客户端渲染页面。
 
 你只需要做的是在页面组件中定义一个getServerData方法，其它的框架会替你完成。
-
 
 # 拓展阅读-渲染选项
 
@@ -175,10 +174,9 @@ Rendering选项定义了在哪个阶段页面的HTML会被生成。可以在buil
 
 gatsby一直支持SSG（Static Site Generation）和Client-Side渲染，现在，另外两个其它渲染选项也被支持。DSG（Deferred Static Generation）和SSR（Server Side Rendering）。
 
-
 ## SSG
 
-Static Site Generation是gatsby中的默认渲染模式。这意味着整个网站会在build时生成预渲染的HTML，CSS和JS。由于是预构建的静态资源，该方式是响应最快的方式。
+Static Site Generation是gatsby中的默认渲染模式。这意味着整个网站会在build时生成预渲染的HTML，CSS和JS。由于是预构建的静态资源，后续请求不涉及大量计算，该方式是响应最快的方式。
 
 怎么工作的？
 
@@ -188,7 +186,7 @@ Static Site Generation是gatsby中的默认渲染模式。这意味着整个网�
 
 SSG的一个缺点是，较长的构建时间。当页面增加时，构建时间也会增加。
 
-Gatsby为了解决这个问题，添加了增加构建的功能，来确保只构建改变的页面。
+Gatsby为了解决这个问题，添加了增量构建的功能，来确保只构建改变的页面。
 
 ## DSG
 
@@ -197,6 +195,15 @@ DSG在概念上和SSG极为相似，唯一的区别是DSG模式下，开发者�
 举个例子：你有一些老旧的博客文章不再有用户访问，每次构建时不必每次都生成那些老旧的博客页面。
 
 DSG需要你在构建完成后，依然保持build Server可用。
+
+## SSR
+
+SSG，DSG和客户端渲染可以适应大多数网站的场景。但是有些情况下，你还是需要服务器渲染。
+
+每次请求到来时，Gatsby都会执行页面组件的getServerData方法，你可以使用context来控制Http的header，以此来规定CDN的缓存策略。
+
+
+
 
 ## 参考文档
 
