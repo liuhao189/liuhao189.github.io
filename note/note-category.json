@@ -56,6 +56,14 @@
         "distFileName":"eletronLearn"
     },
     {
+        "id": "gatsby-learn",
+        "name": "gatsby相关",
+        "path":[
+            "gatsby"
+        ],
+        "distFileName":"gatsbyLearn"
+    },
+    {
         "id": "V8Learn",
         "name": "V8引擎相关",
         "path":[
