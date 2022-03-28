@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Typescript-One</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1648483779243">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="typescript-one">Typescript-One</h1>
+<p>TS只是在JS的基础上添加了类型系统。优点是可以在构建时发现更多错误，可以使用JS不支持的高级功能。</p>
+<h2 id="-">类型推断</h2>
+<p>根据赋值的值来推断变量的类型。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">helloWorld</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span>
+<span class="c1">//let helloWorld:string</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">类型声明</h2>
+<p>你可以在JS中使用许多设计模式。一些设计模式使得类型推断很难，在这种情况下，TS支持JS语言的声明文件和直接声明，你可以在声明文件中提供TS的类型声明。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">User</span> <span class="p">{</span>
+    <span class="nx">name</span>: <span class="kt">string</span><span class="p">;</span>
+    <span class="nx">id</span>: <span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">user</span>: <span class="kt">User</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;hayes&quot;</span><span class="p">,</span>
+    <span class="nx">id</span>: <span class="kt">0</span>
+<span class="p">}</span>
+
+<span class="kr">class</span> <span class="nx">UserAccount</span> <span class="p">{</span>
+    <span class="nx">name</span>: <span class="kt">string</span><span class="p">;</span>
+    <span class="nx">id</span>: <span class="kt">number</span><span class="p">;</span>
+
+    <span class="kr">constructor</span><span class="p">(</span><span class="nx">name</span>:<span class="kt">string</span><span class="p">,</span> <span class="nx">id</span>:<span class="kt">number</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">id</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// class的实例</span>
+<span class="kr">const</span> <span class="nx">user</span>:<span class="kt">User</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">UserAccount</span><span class="p">(</span><span class="s1">&#39;Murpht&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="c1">//注释函数参数类型和返回值</span>
+<span class="kd">function</span> <span class="nx">getAdminUser</span><span class="p">()</span><span class="o">:</span><span class="nx">User</span> <span class="p">{</span>
+    <span class="c1">//...</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">deleteUser</span><span class="p">(</span><span class="nx">user</span>:<span class="kt">User</span><span class="p">)</span><span class="o">:</span> <span class="kr">boolean</span> <span class="p">{</span>
+    <span class="c1">//...</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>TS有的类型：boolean，bigint，null，number，string，symbol，undefined，any(允许任何类型)，unknown(使用时需要提前声明)，never(不会发生的类型)，void(函数返回undefined)。</p>
+<p>你可以使用Interface和Type来声明类型，你应该首选interface。</p>
+<h2 id="-">复合类型</h2>
+<p>将简单的类型们合成一个复合类型。</p>
+<h3 id="unions-">Unions-联合体</h3>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="c1">//联合体常用于字符串或数字</span>
+<span class="nx">type</span> <span class="nx">WindowStates</span> <span class="o">=</span> <span class="s2">&quot;open&quot;</span> <span class="o">|</span> <span class="s2">&quot;closed&quot;</span> <span class="o">|</span> <span class="s2">&quot;minimized&quot;</span><span class="p">;</span>
+<span class="nx">type</span> <span class="nx">LockStates</span> <span class="o">=</span> <span class="s2">&quot;locked&quot;</span> <span class="o">|</span> <span class="s2">&quot;unlocked&quot;</span><span class="p">;</span>
+<span class="nx">type</span> <span class="nx">PositiveOddNumberUnderTen</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="mi">5</span> <span class="o">|</span> <span class="mi">7</span> <span class="o">|</span> <span class="mi">9</span><span class="p">;</span>
+<span class="c1">//联合体也可用于不同的类型</span>
+<span class="kd">function</span> <span class="nx">getLength</span><span class="p">(</span><span class="nx">obj</span>: <span class="kt">string</span> <span class="o">|</span> <span class="kt">string</span><span class="p">[])</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">// 使用typeof来判断参数类型</span>
+<span class="kd">function</span> <span class="nx">wrapInArray</span><span class="p">(</span><span class="nx">obj</span>: <span class="kt">string</span> <span class="o">|</span> <span class="kt">string</span><span class="p">[])</span><span class="o">:</span> <span class="kt">string</span><span class="p">[]</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">obj</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nx">obj</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">obj</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">泛型</h2>
+<p>泛型主要提供了类型变量。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="nx">type</span> <span class="nx">StringArray</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="nx">type</span> <span class="nx">NumberArray</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="kt">number</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="nx">type</span> <span class="nx">ObjectWithNameArray</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">&lt;</span><span class="p">{</span><span class="nx">name</span>:<span class="kt">string</span><span class="p">}</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="c1">//</span>
+<span class="kr">interface</span> <span class="nx">BackPack</span><span class="o">&lt;</span><span class="nx">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nx">add</span><span class="o">:</span> <span class="p">(</span><span class="nx">obj</span>:<span class="kt">T</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">void</span><span class="p">;</span>
+    <span class="nx">get</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">T</span>
+<span class="p">}</span>
+<span class="c1">// 告诉TS，有一个backpack的变量，不用关心该变量来自何处</span>
+<span class="kr">declare</span> <span class="kr">const</span> <span class="nx">backpack</span>: <span class="kt">Backpack</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="nx">backpack</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">结构类型</h2>
+<p>TS的核心原则聚焦于值拥有的类型。这在某些时候叫鸭式类型或结构类型。</p>
+<p>结构类型中，如果两个对象拥有相同的属性，它们会被认为有相同的类型。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">Point</span> <span class="p">{</span>
+    <span class="nx">x</span>: <span class="kt">number</span><span class="p">;</span>
+    <span class="nx">y</span>: <span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">logPoint</span><span class="p">(</span><span class="nx">p</span>:<span class="kt">Point</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">p</span><span class="p">.</span><span class="nx">x</span><span class="p">},</span><span class="nx">$</span><span class="p">{</span><span class="nx">p</span><span class="p">.</span><span class="nx">y</span><span class="p">}</span><span class="err">`</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">point</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">x</span>: <span class="kt">12</span><span class="p">,</span> <span class="nx">y</span>: <span class="kt">36</span> <span class="p">};</span>
+<span class="c1">//TS对比了point的属性。</span>
+<span class="nx">logPoint</span><span class="p">(</span><span class="nx">point</span><span class="p">);</span>
+<span class="c1">//结构类型匹配值匹配对象的属性子集</span>
+<span class="kr">const</span> <span class="nx">point3</span> <span class="o">=</span> <span class="p">{</span><span class="nx">x</span>: <span class="kt">12</span> <span class="p">,</span><span class="nx">y</span>: <span class="kt">26</span><span class="p">,</span> <span class="nx">z</span>: <span class="kt">89</span> <span class="p">};</span>
+<span class="nx">logPoint</span><span class="p">(</span><span class="nx">point3</span><span class="p">);</span>
+<span class="c1">//class的匹配</span>
+<span class="kr">class</span> <span class="nx">VirtualPoint</span> <span class="p">{</span>
+    <span class="nx">x</span>: <span class="kt">number</span><span class="p">;</span>
+    <span class="nx">y</span>: <span class="kt">number</span><span class="p">;</span>
+
+    <span class="kr">constructor</span><span class="p">(</span><span class="nx">x</span>:<span class="kt">number</span><span class="p">,</span><span class="nx">y</span>:<span class="kt">number</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">=</span> <span class="nx">x</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">=</span> <span class="nx">y</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">newVPoint</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">VirtualPoint</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span><span class="mi">56</span><span class="p">);</span>
+<span class="nx">logPoint</span><span class="p">(</span><span class="nx">newVPoint</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>

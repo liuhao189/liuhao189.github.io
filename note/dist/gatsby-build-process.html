@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Gatsby-Build-Process</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1648480550828">
+  <link rel="stylesheet" href="/note/note.css?ts=1648481422397">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -142,14 +142,14 @@ success run static queries - 0.057 s — 3/3 89.08 queries/second
 <p>在启动阶段只有一处不同：删除上一次构建的html和css，以避免冲突。</p>
 <p>在build阶段：build不会启动devServer，而是去编译资源。</p>
 <p>develop因为省略后面的步骤，可以增加热架加载的功能。也可以节省CPU的时间，以快速启动。</p>
-<p>执行page Query的数量上也有差异：develop最多运行3个页面查询(index page, actual 404 和develop 404)，剩余的页面会请求时再查询。build会执行有效缓存的所有页面的数据。</p>
+<p>执行page Query的数量上也有差异：develop最多运行3个页面查询(index page, actual 404 和develop 404)，剩余的页面会请求时再查询。build会执行所有页面的数据。</p>
 <p>cache也用于检测gatsby-*.js的文件和依赖项。可以使用gatsby clean命令来情况缓存。</p>
 <h2 id="gatsby-build-">Gatsby build发生了什么？</h2>
 <p>代码在git仓库的build和bootstrap文件中。</p>
 <p>Gatsby-Layer：</p>
 <p>1、Content，一般存放在DB，Content-Management-Systems，files，外部API。所有数据源都可以链接到gatsby中。</p>
-<p>2、Build，编译你的应用程序，拥有SSR，route based代码拆分等特性。在构建期间，数据会被取到并合并到GraphQL结构中。</p>
-<p>3、Data，通过GraphQL取到数据。data已在上一步绑定到一起，所以可以查询多个数据源的数据。</p>
+<p>2、Build，编译你的应用程序，拥有SSR，route based代码拆分等特性。在构建期间，数据会被读取并合并到GraphQL的结构中。</p>
+<p>3、Data，通过GraphQL取到数据。data已在上一步聚合到一起，所以可以查询多个数据源的数据。</p>
 <p>4、View，React组件构成的应用。你可以将任何上面步骤取到的数据注入到组件中。</p>
 <p>在高层次上，gatsby build做的事：</p>
 <p>1、你在gatsby-config.js中定义的plugins和你的gatsby-node.js文件定义了Node对象的来源。</p>
@@ -157,6 +157,38 @@ success run static queries - 0.057 s — 3/3 89.08 queries/second
 <p>3、页面是根据JS组件或安装的主题生成。</p>
 <p>4、GraphQL查询为所有页面提供数据。</p>
 <p>5、静态HTML文件生成，然后放到public文件夹。</p>
+<h2 id="bootstarp-">Bootstarp阶段</h2>
+<p>包括：</p>
+<p>1、读取并验证getsby-configs。config验证。</p>
+<p>2、加载插件。Gatsby使用Redux来管理内部的状态。</p>
+<p>3、onPreInit，执行插件或配置文件的onPreInit的API方法。</p>
+<p>4、从上个build删除html和css文件。</p>
+<p>5、初始化缓存，检查package.json中的依赖，gatsby-config.js或gatsby-node.js文件是否改变。</p>
+<p>6、拷贝应用的文件到.cache文件夹。</p>
+<p>7、onPreBootstrap，执行插件或配置文件的onPreBootstrap的API方法。</p>
+<p>8、数据源和转换nodes，执行sourceNodes的API方法。</p>
+<p>9、添加明确的类型，添加gatsby定义的GraphQL相关的类型到nodes。</p>
+<p>10、推断类型，其它未明确定义类型的node，gatsby会推断。</p>
+<p>11、处理类型，组合各种类型来生成GraphQL的结构。</p>
+<p>12、构建schema。</p>
+<p>13、createPages，调用CreatePages API。插件可以处理onCreatePage事件来修改页面信息。</p>
+<p>14、createPagesStatefully，和crteaPages类似，主要用于插件根据数据变化来创建和删除页面。</p>
+<p>15、onPreExtractQueries，调用onPreExtractQueries的API。</p>
+<p>16、更新schema。</p>
+<p>17、提取组件的queries。</p>
+<p>18、生成rquire代码。</p>
+<p>19、生成redirect data的代码。</p>
+<p>20、构建manifest和相关的icon。主要是gatsby-plugin-manifest插件。</p>
+<p>21、onPostBootstrap-API的执行。</p>
+<h2 id="build-">build步骤</h2>
+<p>1、运行static-queries，在非页面组件中的static-queries会优先执行。</p>
+<p>2、生成图片合各种尺寸图，主要是gatsby-plugin-sharp插件提供的。</p>
+<p>3、生成prod的JS和CSS包。使用Webpack编译JS和CSS。</p>
+<p>4、重写编译hash，编译hash主要作用是webpack拆分代码，保持缓存。</p>
+<p>5、执行page-queries。</p>
+<p>6、生成页面的static html文件。因为HTML是在Node的上下文中生成的，使用browser API的代码应该不执行。</p>
+<h2 id="-build-">成功的build后的产物</h2>
+<p>当gatsby build成功后，你可以直接部署public文件夹里的内容。构建包括了压缩的文件，转换好的图片，json文件，页面的HTML文件。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://www.gatsbyjs.com/docs/conceptual/overview-of-the-gatsby-build-process">https://www.gatsbyjs.com/docs/conceptual/overview-of-the-gatsby-build-process</a></p>
 </body>

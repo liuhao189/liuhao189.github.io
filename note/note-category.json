@@ -64,6 +64,14 @@
         "distFileName":"gatsbyLearn"
     },
     {
+        "id": "typescript-learn",
+        "name":"TypeScript学习",
+        "path":[
+            "typescript-learn"
+        ],
+        "distFileName": "typeScriptLearn"
+    },
+    {
         "id": "V8Learn",
         "name": "V8引擎相关",
         "path":[
