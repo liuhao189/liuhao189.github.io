@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gataby-调试HTML-构建过程</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1648480830010">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="gataby-html-">Gataby-调试HTML-构建过程</h1>
+<p>在生成静态HTML文件(React构建时SSR或getServerData运行时SSR)可能会发生错误。</p>
+<p>常见的错误原因：</p>
+<p>1、你的代码引用了Browser全局变量(window或document)，这些变量在NodeJS中不可用。你可以看到类似“window is not defined”的错误，你可以在调用之前判断下环境。</p>
+<p>如果代码在一个React的组件的render方法中，将代码转移到componentDisMount或useEffect hook中，这可以确保代码只在浏览器中执行。</p>
+<p>2、检查在pages（包括子文件夹）下面的JS文件都导出了React组件或字符串。</p>
+<p>3、在同一个文件中混用import和require。这可能导致WebpackError。解决方法是指使用import。这也适用于getaby-ssr和gatsby-browser文件。</p>
+<p>4、你的app没有在客户端正确的hybrate。这会导致gatsby-develop和gatsby-build不一致。</p>
+<h2 id="-window-">怎样检查window未定义</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">isBrowser</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nb">window</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">MyComponent</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">loggedIn</span> <span class="o">=</span> <span class="nx">inBrowser</span> <span class="o">?</span> <span class="nx">localstorage</span><span class="p">.</span><span class="nx">getItem</span><span class="p">(</span><span class="s1">&#39;isLoggedIn&#39;</span><span class="p">)</span> <span class="o">:</span> <span class="kc">false</span><span class="p">;</span>
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span> <span class="nx">I</span> <span class="nx">am</span> <span class="p">{</span><span class="nx">loggedIn</span> <span class="o">?</span> <span class="s1">&#39;logged&#39;</span> <span class="o">:</span> <span class="s1">&#39;un-logged&#39;</span><span class="p">}</span> <span class="o">&lt;</span><span class="err">/div&gt;</span>
+  <span class="p">)</span>
+<span class="p">}</span>
+<span class="c1">//引用模块时</span>
+<span class="k">if</span><span class="p">(</span><span class="nx">inBrowser</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//module&#39;s code tried to reference window</span>
+  <span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;module&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">修复第三方包</h2>
+<p>最糟糕的情况是你引用的npm包引用了window等BrowserAPI。你可以提一个issue等待官方修复。更好的作用是通过修改webpack配置使module在SSR期间替换为“仿制品”。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">onCreateWebpackConfig</span> <span class="o">=</span> <span class="p">({</span> <span class="nx">stage</span><span class="p">,</span> <span class="nx">loaders</span><span class="p">,</span> <span class="nx">actions</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">//</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">stage</span> <span class="o">===</span> <span class="s1">&#39;build-html&#39;</span> <span class="o">||</span> <span class="nx">stage</span> <span class="o">===</span> <span class="s1">&#39;develop-html&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">actions</span><span class="p">.</span><span class="nx">setWebpackConfig</span><span class="p">({</span>
+      <span class="nx">module</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">rules</span><span class="o">:</span> <span class="p">[</span>
+          <span class="nx">test</span><span class="o">:</span> <span class="sr">/bad-module/</span><span class="p">,</span>
+          <span class="nx">use</span> <span class="o">:</span> <span class="nx">loaders</span><span class="p">.</span><span class="kc">null</span><span class="p">(),</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>另外一个解决方案是使用loadable-components。这个模块在浏览器环境下懒加载模块，在SSR时不会加载模块。</p>
+</body>
+</html>
