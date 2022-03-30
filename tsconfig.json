@@ -9,6 +9,7 @@
       "ES2020",
       "ES2020.Promise"
     ],
+    "noEmitOnError": true,
     "moduleResolution": "node",
     /* Specify library files to be included in the compilation. */
     // "allowJs": true,                       /* Allow javascript files to be compiled. */
@@ -63,6 +64,6 @@
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
   },
   "include": [
-    "./test-page/**/*.ts"
+    "./test-page/ts-learn/*.ts"
   ]
 }

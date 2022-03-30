@@ -9,7 +9,8 @@
     "buildnote:debug": "node --inspect-brk build/buildnote.js",
     "buildNewNote": "node build/build-new-note.js",
     "buildTestPage": "tsc",
-    "buildNewCategory": "node build/build-note-category.js"
+    "buildNewCategory": "node build/build-note-category.js",
+    "buildTS": "tsc"
   },
   "browser": {
     "path": "vue"

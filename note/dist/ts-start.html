@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Typescript-One</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1648566787916">
+  <link rel="stylesheet" href="/note/note.css?ts=1648657212001">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -55,8 +55,8 @@
 </pre></div>
 
 </code></pre>
-<p>TS有的类型：boolean，bigint，null，number，string，symbol，undefined，any(允许任何类型)，unknown(使用时需要提前声明)，never(不会发生的类型)，void(函数返回undefined)。</p>
-<p>你可以使用Interface和Type来声明类型，你应该首选interface。</p>
+<p>TS有的类型：boolean，bigint，null，number，string，symbol，undefined，any(允许任何类型)，unknown(使用时需要转换类型)，never(不会发生的类型)，void(函数返回undefined)。</p>
+<p>你可以使用Interface和Type来声明类型，应该首选interface，除非是声明类型别名。</p>
 <h2 id="-">复合类型</h2>
 <p>将简单的类型们合成一个复合类型。</p>
 <h3 id="unions-">Unions-联合体</h3>
@@ -95,7 +95,7 @@
 
 </code></pre>
 <h2 id="-">结构类型</h2>
-<p>TS的核心原则聚焦于值拥有的类型。这在某些时候叫鸭式类型或结构类型。</p>
+<p>TS的核心原则聚焦于值拥有的类型，这在某些时候叫鸭式类型或结构类型。</p>
 <p>结构类型中，如果两个对象拥有相同的属性，它们会被认为有相同的类型。</p>
 <pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">Point</span> <span class="p">{</span>
     <span class="nx">x</span>: <span class="kt">number</span><span class="p">;</span>
@@ -125,6 +125,65 @@
 
 <span class="kr">const</span> <span class="nx">newVPoint</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">VirtualPoint</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span><span class="mi">56</span><span class="p">);</span>
 <span class="nx">logPoint</span><span class="p">(</span><span class="nx">newVPoint</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">基础</h2>
+<h3 id="-">静态类型检查</h3>
+<p>TypeError相关的错误在JS的语言中比较常见。静态类型检查描述的是值的类型和表现，TS等静态类型系统告诉我们有哪些值的类型和表现不符合预期。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">message</span> <span class="o">=</span> <span class="s1">&#39;hello!&#39;</span><span class="p">;</span>
+<span class="nx">message</span><span class="p">();</span>
+<span class="c1">// Error - Type &#39;String&#39; has no call signatures.</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">非运行异常错误</h3>
+<p>TS报告的异常情况是根据ECMAScript规范的定义来的。eg：调用未定义的属性返回undefined，调用不可调用的属性直接返回错误。</p>
+<p>因为添加了类型系统，即使在某些情况下，代码是合格的JS代码，不会产生错误，TS也会提示错误，目的是捕获更多合法的错误。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">user</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Daniel&quot;</span><span class="p">,</span>
+    <span class="nx">age</span>: <span class="kt">26</span>
+<span class="p">}</span>
+
+<span class="nx">user</span><span class="p">.</span><span class="nx">location</span><span class="p">;</span>
+<span class="c1">// Error,不存在location属性</span>
+<span class="c1">// typos</span>
+<span class="kr">const</span> <span class="nx">announcement</span> <span class="o">=</span> <span class="s2">&quot;Hello World!&quot;</span><span class="p">;</span>
+<span class="c1">// How quickly can you spot the typos?</span>
+<span class="nx">announcement</span><span class="p">.</span><span class="nx">toLocaleLowercase</span><span class="p">();</span>
+<span class="nx">announcement</span><span class="p">.</span><span class="nx">toLocalLowerCase</span><span class="p">();</span>
+<span class="c1">// We probably meant to write this...</span>
+<span class="nx">announcement</span><span class="p">.</span><span class="nx">toLocaleLowerCase</span><span class="p">();</span>
+<span class="c1">// 未调用方法</span>
+<span class="kd">function</span> <span class="nx">flipCoin() {</span>
+  <span class="c1">// Meant to be Math.random()</span>
+  <span class="k">return</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">;</span>
+<span class="nx">Operator</span> <span class="s1">&#39;&lt;&#39;</span> <span class="nx">cannot</span> <span class="nx">be</span> <span class="nx">applied</span> <span class="nx">to</span> <span class="nx">types</span> <span class="s1">&#39;() =&gt; number&#39;</span> <span class="nx">and</span> <span class="s1">&#39;number&#39;</span><span class="p">.</span>
+<span class="p">}</span>
+<span class="c1">//逻辑错误</span>
+<span class="kr">const</span> <span class="nx">value</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="o">?</span> <span class="s2">&quot;a&quot;</span> <span class="o">:</span> <span class="s2">&quot;b&quot;</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">!==</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">===</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span> <span class="p">{</span>
+<span class="nx">This</span> <span class="nx">condition</span> <span class="nx">will</span> <span class="nx">always</span> <span class="k">return</span> <span class="s1">&#39;false&#39;</span> <span class="nx">since</span> <span class="nx">the</span> <span class="nx">types</span> <span class="s1">&#39;&quot;a&quot;&#39;</span> <span class="nx">and</span> <span class="s1">&#39;&quot;b&quot;&#39;</span> <span class="nx">have</span> <span class="nx">no</span> <span class="nx">overlap</span><span class="p">.</span>
+  <span class="c1">// Oops, unreachable</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">类型工具</h3>
+<p>根据类型信息，可以做智能提示，可以提供自动快速修复功能，重构代码，跳转到定义和实现等功能，发现所有引用。</p>
+<h3 id="tsc-typescript-">tsc-Typescript的编译器</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>npm i typescript -g
+<span class="c"># 将tsc命令安装到全局，npx之类的工具可以运行本地安装的tsc命令</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">错误时也输出内容</h3>
+<p>TSC报告的错误只是基于它内置的数据，大多数时候，你比TSC更加了解情况。</p>
+<p>某些情况下你需要即使有错误也编译输出的情况，比如将JS库转为TS的过程中。</p>
+<p>你可以指定noEmitOnError选项来避免输出。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>tsc --noEmitOnError hello.ts
 </pre></div>
 
 </code></pre>
