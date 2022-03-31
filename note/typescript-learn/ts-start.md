@@ -134,7 +134,7 @@ logPoint(newVPoint)
 
 ### 静态类型检查
 
-TypeError相关的错误在JS的语言中比较常见。静态类型检查描述的是值的类型和表现，TS等静态类型系统告诉我们有哪些值的类型和表现不符合预期。
+TypeError相关的错误在JS语言中比较常见。静态类型检查描述的是值的属性和方法，TS等静态类型系统告诉我们有哪些值的属性获取和方法调用不符合预期。
 
 ```ts
 const message = 'hello!';
@@ -142,11 +142,11 @@ message();
 // Error - Type 'String' has no call signatures.
 ```
 
-### 非运行异常错误
+### 非运行时-异常错误
 
-TS报告的异常情况是根据ECMAScript规范的定义来的。eg：调用未定义的属性返回undefined，调用不可调用的属性直接返回错误。
+TS报告的异常情况是根据ECMAScript规范+类型系统的要求来定义来的。eg：ECMAScript规范：调用未定义的属性返回undefined，调用不可调用的属性直接返回错误。
 
-因为添加了类型系统，即使在某些情况下，代码是合格的JS代码，不会产生错误，TS也会提示错误，目的是捕获更多合法的错误。
+因为添加了类型系统，即使在某些情况下，代码是合格的JS代码，不会产生运行时错误，TS也会提示错误，目的是捕获更多的可能的错误。
 
 ```ts
 const user = {
@@ -155,8 +155,8 @@ const user = {
 }
 
 user.location;
-// Error,不存在location属性
-// typos
+// Error,ts会报不存在location属性。
+// typos，拼写错误
 const announcement = "Hello World!";
 // How quickly can you spot the typos?
 announcement.toLocaleLowercase();
@@ -179,9 +179,9 @@ This condition will always return 'false' since the types '"a"' and '"b"' have n
 }
 ```
 
-### 类型工具
+### 使用类型信息的工具
 
-根据类型信息，可以做智能提示，可以提供自动快速修复功能，重构代码，跳转到定义和实现等功能，发现所有引用。
+根据代码的类型信息，IDE类的工具可以做智能提示，可以提供自动快速修复功能，重构代码、跳转到定义和实现、发现所有引用等功能。
 
 ### tsc-Typescript的编译器
 
@@ -192,9 +192,9 @@ npm i typescript -g
 
 ### 错误时也输出内容
 
-TSC报告的错误只是基于它内置的数据，大多数时候，你比TSC更加了解情况。
+TSC报告的错误只是基于它内置的数据，大多数时候，你比TSC更加了解现实情况。
 
-某些情况下你需要即使有错误也编译输出的情况，比如将JS库转为TS的过程中。
+某些情况下你需要即使有错误也要输出编译内容的情况，比如将JS库转为TS的过程中。
 
 你可以指定noEmitOnError选项来避免输出。
 
@@ -202,9 +202,71 @@ TSC报告的错误只是基于它内置的数据，大多数时候，你比TSC�
 tsc --noEmitOnError hello.ts
 ```
 
+### 明确的类型
 
+主要是在类型推断失效的情况下，添加显式地类型声明。
 
+### 擦除类型
 
+由于ECMAScript的规范没有定义类型声明，tsc编译后的js文件会抹去大部分类型信息。
 
+### 向下兼容
 
+主要是模板字符串转为字符串相加。因为模板字符串是较新的版本才有的功能。
 
+我们可以使用target选项来让tsc编译为较新的版本的ES版本。
+
+```bash
+tsc --target es2015 hello.ts
+# 会生成模板字符串的版本
+```
+
+### 严格性
+
+不同的用户是为了不同的目的来使用TS的类型系统。一些用户选择更加宽松的检查，另外一些用户想尽可能地使用TS的类型。
+
+推荐新的代码尽量使用严格的TS类型功能。tsc包含了一系列类型检查的选项。
+
+strict:true会开启所有选项。两个主要选项是：noImplicitAny和strictNullChecks。
+
+### noImplicitAny
+
+表示TS不会尝试类型推断，只是把这些类型设置为any。
+
+noImplicitAny:true意味着变量的类型隐式推断为any会报错。
+
+### strictNullChecks
+
+默认情况下，null和undefined可以赋值给任何类型，这可以让代码书写更方便。但是忘记处理null和undefined是很多bug的原因。
+
+strictNullChecks:true意味着不可以赋值给其它类型。
+
+## 常见类型
+
+### 基础类型
+
+string，number，boolean，这些和JS的typeof操作符返回的类型相同。
+
+大写字母开头：String，Number和Boolean也是允许的。但是尽量不要那么做。
+
+### Arrays
+
+可以使用string[]或Array<string>，两者是等价的。
+
+### any
+
+当一个类型声明为any，你可以访问它的任意属性。在你不想写出长类型来适应TS时笔记有用。
+
+你没有声明类型，且TS无法根据上下文来推断类型，编译器会默认变量为any类型。使用noImplicitAny可以取消这种情况。
+
+### 变量上的类型声明
+
+使用const，var，或let声明变量时，可以添加类型声明。推荐尽量使用TS推断的类型。
+
+### 函数
+
+TS允许你来指出函数的输入和输出类型。
+
+和变量类型推断一样，你可以不显式定义函数的返回值类型，TS会自动推断。但是某些情况下，提供一个显式的类型还是有很多好处的。
+
+eg：文档原因，避免意外的变更，个人喜好。
