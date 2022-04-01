@@ -58,3 +58,7 @@ https://rxdb.info/slow-indexeddb.html
 ## js-self-profiling-api-in-practice
 
 https://calendar.perfplanet.com/2021/js-self-profiling-api-in-practice/#js-self-profiling-the-api
+
+## V8中的Snapshot机制分析 
+
+https://www.bilibili.com/video/av413478697/
