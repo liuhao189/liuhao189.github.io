@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>使用Detacked-Elements工具来调试DOM内存泄漏</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1649258260914">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="-detacked-elements-dom-">使用Detacked-Elements工具来调试DOM内存泄漏</h1>
+<p>Edge的Detacted-Element工具主要用于发现浏览器无法垃圾回收的Detached的元素，同时定位到仍然引用这些元素的JS对象。</p>
+<p>当一个Element不在DOM树中，但是仍然被你页面的JS代码所引用，一般会出现内存泄漏问题。</p>
+<h2 id="-detached-elements-">打开Detached-Elements工具</h2>
+<p>打开DevTools，然后打开Detached Elements tab查看即可。</p>
+<h2 id="-detached-elements">获取detached-elements</h2>
+<p>点击左上角的Get Detached Elements按钮(刷新图标)即可。</p>
+<p>Demo应用中，当你点击Room-2的时候，Room-1产生的DOM已经不再DOM树上，但是仍然被JS所引用。</p>
+<h2 id="-">触发垃圾回收</h2>
+<p>然后，点击垃圾回收(垃圾箱图标)即可。当你点击垃圾回收按钮时，浏览器执行垃圾回收。</p>
+<h2 id="-detached-elements-js-">识别出引用Detached-elements的JS代码</h2>
+<p>当你发现不能被垃圾回收的detached-elements时，可以点击分析按钮(查看图标)来识别出引用detached-elements的JS对象。</p>
+<p>分析按钮会生成堆快照，然后定位到该detached-elements在堆中的位置。</p>
+<p>Memory-tool的Retainers就展示出引用detached-element的对象。</p>
+<h2 id="-dom-">识别出DOM节点导致的其它问题</h2>
+<p>因为DOM是一个全连接的图，一个DOM节点被JS保留时，这可能会导致其它DOM节点也被保留。</p>
+<p>识别出引起泄漏的DOM节点很重要。点击Detach-Element(鼠标触摸板图标)按钮，可以销毁在detached tree的parent-child链接。然后点击垃圾回收(垃圾桶)按钮。</p>
+<h2 id="-origin">改变不同的origin</h2>
+<p>可以选择不同的origin或frame。</p>
+<h2 id="-">额外的考量</h2>
+<p>detached-elements并不一定意味着内存泄漏。某些情况下，detached的element可能会reattached到DOM树中。</p>
+<h1 id="-">修复内存问题</h1>
+<p>主要是如何使用Microsoft Edge和DevTools来查找内存问题。</p>
+<h2 id="-">内存膨胀-怎样才算是太多</h2>
+<p>用户的设备和浏览器都不同，并不总是有一个特定的数字来指示是否是内存膨胀。主要是考虑主流设备能否拥有好的体验。</p>
+<h2 id="-edge-">可以使用Edge的任务管理器来查看实时内存</h2>
+<p>memory的列展示的是native内存，DOM节点存储在Native内存中。如果这个增长，说明DOM节点正在创建。</p>
+<p>JS-memory列表示的JS的堆内存。这列包括两个部分，一部分是live的大小，live的大小表示页面正在使用的对象大小。如果这个数值在增长，说明新对象在创建，或已有对象在增长。</p>
+<h2 id="-performance-panel-">在Performance-panel可视化内存泄漏</h2>
+<p>如果看到JS heap size和node size在增长，可能存在内存泄漏。</p>
+<h2 id="-heap-snapshots-detached-dom-">使用Heap Snapshots发现detached-DOM节点内存泄漏</h2>
+<p>DOM节点回收，只在DOM树中没有引用和JS代码中没有引用时，才会执行。</p>
+<p>detached的DOM节点说明从DOM树中移除，但是某些JS节点还在引用它。这是常见的内存泄漏原因。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">detachedTree</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">create</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">ul</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">li</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">);</span>
+        <span class="nx">ul</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">li</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">detachedTree</span> <span class="o">=</span> <span class="nx">ul</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;create&#39;</span><span class="p">).</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="nx">create</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>堆快照是一种查明detached节点的方式。</p>
+<p>获取到堆快照后，在Class过滤器的文本框中输入Detached，可以得到Detached的DOM节点。</p>
+<p>在下面的Objects面板，你可以看到哪些代码引用了那个DOM节点。</p>
+<h2 id="-js-">通过申请内存记录来发现内存JS堆内存泄漏</h2>
+<p>时间线上蓝色的条表示内存申请，</p>
+<h2 id="-">函数维度分析内存分配</h2>
+<p>还是Memory-tab下的功能。</p>
+<h2 id="-gc-">频繁GC导致的问题</h2>
+<p>Performance-tab下的频繁的内存变化，表明有频繁的GC操作。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://docs.microsoft.com/en-us/microsoft-edge/devtools-guide-chromium/memory-problems/dom-leaks">https://docs.microsoft.com/en-us/microsoft-edge/devtools-guide-chromium/memory-problems/dom-leaks</a></p>
+<p><a href="https://docs.microsoft.com/en-us/microsoft-edge/devtools-guide-chromium/memory-problems/">https://docs.microsoft.com/en-us/microsoft-edge/devtools-guide-chromium/memory-problems/</a></p>
+</body>
+</html>

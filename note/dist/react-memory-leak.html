@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>如何在React-App中避免内存泄漏</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1649258260914">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="-react-app-">如何在React-App中避免内存泄漏</h1>
+<p>根据维基百科，内存泄漏定义为应用程序不正确地管理内存，不再需要的内存没有及时释放；也可能是在内存中的对象不能被代码访问。</p>
+<p>虽然，浏览器有垃圾回收机制，但是还有一些常见的错误会导致React应用出现内存泄漏，并在很大程序上降低应用的性能。</p>
+<h2 id="react-">React应用导致内存泄漏的原因</h2>
+<p>React应用中的内存泄漏主要是由于组件在卸载之前没有取消订阅。这些订阅可能是DOM事件监听器，WebSocket订阅，或者API请求。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">useState</span><span class="p">,</span> <span class="nx">useEffect</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">Link</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react-router-dom&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s1">&#39;axios&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">MyCompany</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span> <span class="nx">company</span><span class="p">,</span> <span class="nx">setCompany</span> <span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+    <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="p">(</span><span class="nx">async</span> <span class="p">()</span> <span class="p">{</span>
+             <span class="kr">const</span> <span class="p">{</span> <span class="nx">data</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span>
+                 <span class="s1">&#39;https://random-data-api.com/api/company/random_company&#39;</span>
+             <span class="p">);</span>
+             <span class="nx">setCompany</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+        <span class="p">})();</span>
+    <span class="p">},</span> <span class="p">[]);</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">company</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">3</span><span class="p">)}</span><span class="o">&lt;</span><span class="err">/pre&gt;</span>
+            <span class="o">&lt;</span><span class="nx">Link</span> <span class="nx">to</span> <span class="o">=</span> <span class="s1">&#39;/anotherpage&#39;</span><span class="o">&gt;</span><span class="nx">Another</span> <span class="nx">Interesting</span> <span class="nx">Page</span><span class="o">&lt;</span><span class="err">/Link&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>问题点：用户有一个比较慢的网络连接，用户决定去其它页面。当网络请求返回时，我们会在一个unmounted的方法中调用setState方法。</p>
+<h3 id="-abortcontrollers">解决方法-AbortControllers</h3>
+<p>解决办法是在我们卸载组件时取消这个请求，来确保内存中不再有数据。</p>
+<p>根据MDN的文档说明，AbortController表示一个控制对象，允许你取消一个或多个Web请求。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">import</span> <span class="p">{</span> <span class="nx">useState</span><span class="p">,</span> <span class="nx">useEffect</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">Link</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;react-router-dom&#39;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s1">&#39;axios&#39;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">MyCompany</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span> <span class="nx">company</span><span class="p">,</span> <span class="nx">setCompany</span> <span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+
+    <span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+         <span class="kd">let</span> <span class="nx">abortController</span><span class="p">;</span>
+        <span class="p">(</span><span class="nx">async</span> <span class="p">()</span> <span class="p">{</span>
+             <span class="nx">abortController</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AbortController</span><span class="p">();</span>
+             <span class="kd">let</span> <span class="nx">signal</span> <span class="o">=</span> <span class="nx">abortController</span><span class="p">.</span><span class="nx">signal</span><span class="p">;</span>
+             <span class="kr">const</span> <span class="p">{</span> <span class="nx">data</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span>
+                 <span class="s1">&#39;https://random-data-api.com/api/company/random_company&#39;</span><span class="p">,</span>
+                 <span class="p">{</span> <span class="nx">signal</span><span class="o">:</span> <span class="nx">signal</span> <span class="p">}</span>
+             <span class="p">);</span>
+             <span class="nx">setCompany</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+        <span class="p">})();</span>
+
+        <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">abortController</span><span class="p">.</span><span class="nx">abort</span><span class="p">();</span>
+    <span class="p">},</span> <span class="p">[]);</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;&gt;</span>
+            <span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">company</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">3</span><span class="p">)}</span><span class="o">&lt;</span><span class="err">/pre&gt;</span>
+            <span class="o">&lt;</span><span class="nx">Link</span> <span class="nx">to</span> <span class="o">=</span> <span class="s1">&#39;/anotherpage&#39;</span><span class="o">&gt;</span><span class="nx">Another</span> <span class="nx">Interesting</span> <span class="nx">Page</span><span class="o">&lt;</span><span class="err">/Link&gt;</span>
+        <span class="o">&lt;</span><span class="err">/&gt;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>注意：取消一个已经完成的请求不会报任何错误。在一个已经完成的请求上，abort不会进行任何操作。</p>
+<h2 id="-react-">异步调用的React警告</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//Can not perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.</span>
+</pre></div>
+
+</code></pre>
+<p>如果异步调用的state在组件卸载后更新状态，React-App会遇到内存泄漏问题。</p>
+<h2 id="-">修复错误方案</h2>
+<h3 id="-boolean-">使用boolean值</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">value</span><span class="p">,</span> <span class="nx">setValue</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;checking value...&#39;</span><span class="p">);</span>
+<span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">isMounted</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+  <span class="nx">fetchValue</span><span class="p">().</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">isMounted</span> <span class="p">){</span>
+        <span class="nx">setValue</span><span class="p">(</span><span class="s2">&quot;done!&quot;</span><span class="p">);</span> <span class="c1">// no more error</span>
+        <span class="p">}</span> 
+      <span class="p">});</span>
+    <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">isMounted</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+      <span class="p">};</span>
+<span class="p">},</span> <span class="p">[]);</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-abortcontroller">使用AbortController</h3>
+<p>上文提到的。</p>
+<h3 id="-use-state-if-mounted-hook">使用use-state-if-mounted hook</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">[</span><span class="nx">value</span><span class="p">,</span> <span class="nx">setValue</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useStateIfMounted</span><span class="p">(</span><span class="s1">&#39;checking value...&#39;</span><span class="p">);</span>
+<span class="c1">//</span>
+<span class="nx">useEffect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">fetchValue</span><span class="p">().</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">setValue</span><span class="p">(</span><span class="s2">&quot;done!&quot;</span><span class="p">);</span> <span class="c1">// no more error</span>
+    <span class="p">});</span>
+<span class="p">},</span> <span class="p">[]);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.loginradius.com/blog/engineering/how-to-fix-memory-leaks-in-react/">https://www.loginradius.com/blog/engineering/how-to-fix-memory-leaks-in-react/</a></p>
+</body>
+</html>
