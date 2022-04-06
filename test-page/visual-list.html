@@ -1,90 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible"
-            content="IE=edge">
-        <meta name="viewport"
-            content="width=device-width, initial-scale=1.0">
-        <title>Visual List</title>
-        <style>
-            * {
-                padding: 0;
-                margin: 0;
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual List</title>
+  <script>
+    function setIOSViewHeight(scrollHeight) {
+      if (!window.webkit || !window.webkit.messageHandlers) {
+        return;
+      }
+      if (!scrollHeight) {
+        scrollHeight = document.body.scrollHeight;
+      }
+      setTimeout(() => {
+        window.webkit.messageHandlers.loaded.postMessage({
+          'height': scrollHeight
+        });
+      }, 0);
+    }
+
+    var originScrollHeight;
+    btnEl.addEventListener('click', function() {
+      if (!btnTextEl) return;
+      var isHidden = btnTextEl.innerText.indexOf(SHOW_TEXT) > -1 ? true : false;
+      if (isHidden) {
+        if (typeof originScrollHeight === 'undefined') {
+          originScrollHeight = document.body.scrollHeight;
+        }
+        btnTextEl.innerText = HIDE_TEXT;
+        blockQuoteEl.style.display = "block";
+        if (!blockQuoteElAdjusted) {
+          try {
+            if (window.adjustContent && typeof window.adjustContent === 'function') {
+              resetAdjustClass();
+              setTimeout(function() {
+                window.adjustContent(blockQuoteEl);
+                setIOSViewHeight();
+              }, 16);
             }
+          } catch (ex) {
+            console.error('adjustContent error', ex);
+          }
+          blockQuoteElAdjusted = true;
+        } else {
+          setIOSViewHeight();
+        }
+      } else {
+        btnTextEl.innerText = SHOW_TEXT;
+        blockQuoteEl.style.display = 'none';
+        setIOSViewHeight(originScrollHeight);
+      }
+    })
+  </script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #app {
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    #app .list li {
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+    }
+    
+    ul {
+      list-style-type: none;
+    }
+    
+    .list ul {
+      position: relative;
+    }
+  </style>
 
-            html,
-            body {
-                height: 100%;
-                overflow: hidden;
-            }
+</head>
 
-            #app {
-                height: 100%;
-                overflow-y: auto;
-            }
+<body>
+  <div id="app">
+    <div class="list">
+      <ul></ul>
+    </div>
+  </div>
+  <script>
+    let appEl = document.getElementById('app');
+    let itemHeight = 50;
+    appEl.addEventListener('scroll', (ev) => {
+      ulEl.style.transform = `translateY(${appEl.scrollTop}px)`;
+      ulEl.setAttribute(`data-start-index`, Math.floor(appEl.scrollTop / itemHeight));
+      render(ulEl);
+    });
 
-            #app .list li {
-                height: 50px;
-                line-height: 50px;
-                text-align: center;
-            }
+    let listEl = document.querySelector('#app .list');
+    let arr = [];
+    for (let i = 0; i < 300; ++i) {
+      arr.push(i);
+    }
 
-            ul {
-                list-style-type: none;
-            }
+    let ulEl = listEl.querySelector('ul');
+    listEl.style.height = `${50 * 300}px`;
 
-            .list ul {
-                position: relative;
-            }
+    function render(listEl, itemHeight = 50) {
+      let screenHeight = document.documentElement.clientHeight;
+      let visibleItemCount = Math.ceil(screenHeight / itemHeight) + 10;
 
-        </style>
+      let startInx = Number.parseInt(listEl.getAttribute(`data-start-index`)) || 0;
+      let htmlStr = ``;
 
-    </head>
+      for (let i = startInx; i < Math.min(startInx + visibleItemCount, arr.length); ++i) {
+        htmlStr += `<li>${arr[i]}</li>`
+      }
 
-    <body>
-        <div id="app">
-            <div class="list">
-                <ul></ul>
-            </div>
-        </div>
-        <script>
-            let appEl = document.getElementById('app');
-            let itemHeight = 50;
-            appEl.addEventListener('scroll', (ev) => {
-                ulEl.style.transform = `translateY(${appEl.scrollTop}px)`;
-                ulEl.setAttribute(`data-start-index`, Math.floor(appEl.scrollTop / itemHeight));
-                render(ulEl);
-            });
+      requestAnimationFrame(() => {
+        listEl.innerHTML = htmlStr;
+      });
+    }
 
-            let listEl = document.querySelector('#app .list');
-            let arr = [];
-            for (let i = 0; i < 300; ++i) {
-                arr.push(i);
-            }
-
-            let ulEl = listEl.querySelector('ul');
-            listEl.style.height = `${50 * 300}px`;
-
-            function render(listEl, itemHeight = 50) {
-                let screenHeight = document.documentElement.clientHeight;
-                let visibleItemCount = Math.ceil(screenHeight / itemHeight) + 10;
-
-                let startInx = Number.parseInt(listEl.getAttribute(`data-start-index`)) || 0;
-                let htmlStr = ``;
-
-                for (let i = startInx; i < Math.min(startInx + visibleItemCount, arr.length); ++i) {
-                    htmlStr += `<li>${arr[i]}</li>`
-                }
-
-                requestAnimationFrame(() => {
-                    listEl.innerHTML = htmlStr;
-                });
-            }
-
-            render(ulEl);
-        </script>
-    </body>
+    render(ulEl);
+  </script>
+</body>
 
 </html>
