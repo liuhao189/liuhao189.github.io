@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>V8中的垃圾回收</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1649347569809">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="v8-">V8中的垃圾回收</h1>
+<h2 id="v8-">V8是什么</h2>
+<p>V8是一个JS运行时引擎，编译并执行你的JS代码。V8有一个代际的，stop-the-world的垃圾回收器。</p>
+<h2 id="-">垃圾回收器是什么</h2>
+<p>垃圾回收的要点是能够管理特定程序的内存使用情况。JS缺乏访问内存管理的特定接口，这基本意味着程序中的内存管理权限都将传给V8。</p>
+<p>因为内存资源是有限的，垃圾回收期的工作是遍历内存中分配的对象并确定它们是死的还是活的，死去的对象会被删除，而内存会被分配回堆中。</p>
+<p>堆是一个非结构化区域，对象在其中分配内存，这种分配是动态的，因为对象的大小/生命周期/数量是未知的，需要在运行时进行分配和回收内存。</p>
+<p>堆直接与调用堆栈一起工作，因为堆栈中显示的对象需要内存分配。</p>
+<h2 id="dead-or-alive-">Dead or alive?</h2>
+<p>对象是否Alive的基本检查是执行代码的程序是否可以访问它，最容易到达的对象可能是在根作用域中定义的对象。</p>
+<p>一些C++的bindings或Web-APIS也是根的一部分，所以你可以直接访问setInterval。</p>
+<p>可访问性也可以被认为是另一个对象或根是否可以直接或间接地访问该对象，如果可访问，内存就不会回收。</p>
+<h2 id="-">如何进行垃圾回收？</h2>
+<p>当你创建新对象，或创建新指针(JS没有指针的概念，主要指包装器对象)，</p>
+<p>堆中有一堆不同的空间用于不同类型的对象，它将像这样组织。</p>
+<p>为了进行垃圾回收，V8将对分为两个部分：新生代和旧生代。</p>
+<p>当你像V8申请内存时，V8会在新生代中申请内存，随着你不断申请内存，最终会耗尽内存，这时V8不得不进行垃圾回收。</p>
+<p>新创建的对象会非常快地分配，并定期清理，以删除不可访问的对象。一旦对象存活了几次(准确得说是两次)，它们就会被提升到旧生代空间中，当空间满时，就会在一个单独的循环中回收垃圾。</p>
+<p>较老的对象是那些在一次以上的垃圾清理中幸存下来的对象，这意味着它们一直被其它对象引用，并且仍然需要分配内存，它们通常不会引用较年轻的对象，但会引用老对象。缺少代与代之间的相互引用，使得每个系列都有一个更干净的清扫。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://v8.dev/blog/free-garbage-collection">https://v8.dev/blog/free-garbage-collection</a></p>
+<p><a href="https://medium.com/@_lrlna/garbage-collection-in-v8-an-illustrated-guide-d24a952ee3b8">https://medium.com/@_lrlna/garbage-collection-in-v8-an-illustrated-guide-d24a952ee3b8</a></p>
+</body>
+</html>

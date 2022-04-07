@@ -74,7 +74,6 @@ Array，包含数字键的对象，在V8中被广泛用于存储大量数据。
 
 Map，描述对象类型及其布局的对象。例如：映射用于描述隐式对象层次结构，用于快速访问属性。
 
-
 ## Object-Groups
 
 每一个Native-Object都由相互引用，相互管理的对象组成。eg：DOM的子树都有它的parent，child，sibling的节点。
