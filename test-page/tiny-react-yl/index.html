@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiny-React</title>
+  <script>
+    function createElement(type, props, ...children) {
+      return {
+        type,
+        props,
+        children: children.map(child => {
+          return typeof child === 'object' ? child : createTextElement(child);
+        })
+      }
+    }
+    //
+    function createTextElement(text) {
+      return {
+        type: 'TEXT_ELEMENT',
+        props: {
+          nodeValue: text
+        }
+      }
+    }
+
+    function render(element, parentDom) {
+      const {
+        type,
+        props,
+        children = []
+      } = element;
+      const dom = type === 'TEXT_ELEMENT' ? document.createTextNode('') : document.createElement(type);
+
+      Object.keys(props).forEach(name => {
+        dom[name] = props[name];
+      });
+
+      children.forEach(child => {
+        return render(child, dom);
+      });
+
+      parentDom.appendChild(dom);
+    }
+
+    const TinyReact = {
+      createElement,
+      render
+    };
+
+    const App = ({
+      name = 'World'
+    } = {}) => {
+      return TinyReact.createElement('div', {
+          style: "background:salmon;padding:5rem;text-align:center"
+        },
+        TinyReact.createElement('h1', {}, "Hello" + name),
+        TinyReact.createElement('div', {
+          style: 'color:white'
+        }, 'by TinyReact'));
+    }
+
+    window.addEventListener('load', () => {
+      TinyReact.render(App(), document.getElementById('app'));
+    })
+  </script>
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
+</html>
