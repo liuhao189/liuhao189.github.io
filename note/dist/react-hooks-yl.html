@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>React-Hooks原理剖析</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1649690744872">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="react-hooks-">React-Hooks原理剖析</h1>
+<p>React本身非常函数式的设计哲学，fn(data)=UI，并没有被当前组件模式很好地表达。</p>
+<h2 id="hooks-">Hooks实现准备</h2>
+<p>首先从零实现一个极简版本的React，一方面为接下来的Hooks实现做准备，另一方面，也更深入地理解React的基本原理。</p>
+<h2 id="-dom">虚拟DOM</h2>
+<p>为了实现差量更新以降低DOM操作成本和引入中间层方便扩展，React引入了虚拟DOM，让UI以一直虚拟的表现形式被保存在内存中，并通过ReactDOM等类库使之与真实的DOM同步。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">Greet</span> <span class="o">=</span> <span class="p">({</span><span class="nx">name</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;&lt;</span><span class="nx">h2</span><span class="o">&gt;</span><span class="nx">Hello</span><span class="p">,</span> <span class="p">{</span><span class="nx">name</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/h2&gt;&lt;/div&gt;</span>
+  <span class="p">)</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+<span class="p">{</span>
+  <span class="nx">dom</span><span class="o">:</span> <span class="nx">divNode</span><span class="p">,</span>
+  <span class="nx">element</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;div&#39;</span><span class="p">,</span>
+    <span class="nx">props</span><span class="o">:</span> <span class="p">{}</span>
+  <span class="p">},</span>
+  <span class="nx">children</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nx">dom</span><span class="o">:</span><span class="nx">h2Node</span><span class="p">,</span>
+      <span class="nx">element</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span>
+        <span class="nx">props</span><span class="o">:</span> <span class="p">{}</span>
+      <span class="p">},</span>
+      <span class="nx">children</span><span class="o">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nx">dom</span><span class="o">:</span> <span class="nx">textNode</span><span class="p">,</span>
+          <span class="nx">element</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+            <span class="nx">props</span><span class="o">:</span> <span class="p">{</span>
+              <span class="nx">nodeValue</span><span class="o">:</span> <span class="s1">&#39;Hello,xxx&#39;</span>
+            <span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>虚拟DOM和真实DOM类似，也是树形结构，每个节点有真实的DOM节点引用，组件元素数据以及子节点信息。</p>
+<h2 id="tinyreact-v1">TinyReact-V1</h2>
+<p>首先，实现createElement和createTextElement两个工厂函数，用以表达组件渲染所需的element信息。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//</span>
+<span class="kd">function</span> <span class="nx">createElement</span><span class="p">(</span><span class="nx">type</span><span class="p">,</span><span class="nx">props</span><span class="p">,...</span><span class="nx">children</span><span class="p">){</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="p">,</span>
+    <span class="nx">props</span><span class="p">,</span>
+    <span class="nx">children</span><span class="o">:</span> <span class="nx">children</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">child</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">typeof</span> <span class="nx">child</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">?</span> <span class="nx">child</span> <span class="o">:</span> <span class="nx">createTextElement</span><span class="p">(</span><span class="nx">child</span><span class="p">);</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+<span class="kd">function</span> <span class="nx">createTextElement</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;TEXT_ELEMENT&#39;</span><span class="p">,</span>
+    <span class="nx">props</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">nodeValue</span><span class="o">:</span> <span class="nx">text</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>接下来，实现第一版render方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">render</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">parentDom</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">props</span><span class="p">,</span> <span class="nx">children</span> <span class="o">=</span> <span class="p">[]</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">element</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">dom</span> <span class="o">=</span> <span class="nx">type</span> <span class="o">===</span><span class="s1">&#39;TEXT_ELEMENT&#39;</span> <span class="o">?</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createTextNode</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">:</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="nx">type</span><span class="p">);</span>
+
+  <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">props</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">name</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">dom</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">props</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+  <span class="p">});</span>
+
+  <span class="nx">children</span><span class="p">.</span><span class="nx">forEech</span><span class="p">(</span><span class="nx">child</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">render</span><span class="p">(</span><span class="nx">child</span><span class="p">,</span> <span class="nx">dom</span><span class="p">);</span>
+  <span class="p">});</span>
+
+  <span class="nx">parentDom</span><span class="p">.</span><span class="nx">appchild</span><span class="p">(</span><span class="nx">dom</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>试试TinyReact的威力：</p>
+<pre><code class="lang-js"><div class="highlight"><pre>  <span class="kr">const</span> <span class="nx">App</span> <span class="o">=</span> <span class="p">({</span>
+    <span class="nx">name</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span>
+  <span class="p">}</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">TinyReact</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">style</span><span class="o">:</span> <span class="s2">&quot;background:salmon;padding:5rem;text-align:center&quot;</span>
+      <span class="p">},</span>
+      <span class="nx">TinyReact</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;h1&#39;</span><span class="p">,</span> <span class="p">{},</span> <span class="s2">&quot;Hello&quot;</span> <span class="o">+</span> <span class="nx">name</span><span class="p">),</span>
+      <span class="nx">TinyReact</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">style</span><span class="o">:</span> <span class="s1">&#39;color:white&#39;</span>
+      <span class="p">},</span> <span class="s1">&#39;by TinyReact&#39;</span><span class="p">));</span>
+  <span class="p">}</span>
+
+  <span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;load&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">TinyReact</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="nx">App</span><span class="p">(),</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">));</span>
+  <span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">调谐过程</h2>
+<p>TinyReact-V1以及可以轻松处理组件首次渲染，但是当我们再次调用render方法时，出现了两个问题：</p>
+<p>1、TinyReact依然重新创建了一遍所有DOM节点，没有检查是否已有DOM节点可以复用。</p>
+<p>2、创建的DOM节点又被加入到页面父节点中，导致了重复内容。</p>
+<p>产生这些问题的原因是：没有通过对比新旧虚拟DOM之间的不同来进行真实的UI的差异化更新。</p>
+<p>首先改造render方法，从而在下一次render的时候能够对比两次的差异：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">rootInstance</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">render</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">container</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">prevInstance</span> <span class="o">=</span> <span class="nx">rootInstance</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">nextInstance</span> <span class="o">=</span> <span class="nx">reconcile</span><span class="p">(</span><span class="nx">container</span><span class="p">,</span> <span class="nx">prevInstance</span><span class="p">,</span> <span class="nx">element</span><span class="p">);</span>
+  <span class="nx">rootInstance</span> <span class="o">=</span> <span class="nx">nextInstance</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>可以看到几个变化：</p>
+<p>1、render中的原渲染逻辑被封装到reconcile函数中。</p>
+<p>2、加入一个全局的rootInstance变量，保存着每次reconcile的结构，即一个完整的虚拟DOM实例。</p>
+<p>3、调用reconcile时，会传入当前的rootInstance作为参照，完成调用后，将结果更新到rootInstance。</p>
+<p>每次render过程就是调谐过程，这一过程会对比当前虚拟DOM实例和新传入的渲染内容直接的差异从而实现差量更新。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">reconcile</span><span class="p">(</span><span class="nx">parentDom</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">element</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">instance</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">newInstance</span> <span class="o">=</span> <span class="nx">instantiate</span><span class="p">(</span><span class="nx">element</span><span class="p">);</span>
+    <span class="nx">parentDom</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">newInstance</span><span class="p">.</span><span class="nx">dom</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">newInstance</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">element</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">parentDom</span><span class="p">.</span><span class="nx">removeChild</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">dom</span><span class="p">);</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">element</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="nx">element</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">updateDomPeoperties</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">dom</span><span class="p">,</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">element</span><span class="p">.</span><span class="nx">props</span><span class="p">,</span> <span class="nx">element</span><span class="p">.</span><span class="nx">props</span><span class="p">);</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">childInstances</span> <span class="o">=</span> <span class="nx">reconcileChildren</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">element</span><span class="p">);</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">element</span> <span class="o">=</span> <span class="nx">element</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">instance</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">newInstance</span> <span class="o">=</span> <span class="nx">instantiate</span><span class="p">(</span><span class="nx">element</span><span class="p">);</span>
+    <span class="nx">parentDom</span><span class="p">.</span><span class="nx">replaceChild</span><span class="p">(</span><span class="nx">newInstance</span><span class="p">.</span><span class="nx">dom</span><span class="p">,</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">dom</span><span class="p">);</span>
+    <span class="nx">retuen</span> <span class="nx">newInstance</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>处理了四种情况：</p>
+<p>1、如果之前没有虚拟DOM节点实例，则创建一个实例，并添加到DOM中，第一次执行render时的逻辑。</p>
+<p>2、已经有虚拟DOM节点实例，本次渲染传入的element数据为空，意味着新UI中不再需要该节点，从DOM中删除之前的DOM节点，并返回空结果。</p>
+<p>3、当前虚拟DOM实例和新的Element类型是一致的，说明节点类型没有变化，只检查是否有对应的节点属性变更，并递归处理所有子节点实例。</p>
+<p>4、虚拟DOM实例和新的element类型不一致，则创建新实例并进行替换。</p>
+<h2 id="-">函数组件</h2>
+<p>准备工作的最后一步是支持函数组件，它是Hooks的主要使用场景。</p>
+<p>需要改进的地方有两处，首次渲染函数组件时，在instantiate方法内创建对应虚拟DOM节点实例的逻辑：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">instantiate</span><span class="p">(</span><span class="nx">element</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">props</span><span class="p">,</span> <span class="nx">children</span> <span class="o">=</span> <span class="p">[]</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">element</span><span class="p">;</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">type</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">childElement</span> <span class="o">=</span> <span class="nx">type</span><span class="p">(</span><span class="nx">props</span><span class="p">);</span>
+    <span class="kr">const</span> <span class="nx">childInstance</span> <span class="o">=</span> <span class="nx">instantiate</span><span class="p">(</span><span class="nx">childElement</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="nx">dom</span><span class="o">:</span> <span class="nx">childInstance</span><span class="p">.</span><span class="nx">dom</span><span class="p">,</span>
+      <span class="nx">element</span><span class="p">,</span>
+      <span class="nx">childInstance</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>与处理普通DOM节点主要不同在于：</p>
+<p>1、需要执行函数组件，type(props)，进而获得最终的element。</p>
+<p>2、函数组件对应的虚拟DOM节点只会有一个子节点实例，而普通的DOM节点可以有多个。</p>
+<p>另外移除reconcile调谐函数需要更新函数组件对应虚拟DOM节点实例的分支：</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">reconcile</span><span class="p">(</span><span class="nx">parentDom</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">element</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(...){</span>
+    <span class="c1">//....</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">childElement</span> <span class="o">=</span> <span class="nx">element</span><span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="nx">element</span><span class="p">.</span><span class="nx">props</span><span class="p">);</span>
+    <span class="kr">const</span> <span class="nx">oldInstance</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">childInstance</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="nx">childInstance</span> <span class="o">=</span> <span class="nx">reconcile</span><span class="p">(</span><span class="nx">parentDom</span><span class="p">,</span><span class="nx">oldChildInstance</span><span class="p">,</span> <span class="nx">childElement</span><span class="p">);</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">dom</span> <span class="o">=</span> <span class="nx">childInstance</span><span class="p">.</span><span class="nx">dom</span><span class="p">;</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">element</span> <span class="o">=</span> <span class="nx">element</span><span class="p">;</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">childInstance</span> <span class="o">=</span> <span class="nx">childInstance</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">instance</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>这样，TinyReact-V3已经可以处理函数组件。</p>
+<h2 id="-hook-usestate">实现第一个hook:useState</h2>
+<p>useState可谓是最为常用的Hook。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">App</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">You</span> <span class="nx">clicked</span> <span class="p">{</span><span class="nx">count</span><span class="p">}</span> <span class="nx">times</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">setCount</span><span class="p">(</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span><span class="o">&gt;</span>
+        <span class="nx">Click</span> <span class="nx">me</span>
+      <span class="o">&lt;</span><span class="err">/button&gt;</span>
+    <span class="o">&lt;</span><span class="err">/div&gt;</span>
+  <span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>特点：1、接受一个初始值；2、返回一个tuple，第一个元素为state最新的值，第二个元素为更新函数；3、函数组件多次执行时，仍然能够返回之前的state值。</p>
+<p>能够满足这些条件，尤其是第三个条件，看起来只要在和组件有深度绑定的虚拟DOM上进行修改即可。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nx">dom</span><span class="p">,</span>
+  <span class="nx">element</span><span class="p">,</span>
+  <span class="nx">childInstance</span><span class="p">,</span>
+  <span class="c1">// add state to store state accross multiple executions</span>
+  <span class="nx">state</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>在组件对应的虚拟DOM节点实例，加入一个state字段来保存当前状态数据。</p>
+<p>经过分析TinyReact，需要在每次执行函数组件之前进行state数据的准备工作。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">wipInstance</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">wipState</span> <span class="o">=</span> <span class="kc">undefined</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">instantiate</span><span class="p">(</span><span class="nx">element</span><span class="p">){</span>
+  <span class="kr">const</span> <span class="p">{</span><span class="nx">type</span><span class="p">,</span> <span class="nx">props</span><span class="p">,</span> <span class="nx">children</span> <span class="o">=</span> <span class="p">[]}</span> <span class="o">=</span> <span class="nx">element</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">type</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">){</span>
+    <span class="nx">wipInstance</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="nx">wipState</span> <span class="o">=</span> <span class="kc">undefined</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="nx">childElement</span> <span class="o">=</span> <span class="nx">type</span><span class="p">(</span><span class="nx">props</span><span class="p">);</span>
+    <span class="c1">// ...</span>
+    <span class="nx">wipInstance</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="nx">wipState</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">wipInstance</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">reconcile</span><span class="p">(</span><span class="nx">parentDom</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">element</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//...</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">wipInstance</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">;</span>
+    <span class="nx">wipState</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">state</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="nx">childElement</span> <span class="o">=</span> <span class="nx">element</span><span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="nx">element</span><span class="p">.</span><span class="nx">props</span><span class="p">);</span>
+    <span class="c1">//...</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="nx">wipState</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">instance</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>1、添加两个全局变量，wipInstance保存当前正在处理的虚拟DOM实例，wipState保存当前虚拟DOM实例的state数据，以便在useState中直接读取。</p>
+<p>2、在instancetiate方法中首次渲染函数组件时，将wipInstance指向新创建的对象，并初始化wipState。</p>
+<p>3、在reconcile方法中更新渲染函数组件时，将wipInstance指向已创建的虚拟DOM实例，wipState保存该实例的state数据。</p>
+<p>上述保证了wipInstance和wipState在执行函数组件之前已经指向了正确的数据，且由于是全局变量(模块级变量，仅在TinyReact内部共享)，它们可以被其它TinyReact方法直接读取的。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">useState</span><span class="p">(</span><span class="nx">initialState</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">wipState</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">wipState</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span> <span class="o">?</span> <span class="nx">initialState</span><span class="o">:</span> <span class="nx">wipState</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">wipInstance</span><span class="p">;</span>
+  <span class="nx">setState</span> <span class="o">=</span> <span class="p">(</span><span class="nx">newState</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="nx">newState</span><span class="p">;</span>
+    <span class="nx">reconcile</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">dom</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">element</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="p">[</span><span class="nx">wipState</span><span class="p">,</span> <span class="nx">setState</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>逻辑非常简明扼要，主要有两方面：</p>
+<p>1、更新wipState，在初始化时赋值未initialState。</p>
+<p>2、创建setState方法，接受一个参数作为新指定的state，先将其更新到虚拟DOM实例的state字段，然后执行reconcile方法触发UI更新。</p>
+<p>3、将最新的state和setState方法组合为二元tuple返回。</p>
+<p>这段逻辑也解释了React Hooks名字的寓意：Hook是React内部引擎扩展到函数组件一个钩子，通过这个钩子，函数组件可以读写内部引擎保存的信息，且该信息在其多次执行时保持一致。</p>
+<h3 id="-">多状态支持</h3>
+<p>上述实现存在一个非常明显的问题，只能保存一个state。</p>
+<p>为了让TinyReact更加切合实际，需要进一步添加多状态的支持，实现方式多种多样。</p>
+<p>1、将虚拟DOM节点实例的state替换为hooks数组。</p>
+<p>2、将虚拟DOM节点实例的state替换为hookHash对象，key通过useState(key,initialState)来指定。</p>
+<p>3、将虚拟DOM节点实例的hooks或者hookHash对象作为函数组件的第二个参数传入，这样组件内部可以随意读写任意状态。</p>
+<p>React团队经过研究权衡，最终采用了第一种方式，虽然有顺序相关等缺点，但是心智成本低，不需要指定key，不需要额外的参数，而且顺序相关的缺点乐意通过lint解决。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">wipInstance</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">wipHookIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">instantiate</span><span class="p">(</span><span class="nx">element</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">type</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">wipInstance</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="nx">wipHookIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kr">const</span> <span class="nx">childElement</span> <span class="o">=</span> <span class="nx">type</span><span class="p">(</span><span class="nx">props</span><span class="p">);</span>
+    <span class="c1">//...</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">reconcile</span><span class="p">(</span><span class="nx">parentDom</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">element</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//...</span>
+  <span class="nx">wipInstance</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">;</span>
+  <span class="nx">wipHookIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">childElement</span> <span class="o">=</span> <span class="nx">element</span><span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="nx">props</span><span class="p">);</span>
+  <span class="c1">//...</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>修改的地方：</p>
+<p>1、增加一个全局变量wipHookIndex，用以指向当前正在调用的hook索引，从而获得正确的hook状态数据。</p>
+<p>2、在每次执行函数组件(mount或update)时，先要重置wipHookIndex。</p>
+<p>继续修改useState。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">useState</span><span class="p">(</span><span class="nx">initialValue</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">wipInstance</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">hooks</span> <span class="o">=</span> <span class="nx">wipInstance</span><span class="p">.</span><span class="nx">hooks</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">hookIndex</span> <span class="o">=</span> <span class="nx">wipHookIndex</span><span class="p">;</span>
+  <span class="nx">hooks</span><span class="p">[</span><span class="nx">hookIndex</span><span class="p">]</span> <span class="o">=</span> <span class="nx">hooks</span><span class="p">[</span><span class="nx">hookIndex</span><span class="p">]</span> <span class="o">||</span> <span class="nx">initialValue</span><span class="p">;</span>
+
+  <span class="kr">const</span> <span class="nx">setState</span> <span class="o">=</span> <span class="p">(</span><span class="nx">newState</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">hooks</span><span class="p">[</span><span class="nx">hookIndex</span><span class="p">]</span> <span class="o">=</span> <span class="nx">newState</span><span class="p">;</span>
+    <span class="nx">reconcile</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">dom</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">,</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">element</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="p">[</span><span class="nx">wipInstance</span><span class="p">.</span><span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="o">++</span><span class="p">],</span> <span class="nx">setState</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>return之前需要wipHookIndex++，从而保证下一个useState可以拿到正确状态。</p>
+<h2 id="-hooks">更多Hooks</h2>
+<p>虚拟DOM实例的hooks属性既然是一个数组，那么它的每个元素存储的可以是状态数据，但也可以是其它类似callback等数据，只要保证顺序即可。它在本质上提供了函数组件在多次执行时可以共享的数据。</p>
+<h2 id="useeffect">useEffect</h2>
+<p>useEffect大概是除了useState外最为常用的Hook，它与组件生命周期息息相关，常被用来处理副作用相关的逻辑。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">useEffect</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span><span class="nx">deps</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">oldDeps</span> <span class="o">=</span> <span class="nx">wipInstance</span><span class="p">.</span><span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="p">];</span>
+  <span class="kr">const</span> <span class="nx">hasChangedDeps</span> <span class="o">=</span> <span class="nx">oldDeps</span> <span class="o">?</span> <span class="nx">deps</span><span class="p">.</span><span class="nx">some</span><span class="p">((</span><span class="nx">el</span><span class="p">,</span><span class="nx">i</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span> <span class="k">return</span> <span class="nx">el</span><span class="o">!==</span><span class="nx">oldDeps</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>  <span class="p">})</span><span class="o">:</span> <span class="kc">true</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">deps</span> <span class="o">||</span> <span class="nx">hasChangedDeps</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">callback</span><span class="p">();</span>
+    <span class="nx">wipInstance</span><span class="p">.</span><span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="p">]</span> <span class="o">=</span> <span class="nx">deps</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="nx">wipHookIndex</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>接受两个参数：callback是回调函数，用以处理副作用，deps为判断是否需要再次执行callback的依赖条件。</p>
+<p>在虚拟DOM实例hooks对应元素存储的内容是上次执行时的deps信息，用以进行对比。</p>
+<p>在函数组件初次渲染时，因为hooks对应元素为空，所以callback一定被执行。</p>
+<p>更新时，会检查最新传入deps是否相同，如果有变更则执行callback。</p>
+<p>一旦执行callback，会更新deps信息到hooks对应元素。</p>
+<p>如果没有指定第二个参数deps，则每次都会执行callback。</p>
+<p>相比官方的useState，我们并没有支持在callback中返回析构函数，能够在deps发生变更或删除函数组件时进行清理工作。</p>
+<h2 id="usecallback">useCallback</h2>
+<p>useCallback的目的是可以在函数组件多次执行时仍然返回同一个回调函数，主要目的是为了避免子组件每次新创建的回调函数而重新渲染，逻辑和useEffect非常相像。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">useCallback</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span><span class="nx">deps</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">hooks</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">wipInstance</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">deps</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">oldCallback</span><span class="p">,</span> <span class="nx">oldDeps</span><span class="p">]</span> <span class="o">=</span> <span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="p">];</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">deps</span><span class="p">.</span><span class="nx">some</span><span class="p">((</span><span class="nx">el</span><span class="p">,</span><span class="nx">i</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">el</span> <span class="o">!</span> <span class="o">==</span> <span class="nx">oldDeps</span><span class="p">[</span><span class="nx">i</span><span class="p">]))</span> <span class="p">{</span>
+      <span class="nx">wipHooksIndex</span> <span class="o">++</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">oldCallback</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">deps</span><span class="p">];</span>
+  <span class="k">return</span> <span class="nx">callback</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>有了useEffect的基础，上述逻辑并不复杂：</p>
+<p>1、hooks对应元素存储的信息是一个二元tuple，与传入的两个参数一直。</p>
+<p>2、首次执行时，存储到hooks对应元素然后返回callback。</p>
+<p>3、更新执行时，通过对比新旧deps，如一致则返回之前的callback。</p>
+<p>4、如未指定deps，则每次都返回最新的callback。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">BigList</span> <span class="o">=</span> <span class="p">({</span> <span class="nx">onClick</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">(</span>
+  <span class="o">&lt;</span><span class="nx">ul</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="nx">li</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onClick</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">Foo</span><span class="o">&lt;</span><span class="err">/li&gt;</span>
+    <span class="o">&lt;</span><span class="nx">li</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onClick</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">Bar</span><span class="o">&lt;</span><span class="err">/li&gt;</span>
+    <span class="o">&lt;</span><span class="nx">li</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onClick</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">Baz</span><span class="o">&lt;</span><span class="err">/li&gt;</span>
+  <span class="o">&lt;</span><span class="err">/ul&gt;</span>
+<span class="p">);</span>
+<span class="kr">const</span> <span class="nx">CallbackExample</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="kr">const</span> <span class="nx">onClick</span> <span class="o">=</span> <span class="nx">useCallback</span><span class="p">((</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;click&quot;</span><span class="p">,</span> <span class="nx">count</span><span class="p">,</span> <span class="nx">event</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">.</span><span class="nx">textContent</span><span class="p">);</span>
+  <span class="p">},</span> <span class="p">[]);</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">You</span> <span class="nx">clicked</span> <span class="p">{</span><span class="nx">count</span><span class="p">}</span> <span class="nx">times</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">setCount</span><span class="p">(</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span><span class="o">&gt;</span><span class="nx">Click</span> <span class="nx">me</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+      <span class="o">&lt;</span><span class="nx">BigList</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">onClick</span><span class="p">}</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="err">/div&gt;</span>
+  <span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>经过观察，可以发现在当前TinyReact实现中并没有降低无效渲染次数。原因在于TinyReact并没有在每次更新函数组件前进行props比较，而这一工作实际上有React.memo负责。</p>
+<h2 id="usememo">useMemo</h2>
+<p>useMemo就像是useCallback的孪生兄弟，不同的是，它用来保存已经计算好的结果而不是回调函数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">useMemo</span><span class="p">(</span><span class="nx">create</span><span class="p">,</span> <span class="nx">deps</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">hooks</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">wipInstance</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">deps</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">[</span><span class="nx">oldValue</span><span class="p">,</span> <span class="nx">oldDeps</span> <span class="p">]</span> <span class="o">=</span> <span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHooksIndex</span><span class="p">];</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">deps</span><span class="p">.</span><span class="nx">some</span><span class="p">((</span><span class="nx">el</span><span class="p">,</span><span class="nx">i</span><span class="p">)</span><span class="o">=&gt;</span><span class="nx">el</span><span class="o">!==</span><span class="nx">oldDeps</span><span class="p">[</span><span class="nx">i</span><span class="p">]))</span> <span class="p">{</span>
+      <span class="nx">wipHookIndex</span><span class="o">++</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">oldValue</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="kr">const</span> <span class="nx">newValue</span> <span class="o">=</span> <span class="nx">create</span><span class="p">();</span>
+  <span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nx">newValue</span><span class="p">,</span><span class="nx">deps</span><span class="p">];</span>
+  <span class="k">return</span> <span class="nx">newValue</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>除了Hooks对应元素保存的tuple中的第一个数据从callback变成了create计算得出的结果外，其它都是一样的。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">fibonacci</span> <span class="o">=</span> <span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">===</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">n</span> <span class="o">===</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">fibonacci</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nx">fibonacci</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="kr">const</span> <span class="nx">MemoExample</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">input</span><span class="p">,</span> <span class="nx">setInput</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">useMemo</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;memo&quot;</span><span class="p">,</span> <span class="nx">input</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">fibonacci</span><span class="p">(</span><span class="nx">input</span><span class="p">);</span>
+  <span class="p">},</span> <span class="p">[</span><span class="nx">input</span><span class="p">]);</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">Fibonacci</span> <span class="nx">of</span> <span class="nx">input</span> <span class="p">{</span><span class="nx">input</span><span class="p">}</span> <span class="nx">is</span><span class="o">:</span> <span class="p">{</span><span class="nx">result</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">setInput</span><span class="p">(</span><span class="nx">input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span><span class="o">&gt;</span><span class="nx">Change</span> <span class="nx">input</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">setCount</span><span class="p">(</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span><span class="o">&gt;</span><span class="nx">Change</span> <span class="nx">state</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+    <span class="o">&lt;</span><span class="err">/div&gt;</span>
+  <span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-hook-useref">最后一个Hook，useRef</h2>
+<p>让我们来实现最后一个Hook，useRef，它主要用来保存一个可以在组件的整个生命周期内持续存在的ref对象，其current属性被初始化为initialValue，后续可以被修改。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">useRef</span><span class="p">(</span><span class="nx">initialValue</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">hooks</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">wipInstance</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="p">])</span> <span class="p">{</span>
+    <span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nx">current</span><span class="o">:</span> <span class="nx">initialValue</span><span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">hooks</span><span class="p">[</span><span class="nx">wipHookIndex</span><span class="o">++</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>最简单的一个Hook，在虚拟DOM实例hooks对应位置存储的就是一个对象而已。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/372790745">https://zhuanlan.zhihu.com/p/372790745</a></p>
+</body>
+</html>
