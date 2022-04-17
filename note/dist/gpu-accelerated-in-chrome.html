@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chrome中的GPU加速</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1650211079079">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="chrome-gpu-">Chrome中的GPU加速</h1>
+<h2 id="-gpu-">为什么需要GPU加速</h2>
+<p>传统上，网页浏览器完全依赖CPU来呈现网页内容，随着GPU的普及，任命开始关注如何有效使用底层硬件来实现更好的性能和节能。使用GPU来合成网页的内容可以导致非显著的性能提升。</p>
+<p>有三个优点：</p>
+<p>1、在GPU上合成页面可以达到更好的效率。</p>
+<p>2、GPU上已存在的内容，读取是不必要的。eg：video，Canvas2D或WebGL。</p>
+<p>3、CPU和GPU并行，可以同时运行创建一个高效的图形管道。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.chromium.org/developers/design-documents/gpu-accelerated-compositing-in-chrome/">https://www.chromium.org/developers/design-documents/gpu-accelerated-compositing-in-chrome/</a></p>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Blink如何工作</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1650128309446">
+  <link rel="stylesheet" href="/note/note.css?ts=1650211079079">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,28 +13,28 @@
 })();
 </script>
 <h1 id="blink-">Blink如何工作</h1>
-<p>开发Blink是困难的，对于新开发者来说，Blink有很多Blink自身的概念和一些为实现非常快速的渲染引擎而引入的编码约定。</p>
+<p>开发Blink是困难的，对于新开发者来说，Blink有许多Blink的自身概念和一些为实现非常快速的渲染引擎而引入的编码约定。</p>
 <p>对于有经验的Blink开发者来说也不简单，因为Blink对性能，内存和安全的要求非常高。</p>
-<p>本文主要讲述Blink如何工作的概述，希望有助于Blink开发人员快速熟悉结构。</p>
+<p>本文主要讲述Blink如何工作的概述，希望有助于Blink开发人员快速熟悉代码结构。</p>
 <h2 id="blink-">Blink负责什么</h2>
-<p>Blink是Web平台的渲染引擎。粗略地说，Blink实现了在浏览器选项卡中呈现内容的所有内容：</p>
+<p>Blink是Web平台的渲染引擎。粗略地说，Blink实现了在浏览器选项卡中呈现内容的所有职责：</p>
 <p>1、实现Web平台的规范，包括HTML，CSS和Web IDL。</p>
 <p>2、嵌入V8并运行JS。</p>
 <p>3、从底层网络堆栈请求资源。</p>
 <p>4、构建DOM树。</p>
 <p>5、计算样式和布局。</p>
 <p>6、嵌入Chrome合成器并绘制图形。</p>
-<p>Blink被很多软件通过内容公共API嵌入，如Chromium，Android Webview和Opera。</p>
+<p>Blink被很多软件通过Content-Public-API嵌入使用，比如Chromium，Android Webview和Opera。</p>
 <h2 id="-">进程-线程架构</h2>
 <h3 id="-">进程</h3>
 <p>Chromium使用多进程架构。Blink运行在渲染器进程中。</p>
-<p>从概念上来讲，每个渲染器进程最多对应于一个站点。但是实际上，当用户打开太多选项卡或设备没有足够的RAM时，将每个渲染器进程限制为单个站点太重了。在这种情况下，渲染器进程可能被多个Tab或多个iframe共享。</p>
+<p>从站点隔离的概念上来讲，每个渲染器进程最多对应于一个站点，但是实际上，当用户打开太多Tab或设备没有足够的RAM时，将每个渲染器进程限制为单个站点太重了。在这种情况下，渲染器进程可能被多个Tab或多个iframe共享。</p>
 <p>渲染器进程在沙盒运行，Blink需要向浏览器进程发起系统调度请求，eg：文件访问、播放音频和访问用户配置文件数据(Cookie，密码)。</p>
 <p>渲染器进程通过Mojo和浏览器进程进行通信，注意，过去使用Chromium IPC系统。</p>
 <p>在Chromium方面，服务化正在进行，将浏览器进程抽象为一组服务。在Blink看来，Blink可以使用Mojo来和服务进程和浏览器进程通信。</p>
 <h3 id="-">线程</h3>
 <p>Blink有一个主线程，N个worker线程，还有一些内部的线程。</p>
-<p>几乎所有重要的事都在主线程中。除了Workders以外的JS运行，DOM，CSS，样式和布局计算都在主线程。</p>
+<p>几乎所有重要的事都在主线程中。除了Workder以外的JS运行，DOM，CSS，样式和布局计算都在主线程。</p>
 <p>Blink经过高度优化，以最大限度地提高主线程的性能。</p>
 <p>Blink也可能创建多个worker线程来执行Web Workers，Service Workder和Worklets。</p>
 <p>Blink和V8也会创建一系列内置进程来处理音频，数据库，垃圾回收器等。</p>
@@ -61,7 +61,7 @@
 <p>所有的Blink对象应该分配在PartitionAlloc或GarbageCollected中。默认使用Oilpan；在对象的生命周期非常清晰&amp;使用std:unique_ptr或scoped_refptr足够，在Olipan中分配对象增加了复杂性，在Oilpan中分配对象增加了垃圾回收的运行压力时，才应该在PartitionAlloc中分配对象。</p>
 <h2 id="-">任务调度</h2>
 <p>为了提高渲染引擎的响应性，在Blink中的task应该尽可能异步执行。同步的IPC/Mojo或其它操作可能会耗费数毫秒的时间。</p>
-<p>渲染引擎中的所有tasks应该添加到Blink Schedule中。Blink调度器维护了多个任务队列，可以智慧得确定任务的优先级，以最大限度地提高用户感知的性能。</p>
+<p>渲染引擎中的所有tasks应该添加到Blink Schedule中。Blink调度器维护了多个任务队列，可以智能得确定任务的优先级，以最大限度地提高用户感知的性能。</p>
 <h2 id="-domwindow">页面，框架，文档，DOMWindow</h2>
 <p>Page：页面对应于选项卡的概念，每个渲染器进程可能包含多个选项卡。</p>
 <p>Frame：框架包括主框架或iframe，每一个Page可能包含一个或多个以树状层次结构排列的Frames。</p>
@@ -74,7 +74,52 @@
 <p>如果一个页面包含一个跨站点的iframe，那么这个Page可能在两个渲染器进程中。</p>
 <p>在渲染器进程中的frame由LocalFrame表示，不在当前渲染器进程中的Frame由RemoteFrame表示。</p>
 <p>在两个渲染器进程之间通信主要通过浏览器进程。</p>
-<h2 id="-frame-document">分离的Frame和Document</h2>
+<h3 id="-frame-document">分离的Frame和Document</h3>
+<p>Frame和Document可Detached，但是你仍然可以在Detached的frame上执行JS代码。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">doc</span> <span class="o">=</span> <span class="nx">iframe</span><span class="p">.</span><span class="nx">contentDocument</span><span class="p">;</span>
+<span class="nx">iframe</span><span class="p">.</span><span class="nx">remove</span><span class="p">();</span><span class="c1">//detached iframe from the dom tree</span>
+<span class="nx">doc</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">);</span> <span class="c1">// run script on the detached frame</span>
+</pre></div>
+
+</code></pre>
+<p>由于frame已被detached，大多数DOM操作可能会失败并报错。规范中没有明确定义在detached的frame上执行操作该如何反应。</p>
+<p>基本上，人们期望JS能够运行，但大多数DOM操作都会失败，出现一些异常。</p>
+<h2 id="web-idl-interface-definition-language-">Web IDL(Interface Definition Language)绑定</h2>
+<p>当JS调用node.firstChild时，Blink是如何响应的？</p>
+<p>首先，需要在IDL文件中定义：</p>
+<pre><code class="lang-cpp"><div class="highlight"><pre><span class="c1">//node idl</span>
+<span class="n">interface</span> <span class="nl">Node</span><span class="p">:</span> <span class="n">EventTarget</span> <span class="p">{</span>
+    <span class="p">[...]</span> <span class="n">readonly</span> <span class="n">attribute</span> <span class="n">Node</span> <span class="o">?</span> <span class="n">firstChild</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>然后，你需要定义C++类来实现Node，并定义C++的getter：</p>
+<pre><code class="lang-c"><div class="highlight"><pre><span class="n">class</span> <span class="nl">EventTarget</span> <span class="p">:</span> <span class="n">public</span> <span class="n">ScriptWrappable</span> <span class="p">{</span>  <span class="c1">// All classes exposed to JavaScript must inherit from ScriptWrappable.</span>
+  <span class="p">...;</span>
+<span class="p">};</span>
+<span class="n">class</span> <span class="nl">Node</span> <span class="p">:</span> <span class="n">public</span> <span class="n">EventTarget</span> <span class="p">{</span>
+  <span class="n">DEFINE_WRAPPERTYPEINFO</span><span class="p">();</span>  <span class="c1">// All classes that have IDL files must have this macro.</span>
+  <span class="n">Node</span><span class="o">*</span> <span class="n">firstChild</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">first_child_</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+</code></pre>
+<p>最后，你可以构建node idl，IDL编译器自动生成Node.firstChild的Blink-V8的绑定。</p>
+<p>当JS调用node.firstChild时，V8调用V8Node::firstChildAttributeGetterCallback，然后调用你定义的Node::firstChild。</p>
+<h2 id="v8-blink">V8和Blink</h2>
+<h3 id="isoate-context-world">Isoate，Context，World</h3>
+<p>Isolate，对应于一个物理线程，Isolate:thread=1:1，主线程有它自己的Isolate，Worker线程有它自己的Isolate。</p>
+<p>Context对应于全局对象，因为每个frame都有它自己的window对象，所以一个渲染器进程中有多个Context。当你调用V8 API时，需要确保在正确的Context，否则会导致内存泄露或安全问题。</p>
+<p>World，是一个支持Chrome扩展内容脚本的概念。内容脚本需要和网页共享DOM，但是为了安全原因，内容脚本的JS对象和网页的JS对象是隔离的。为了实现这种隔离，主线程创建了网页的隔离世界和内容脚本的隔离世界。网页的World和内容脚本的World可共享C++ DOM对象，但是JS对象是隔离的。共享C++ DOM对象是通过创建多个V8包装器对象来实现。</p>
+<h2 id="v8-">V8包装器对象</h2>
+<p>每一个C++ DOM对象都有它对应的V8包装器对象。准确得说，每一个C++ DOM对象在每一个World都有对应的V8包装器对象。</p>
+<p>V8包装器对象强引用它们对应的C++ DOM对象。C++ DOM对象只有弱引用V8包装器对象。</p>
+<h2 id="-">渲染流水线</h2>
+<p>从HTML文件传到Blink，到屏幕上的像素点。大概经历的流水线如下：</p>
+<p>Main Thread：parse -&gt; DOM -&gt; style -&gt; layout -&gt; paint</p>
+<p>然后到Compositor thread：commit -&gt; tiling -&gt; rester -&gt; draw </p>
+<p>然后到GPU进程。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://docs.google.com/document/d/1aitSOucL0VHZa9Z2vbRJSyAIsAz24kX8LFByQ5xQnUg/edit">https://docs.google.com/document/d/1aitSOucL0VHZa9Z2vbRJSyAIsAz24kX8LFByQ5xQnUg/edit</a></p>
 </body>
