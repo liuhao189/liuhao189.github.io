@@ -73,7 +73,7 @@
     },
     {
         "id": "V8Learn",
-        "name": "V8引擎相关",
+        "name": "Chrome相关",
         "path":[
             "V8-learn"
         ],
