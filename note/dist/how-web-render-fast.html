@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>WebRender怎么保证渲染效率</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1651854158306">
+  <link rel="stylesheet" href="/note/note.css?ts=1652112646471">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -72,12 +72,12 @@
 <h2 id="webrender-">WebRender是如何做的</h2>
 <p>跟原来的浏览器渲染页面相比，两件事会改变。</p>
 <p><img src="/note/assets/imgs/webrender-change-2.png" alt="WebRender两点不同"></p>
-<p>1、绘制和合成不再区分，它们是同一步中的两部分。GPU基于图形API同时处理绘制和合成。</p>
+<p>1、绘制和合成不再区分，它们是同一步中的两部分。使用图形API使GPU同时处理绘制和合成。</p>
 <p>2、布局信息之前被称为Frame-Tree或Render-Tree，现在传递为Display-List。</p>
-<p>Display-List是高级绘制指令，它告诉我们需要绘制什么，而不是具体到图形API。</p>
+<p>Display-List是高级绘制指令，它告诉我们需要绘制什么，而不会具体到图形API。</p>
 <p>当有新的东西需要绘制时，主线程会将Dispaly-List给到RenderBackend（在CPU上运行的WebRender实例）。</p>
 <p>RenderBackend工作是将这个高级绘图指令列表转换成GPU需要的绘图调用，这些调用被分批运行，以使得它们运行得更快。</p>
-<p>RenderBackend想让它给GPU的绘制调用尽可能快地运行，为此，它使用了一些不同的技术。</p>
+<p>RenderBackend想让它给GPU的绘制调用尽可能快地绘制，为此，它使用了一些不同的技术。</p>
 <h3 id="-">从列表中删除不必要的形状（早期剔除）</h3>
 <p>节省时间最好的方式是不做该事情。首先，RenderBackend会过滤掉不在屏幕内展示的条目。这个过程称为早期剔除。</p>
 <h3 id="-">尽量减少中间纹理的数量(渲染任务树)</h3>
@@ -93,10 +93,19 @@
 <p>首先、每当CPU调用GPU时，CPU必须做很多工作。包括设置GPU，上传着色器程序，测试不同的硬件错误。CPU做这些工作时，GPU是空闲的。</p>
 <p>第二、改变状态是有代价的，需要在批次之间改变着色器程序。在一个典型的GPU上，你需要等到所有的核心都完成当前着色器的工作。这称为排空管线，在管线耗尽之前，其它内核将处于闲置状态。</p>
 <p><img src="/note/assets/imgs/gpu-pipeline.png" alt="gpu-pipeline"></p>
-<p>在典型的桌面电脑上，你在每一帧会有100次批绘制，每一次批绘制有几千个点，这样，可以更好的利用GPU的并行性。</p>
+<p>在典型的桌面网页上，你在每一帧会有100次批绘制，每一次批绘制有几千个点，这样，可以更好的利用GPU的并行性。</p>
 <p>目前，每种不同类型的元素都需要一个不同的着色器。例如：有一个border着色器，一个text着色器和一个图像着色器。</p>
 <p>我们目前计划结合这些着色器，这将使我们有更大的批次。</p>
 <h3 id="-alpha-z-">用不透明和alpha通道减少像素阴影(Z-剔除)</h3>
+<p>现代网页中会有很多图形相互重叠的部分。例如：文本输入框在div(有背景色的)上，而div又在有背景色的body上。</p>
+<p>当计算像素的颜色时，GPU需要计算出每个图形的像素颜色。WebRender会首先计算出顶层的像素颜色，对于下层的图形，会首先查看当前像素是否有设置颜色，如果有颜色，那就不会再次计算颜色。</p>
+<p>这个算法在上层透明或半透明时会有问题，因为这种情况你需要混合两个像素的颜色，顺序也需要从底层到顶层。所以，半透明的形状会走其它特殊逻辑。</p>
+<p>将工作拆分为不透明和alpha过程，然后跳过不需要像素计算的过程称为Z剔除。</p>
+<p>这看起来像是一个简单的优化，但实际上带来了很大的速度提升。它大大减少了我们需要接触的像素数量。</p>
+<h2 id="-gpu">警告：并不是所有东西都在GPU</h2>
+<p>CPU仍然需要做一些绘制工作。例如：我们仍然在CPU上呈现文本块中使用的字符。在GPU上可以做到这一点，但很难获得与计算机其它应用程序中渲染的字体逐像素匹配。</p>
+<p>我们正在试图通过Pathfinder项目将符号之类的东西移到GPU。</p>
+<p>目前，这些东西会被CPU绘制为Bitmap，然后上传到GPU的纹理缓存中，这个缓存在不同的帧直接保持不变，因为它们通常不会改变。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://hacks.mozilla.org/2017/10/the-whole-web-at-maximum-fps-how-webrender-gets-rid-of-jank/">https://hacks.mozilla.org/2017/10/the-whole-web-at-maximum-fps-how-webrender-gets-rid-of-jank/</a></p>
 </body>
