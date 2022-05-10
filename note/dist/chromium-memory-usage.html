@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chromium内存使用背景知识</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1652199369349">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="chromium-">Chromium内存使用背景知识</h1>
+<h2 id="-">多进程模型</h2>
+<p>当Chromium启动时，初始会有浏览器进程和渲染器进程。当你新开一个浏览器Tab页时，你可能会得到一个新的渲染器进程。</p>
+<p>插件，apps或扩展也可能在独立的进程中运行。所有的Chromium进程，在Windows的进程管理器中都叫chrome.exe。</p>
+<p>从Windows XP以后的系统，进程管理器中的内存占用会低很多。因为以后的系统更新了内存占用衡量指标。</p>
+<p>这两个操作系统主要测量一个进程的工作集，然而，工作集由三个不同的组成部分组成：</p>
+<p>1、Private Working Set，仅此进程私有。</p>
+<p>2、Shareable Woring Set，可共享的工作集。</p>
+<p>3、Shared Working Set，当前进程正在与其它进程共享的工作集，这是可共享工作集的一个子集。</p>
+<p>在Windows XP中，每个进程都使用总的Working Set表示内存占用。</p>
+<p>在Windows Vista及以后变为了Private Working Set表示内存占用，这更加合理了。</p>
+</body>
+</html>
