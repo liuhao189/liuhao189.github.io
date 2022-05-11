@@ -33,7 +33,6 @@
     "npm.enableScriptExplorer": false,
     "workbench.editor.openSideBySideDirection": "right",
     "editor.minimap.enabled": false,
-    "editor.renderIndentGuides": false,
     "workbench.editor.showTabs": true,
     "workbench.editor.enablePreview": true,
     "extensions.showRecommendationsOnlyOnDemand": true,
@@ -46,5 +45,6 @@
     "breadcrumbs.enabled": false,
     "emmet.extensionsPath": [
         ".vscode"
-    ]
+    ],
+    "editor.guides.indentation": false
 }
