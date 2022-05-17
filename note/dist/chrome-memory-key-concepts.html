@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Chrome内存的关键概念</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1652717367802">
+  <link rel="stylesheet" href="/note/note.css?ts=1652803690569">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -14,9 +14,7 @@
 </script>
 <h1 id="chrome-">Chrome内存的关键概念</h1>
 <h2 id="-malloc-free-">内存有什么难的？不就是malloc和free吗？</h2>
-<p>并不是，有许多差异和细微之处，会因操作系统甚至操作系统配置而异。幸运的是，当程序以足够的资源运行时，这些差异大多会消失。</p>
-<p>不幸的是，当工作接近内存不足的条件或分析整体性能时，当存在内存压力时，这些区别最终非常重要。</p>
-<p>本文档的重点是提供简洁的背景，以帮助您在这个空间中增加理解。</p>
+<p>并不是，有许多差异和细微之处，因操作系统甚至操作系统配置而异。幸运的是，当程序以足够的资源运行时，这些差异大多会消失。当存在内存压力时，这些区别最终非常重要。</p>
 <h2 id="-malloc-free-">具体的例子来说明它是如何比malloc/free更难？</h2>
 <p>1、当Chrome申请内存时，何时会占用swap空间？</p>
 <p>2、当内存free了，何时可被其它程序使用？</p>
@@ -36,9 +34,9 @@
 <p>Unix系统中，有一个madvise函数，通过该函数，可以返回到非资源消耗状态。但是，Windows上却没有这样的API。VirtualAlloc(MEM_RESET)，DiscardVirtualMemory，OfferVirtualMemory初看起来很相似，因为它们会立即减少进程使用的物理RAM的数量，但是，它们不会释放swap，无助于防止OOM方案。</p>
 <h2 id="-">术语和定义</h2>
 <p>1、Virtual memory，内核公开的进程抽象层，一个连续的区域，分为4kb的虚拟页面。</p>
-<p>2、Physical memory，内核内部的每条计算机的抽象层，一个连续的区域，分为4kb的物理页面。每个物理页代表4kb的物理内存。</p>
+<p>2、Physical memory，内核内部的每个计算机的抽象层，一个连续的区域，分为4kb的物理页面。每个物理页代表4kb的物理内存。</p>
 <p>3、Resident，由物理页面支持的虚拟页面。</p>
-<p>4、Swapped/Compressed，由物理页面意外的其它内容支持的虚拟页面。</p>
+<p>4、Swapped/Compressed，由物理页面以外的其它内容支持的虚拟页面。</p>
 <p>5、Swapping/Compression，动词，获取常驻页面并使其交换/压缩页面的过程。这样可以释放物理内存。</p>
 <p>6、Unlocked Discardable/Reusable，Android和Darwin特有，一个虚拟页面，其内容由物理页面支持，但内核可以在任何时间点自由重用物理页面。</p>
 <p>7、Private，一个只可以由当前进程修改其内容的虚拟页面。</p>
@@ -46,6 +44,8 @@
 <p>9、Shared，一个虚拟页面，其内容可以和其它进程共享。</p>
 <p>10、File-backed，一个虚拟页面，其内容反映文件的内容。</p>
 <p>11、Anonymous，未支持File-backed的虚拟页。</p>
+<h2 id="-">共享内存</h2>
+<p>在Linux上，一种常见的解决方案是使用成比例的大小。它计算驻留大小为1/N，N为其它进程的数量。缺点是依赖上下文，开更多的进程可能会导致单个进程占用更少。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://chromium.googlesource.com/chromium/src.git/+/master/docs/memory/key_concepts.md">https://chromium.googlesource.com/chromium/src.git/+/master/docs/memory/key_concepts.md</a></p>
 </body>
