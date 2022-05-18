@@ -270,3 +270,105 @@ TS允许你来指出函数的输入和输出类型。
 和变量类型推断一样，你可以不显式定义函数的返回值类型，TS会自动推断。但是某些情况下，提供一个显式的类型还是有很多好处的。
 
 eg：文档原因，避免意外的变更，个人喜好。
+
+### 匿名函数
+
+当TS可以推断匿名函数是如何被调用时，函数的参数会被自动赋予类型。这个过程叫做上下文类型推断。
+
+```ts
+const names = [ "one", "two", "three" ];
+names.forEach(name=> {
+  //name is string
+})
+```
+
+### 对象类型
+
+除了基础类型，最常见的类型是对象类型。主要是声明属性和它们的类型。
+
+```ts
+function printCoord(pt:{ x:number,y:number }) {
+    console.log(pt);
+}
+```
+
+#### 可选属性
+
+对象类型可以指定部分属性是可选的。在属性后添加?即可。
+
+```ts
+function printName(obj: { first:string, last?:string }){
+    //...
+}
+```
+
+在访问可选属性时，必须先判断是否为undefined。
+
+### 联合类型
+
+TS的类型系统允许您使用各种各样的运算符从现有类型中构建新类型。
+
+#### 定义联合类型
+
+联合类型是由两个或多个其它类型组成的类型，表示的值可以是这些类型中的任何一个。TS值只允许每个联合体成员都支持的操作。
+
+解决办法是缩小类型的范围，可以使用typeof来缩小。
+
+```js
+function printId(id:number|string){
+    //id is union type
+    console.log(id.toUpperCase());
+    // error Property 'toUpperCase' does not exist on type 'string | number'.
+    if(typeof id === 'string') {
+      console.log(id.toUpperCase())
+    } else {
+      console.log(id);
+    }
+}
+```
+
+也可以使用Array.isArray类缩小联合体的类型范围。
+
+```js
+function welcomePeople(x: string[] | string) {
+  if (Array.isArray(x)) {
+    // Here: 'x' is 'string[]'
+    console.log("Hello, " + x.join(" and "));
+  } else {
+    // Here: 'x' is 'string'
+    console.log("Welcome lone traveler " + x);
+  }
+}
+```
+
+### 类型别名
+
+如果希望多次引用同一类型，可以给任何类型定义别名。
+
+```js
+type Point = {
+    x: number;
+    y: number;
+}
+function printPoint(pt:Point) {
+    //...
+}
+
+type ID = number | string;
+```
+
+注意：别名只是别名，不能使用别名来创建相同类型的不同版本。
+
+```js
+type UserInputSanitizedString = string;
+
+function sanitizeInput(str: string): UserInputSanitizedString {
+  return sanitize(str);
+}
+ 
+// Create a sanitized input
+let userInput = sanitizeInput(getInput());
+ 
+// Can still be re-assigned with a string though
+userInput = "new input";
+```

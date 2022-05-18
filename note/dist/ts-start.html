@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Typescript-One</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1648742657260">
+  <link rel="stylesheet" href="/note/note.css?ts=1652890342656">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -224,5 +224,91 @@
 <p>TS允许你来指出函数的输入和输出类型。</p>
 <p>和变量类型推断一样，你可以不显式定义函数的返回值类型，TS会自动推断。但是某些情况下，提供一个显式的类型还是有很多好处的。</p>
 <p>eg：文档原因，避免意外的变更，个人喜好。</p>
+<h3 id="-">匿名函数</h3>
+<p>当TS可以推断匿名函数是如何被调用时，函数的参数会被自动赋予类型。这个过程叫做上下文类型推断。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">names</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;one&quot;</span><span class="p">,</span> <span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="s2">&quot;three&quot;</span> <span class="p">];</span>
+<span class="nx">names</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">name</span><span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">//name is string</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">对象类型</h3>
+<p>除了基础类型，最常见的类型是对象类型。主要是声明属性和它们的类型。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">printCoord</span><span class="p">(</span><span class="nx">pt</span><span class="o">:</span><span class="p">{</span> <span class="nx">x</span>:<span class="kt">number</span><span class="p">,</span><span class="nx">y</span>:<span class="kt">number</span> <span class="p">})</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pt</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h4 id="-">可选属性</h4>
+<p>对象类型可以指定部分属性是可选的。在属性后添加?即可。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">printName</span><span class="p">(</span><span class="nx">obj</span><span class="o">:</span> <span class="p">{</span> <span class="nx">first</span>:<span class="kt">string</span><span class="p">,</span> <span class="nx">last?</span>:<span class="kt">string</span> <span class="p">}){</span>
+    <span class="c1">//...</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>在访问可选属性时，必须先判断是否为undefined。</p>
+<h3 id="-">联合类型</h3>
+<p>TS的类型系统允许您使用各种各样的运算符从现有类型中构建新类型。</p>
+<h4 id="-">定义联合类型</h4>
+<p>联合类型是由两个或多个其它类型组成的类型，表示的值可以是这些类型中的任何一个。TS值只允许每个联合体成员都支持的操作。</p>
+<p>解决办法是缩小类型的范围，可以使用typeof来缩小。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">printId</span><span class="p">(</span><span class="nx">id</span><span class="o">:</span><span class="nx">number</span><span class="o">|</span><span class="nx">string</span><span class="p">){</span>
+    <span class="c1">//id is union type</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">id</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">());</span>
+    <span class="c1">// error Property &#39;toUpperCase&#39; does not exist on type &#39;string | number&#39;.</span>
+    <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">id</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">id</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">())</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>也可以使用Array.isArray类缩小联合体的类型范围。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">welcomePeople</span><span class="p">(</span><span class="nx">x</span><span class="o">:</span> <span class="nx">string</span><span class="p">[]</span> <span class="o">|</span> <span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">x</span><span class="p">))</span> <span class="p">{</span>
+    <span class="c1">// Here: &#39;x&#39; is &#39;string[]&#39;</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Hello, &quot;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">&quot; and &quot;</span><span class="p">));</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// Here: &#39;x&#39; is &#39;string&#39;</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Welcome lone traveler &quot;</span> <span class="o">+</span> <span class="nx">x</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">类型别名</h3>
+<p>如果希望多次引用同一类型，可以给任何类型定义别名。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">type</span> <span class="nx">Point</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">x</span><span class="o">:</span> <span class="nx">number</span><span class="p">;</span>
+    <span class="nx">y</span><span class="o">:</span> <span class="nx">number</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">printPoint</span><span class="p">(</span><span class="nx">pt</span><span class="o">:</span><span class="nx">Point</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//...</span>
+<span class="p">}</span>
+
+<span class="nx">type</span> <span class="nx">ID</span> <span class="o">=</span> <span class="nx">number</span> <span class="o">|</span> <span class="nx">string</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<p>注意：别名只是别名，不能使用别名来创建相同类型的不同版本。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">type</span> <span class="nx">UserInputSanitizedString</span> <span class="o">=</span> <span class="nx">string</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">sanitizeInput</span><span class="p">(</span><span class="nx">str</span><span class="o">:</span> <span class="nx">string</span><span class="p">)</span><span class="o">:</span> <span class="nx">UserInputSanitizedString</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">sanitize</span><span class="p">(</span><span class="nx">str</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Create a sanitized input</span>
+<span class="kd">let</span> <span class="nx">userInput</span> <span class="o">=</span> <span class="nx">sanitizeInput</span><span class="p">(</span><span class="nx">getInput</span><span class="p">());</span>
+
+<span class="c1">// Can still be re-assigned with a string though</span>
+<span class="nx">userInput</span> <span class="o">=</span> <span class="s2">&quot;new input&quot;</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
 </body>
 </html>
