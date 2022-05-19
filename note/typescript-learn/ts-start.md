@@ -284,7 +284,7 @@ names.forEach(name=> {
 
 ### 对象类型
 
-除了基础类型，最常见的类型是对象类型。主要是声明属性和它们的类型。
+除了基础类型，最常见的类型是对象类型。主要是声明属性名称和属性的类型。
 
 ```ts
 function printCoord(pt:{ x:number,y:number }) {
@@ -310,9 +310,7 @@ TS的类型系统允许您使用各种各样的运算符从现有类型中构建
 
 #### 定义联合类型
 
-联合类型是由两个或多个其它类型组成的类型，表示的值可以是这些类型中的任何一个。TS值只允许每个联合体成员都支持的操作。
-
-解决办法是缩小类型的范围，可以使用typeof来缩小。
+联合类型是由两个或多个其它类型组成的类型，表示的值可以是这些类型中的任何一个。默认情况下TS值只允许每个联合体成员都支持的操作。解决办法是缩小类型的范围，可以使用typeof来缩小。
 
 ```js
 function printId(id:number|string){
@@ -372,3 +370,150 @@ let userInput = sanitizeInput(getInput());
 // Can still be re-assigned with a string though
 userInput = "new input";
 ```
+
+### 接口
+
+interface声明是另一种命令类型的方式。
+
+```ts
+interface Point {
+  x: number;
+  y: number;
+}
+```
+
+### type和interface的区别
+
+type和interface很像，在很多场景下你可以自由选择。唯一的区别是，type不能再次修改，而interface可以添加新属性。
+
+```ts
+//通过extends扩展接口
+interface Animal {
+  name: string;
+}
+
+interface Bear extends Animal {
+  honey: boolean;
+}
+
+const bear = getBear();
+// 通过 & 扩展Type
+type Animal = {
+  name: string;
+}
+
+type Bear = Animal & {
+  honey: boolean;
+}
+
+const bear = new Bear();
+```
+
+```ts
+interface Window {
+  title: string;
+}
+
+interface Window {
+  ts: TypeScriptAPI
+}
+
+window.ts.transpileModule(src,{})
+//type在创建后不能再次修改
+type Window = { title: string }
+type Window = { ts:TypeScriptAPI }
+// Error Duplicate identifier 'Window'
+```
+
+主要的区别：
+
+1、interface值用于定义对象的结构，而不能用于重命名基础类型。
+
+2、type别名不能参与声明合并，但interface可以。
+
+3、在TS-4.2版本之前，类型别名可能出现在错误消息中，有时是等效的匿名类型，接口始终在错误消息中命名。
+
+大多数情况下，可以根据个人喜好进行选择。启发式的方法，请使用Interface，直到需要使用类型别名时才使用类型别名。
+
+### 类型断言
+
+某些时候，你有TS不知道的类型信息。例如：如果你使用document.getElementById，TS只知道会返回某种HTMLElement，不知道具体的类型。
+
+```ts
+const myCanvas = document.getElementById('main_canvas') as HTMLCanvasElement;
+```
+
+在非TSX文件中，你也可以使用尖括号语法来转类型。
+
+```ts
+const myCanvas = <HTMLCanvasElement>document.getElementById('main_canvas');
+```
+
+TS只允许转换类型为更具体或更不具体的类型断言。不允许不可能的转换。有时候，这个规则过于保守，并且不允许可能有效的更复杂的转换。解决方案是先转换为any或unknown，然后再转换到所需类型。
+
+```ts
+const x = 'hello' as number;
+// error 类型不重叠，需要先转换为unknown
+const x = 'hello' as unknown as number
+// 可以转换
+```
+
+### 字面类型
+
+主要是声明只有特定值得变量类型。有一个只能有一个值的遍历没有多大用处。
+
+```ts
+let x: "hello" = "hello"
+x = "howdy"
+//Error
+```
+但是，通过将文本组合到组合体中，你可以表达更有用的概念。例如：只接受特定值的函数。
+
+```ts
+function printText(s:string, alignment:"left"| "right"| "center") {
+  //...
+}
+printText("Hello, world", "left");
+printText("G'day, mate", "centre");
+//数字字面类型也可以
+```
+
+还有一种字面量类型，布尔类型，type boolean = true | false;
+
+
+### 字面类型推断
+
+当你初始化一个对象变量时，TS假定该对象的属性值后续会变化。
+
+```ts
+const obj = { counter: 0 };
+if (someCondition) {
+  obj.counter = 1;
+}
+
+const req = { url: "https://example.com", method: "GET" };
+handleRequest(req.url, req.method);
+//Error: Argument of type 'string' is not assignable to parameter of type '"GET" | "POST"'.
+```
+
+两种方式解决该问题：
+
+1、添加一个类型转换。
+
+```ts
+const req = { url: "https://example.com", method: "GET" as "GET" };
+//or
+handleRequest(req.url, req.method as "GET")
+```
+
+2、使用as const类将整个对象转换为字面量类型。
+
+```ts
+const req = { url: "https://example.com", method: "GET" } as const;
+```
+
+as const确保所有属性分配字面量类型（GET），而不是更通用的类型(string)。
+
+## 参考文档
+
+https://www.typescriptlang.org/docs/handbook/2

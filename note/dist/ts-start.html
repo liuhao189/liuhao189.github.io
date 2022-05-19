@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Typescript-One</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1652890342656">
+  <link rel="stylesheet" href="/note/note.css?ts=1652976783076">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -234,7 +234,7 @@
 
 </code></pre>
 <h3 id="-">对象类型</h3>
-<p>除了基础类型，最常见的类型是对象类型。主要是声明属性和它们的类型。</p>
+<p>除了基础类型，最常见的类型是对象类型。主要是声明属性名称和属性的类型。</p>
 <pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">printCoord</span><span class="p">(</span><span class="nx">pt</span><span class="o">:</span><span class="p">{</span> <span class="nx">x</span>:<span class="kt">number</span><span class="p">,</span><span class="nx">y</span>:<span class="kt">number</span> <span class="p">})</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pt</span><span class="p">);</span>
 <span class="p">}</span>
@@ -253,8 +253,7 @@
 <h3 id="-">联合类型</h3>
 <p>TS的类型系统允许您使用各种各样的运算符从现有类型中构建新类型。</p>
 <h4 id="-">定义联合类型</h4>
-<p>联合类型是由两个或多个其它类型组成的类型，表示的值可以是这些类型中的任何一个。TS值只允许每个联合体成员都支持的操作。</p>
-<p>解决办法是缩小类型的范围，可以使用typeof来缩小。</p>
+<p>联合类型是由两个或多个其它类型组成的类型，表示的值可以是这些类型中的任何一个。默认情况下TS值只允许每个联合体成员都支持的操作。解决办法是缩小类型的范围，可以使用typeof来缩小。</p>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">printId</span><span class="p">(</span><span class="nx">id</span><span class="o">:</span><span class="nx">number</span><span class="o">|</span><span class="nx">string</span><span class="p">){</span>
     <span class="c1">//id is union type</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">id</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">());</span>
@@ -310,5 +309,127 @@
 </pre></div>
 
 </code></pre>
+<h3 id="-">接口</h3>
+<p>interface声明是另一种命令类型的方式。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">Point</span> <span class="p">{</span>
+  <span class="nx">x</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="nx">y</span>: <span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="type-interface-">type和interface的区别</h3>
+<p>type和interface很像，在很多场景下你可以自由选择。唯一的区别是，type不能再次修改，而interface可以添加新属性。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="c1">//通过extends扩展接口</span>
+<span class="kr">interface</span> <span class="nx">Animal</span> <span class="p">{</span>
+  <span class="nx">name</span>: <span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">interface</span> <span class="nx">Bear</span> <span class="kr">extends</span> <span class="nx">Animal</span> <span class="p">{</span>
+  <span class="nx">honey</span>: <span class="kt">boolean</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">bear</span> <span class="o">=</span> <span class="nx">getBear</span><span class="p">();</span>
+<span class="c1">// 通过 &amp; 扩展Type</span>
+<span class="nx">type</span> <span class="nx">Animal</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">name</span>: <span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">type</span> <span class="nx">Bear</span> <span class="o">=</span> <span class="nx">Animal</span> <span class="o">&amp;</span> <span class="p">{</span>
+  <span class="nx">honey</span>: <span class="kt">boolean</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">bear</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Bear</span><span class="p">();</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">Window</span> <span class="p">{</span>
+  <span class="nx">title</span>: <span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">interface</span> <span class="nx">Window</span> <span class="p">{</span>
+  <span class="nx">ts</span>: <span class="kt">TypeScriptAPI</span>
+<span class="p">}</span>
+
+<span class="nb">window</span><span class="p">.</span><span class="nx">ts</span><span class="p">.</span><span class="nx">transpileModule</span><span class="p">(</span><span class="nx">src</span><span class="p">,{})</span>
+<span class="c1">//type在创建后不能再次修改</span>
+<span class="nx">type</span> <span class="nx">Window</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">title</span>: <span class="kt">string</span> <span class="p">}</span>
+<span class="nx">type</span> <span class="nx">Window</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">ts</span>:<span class="kt">TypeScriptAPI</span> <span class="p">}</span>
+<span class="c1">// Error Duplicate identifier &#39;Window&#39;</span>
+</pre></div>
+
+</code></pre>
+<p>主要的区别：</p>
+<p>1、interface值用于定义对象的结构，而不能用于重命名基础类型。</p>
+<p>2、type别名不能参与声明合并，但interface可以。</p>
+<p>3、在TS-4.2版本之前，类型别名可能出现在错误消息中，有时是等效的匿名类型，接口始终在错误消息中命名。</p>
+<p>大多数情况下，可以根据个人喜好进行选择。启发式的方法，请使用Interface，直到需要使用类型别名时才使用类型别名。</p>
+<h3 id="-">类型断言</h3>
+<p>某些时候，你有TS不知道的类型信息。例如：如果你使用document.getElementById，TS只知道会返回某种HTMLElement，不知道具体的类型。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">myCanvas</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;main_canvas&#39;</span><span class="p">)</span> <span class="kr">as</span> <span class="nx">HTMLCanvasElement</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<p>在非TSX文件中，你也可以使用尖括号语法来转类型。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">myCanvas</span> <span class="o">=</span> <span class="o">&lt;</span><span class="nx">HTMLCanvasElement</span><span class="o">&gt;</span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;main_canvas&#39;</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>TS只允许转换类型为更具体或更不具体的类型断言。不允许不可能的转换。有时候，这个规则过于保守，并且不允许可能有效的更复杂的转换。解决方案是先转换为any或unknown，然后再转换到所需类型。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">x</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span> <span class="kr">as</span> <span class="kt">number</span><span class="p">;</span>
+<span class="c1">// error 类型不重叠，需要先转换为unknown</span>
+<span class="kr">const</span> <span class="nx">x</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span> <span class="kr">as</span> <span class="nx">unknown</span> <span class="kr">as</span> <span class="kt">number</span>
+<span class="c1">// 可以转换</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">字面类型</h3>
+<p>主要是声明只有特定值得变量类型。有一个只能有一个值的遍历没有多大用处。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">x</span><span class="o">:</span> <span class="s2">&quot;hello&quot;</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span>
+<span class="nx">x</span> <span class="o">=</span> <span class="s2">&quot;howdy&quot;</span>
+<span class="c1">//Error</span>
+</pre></div>
+
+</code></pre>
+<p>但是，通过将文本组合到组合体中，你可以表达更有用的概念。例如：只接受特定值的函数。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">printText</span><span class="p">(</span><span class="nx">s</span>:<span class="kt">string</span><span class="p">,</span> <span class="nx">alignment</span><span class="o">:</span><span class="s2">&quot;left&quot;</span><span class="o">|</span> <span class="s2">&quot;right&quot;</span><span class="o">|</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//...</span>
+<span class="p">}</span>
+<span class="nx">printText</span><span class="p">(</span><span class="s2">&quot;Hello, world&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">);</span>
+<span class="nx">printText</span><span class="p">(</span><span class="s2">&quot;G&#39;day, mate&quot;</span><span class="p">,</span> <span class="s2">&quot;centre&quot;</span><span class="p">);</span>
+<span class="c1">//数字字面类型也可以</span>
+</pre></div>
+
+</code></pre>
+<p>还有一种字面量类型，布尔类型，type boolean = true | false;</p>
+<h3 id="-">字面类型推断</h3>
+<p>当你初始化一个对象变量时，TS假定该对象的属性值后续会变化。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">counter</span>: <span class="kt">0</span> <span class="p">};</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">someCondition</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">obj</span><span class="p">.</span><span class="nx">counter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">req</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;https://example.com&quot;</span><span class="p">,</span> <span class="nx">method</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span> <span class="p">};</span>
+<span class="nx">handleRequest</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">url</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">method</span><span class="p">);</span>
+<span class="c1">//Error: Argument of type &#39;string&#39; is not assignable to parameter of type &#39;&quot;GET&quot; | &quot;POST&quot;&#39;.</span>
+</pre></div>
+
+</code></pre>
+<p>两种方式解决该问题：</p>
+<p>1、添加一个类型转换。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">req</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;https://example.com&quot;</span><span class="p">,</span> <span class="nx">method</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span> <span class="kr">as</span> <span class="s2">&quot;GET&quot;</span> <span class="p">};</span>
+<span class="c1">//or</span>
+<span class="nx">handleRequest</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">url</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">method</span> <span class="kr">as</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>2、使用as const类将整个对象转换为字面量类型。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">req</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;https://example.com&quot;</span><span class="p">,</span> <span class="nx">method</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span> <span class="p">}</span> <span class="kr">as</span> <span class="kr">const</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<p>as const确保所有属性分配字面量类型（GET），而不是更通用的类型(string)。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.typescriptlang.org/docs/handbook/2">https://www.typescriptlang.org/docs/handbook/2</a></p>
 </body>
 </html>
