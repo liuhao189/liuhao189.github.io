@@ -66,3 +66,11 @@ https://www.bilibili.com/video/av413478697/
 ## TS类型挑战
 
 https://github.com/type-challenges/type-challenges/blob/main/README.zh-CN.md
+
+## 设计模式
+
+https://refactoring.guru/design-patterns/catalog
+
+## NSIS脚本
+
+https://omega.idv.tw/nsis/Contents.html
