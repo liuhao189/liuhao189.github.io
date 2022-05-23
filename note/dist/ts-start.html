@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Typescript-One</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1652976783076">
+  <link rel="stylesheet" href="/note/note.css?ts=1653272137478">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -384,7 +384,7 @@
 
 </code></pre>
 <h3 id="-">字面类型</h3>
-<p>主要是声明只有特定值得变量类型。有一个只能有一个值的遍历没有多大用处。</p>
+<p>主要是声明只有特定值的变量类型。有一个只能有一个值的变量没有多大用处。</p>
 <pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">x</span><span class="o">:</span> <span class="s2">&quot;hello&quot;</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span>
 <span class="nx">x</span> <span class="o">=</span> <span class="s2">&quot;howdy&quot;</span>
 <span class="c1">//Error</span>
@@ -397,7 +397,7 @@
 <span class="p">}</span>
 <span class="nx">printText</span><span class="p">(</span><span class="s2">&quot;Hello, world&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">);</span>
 <span class="nx">printText</span><span class="p">(</span><span class="s2">&quot;G&#39;day, mate&quot;</span><span class="p">,</span> <span class="s2">&quot;centre&quot;</span><span class="p">);</span>
-<span class="c1">//数字字面类型也可以</span>
+<span class="c1">//Error，centre不存在，数字字面类型也可以</span>
 </pre></div>
 
 </code></pre>
@@ -429,7 +429,48 @@
 
 </code></pre>
 <p>as const确保所有属性分配字面量类型（GET），而不是更通用的类型(string)。</p>
+<h3 id="null-undefined">null和undefined</h3>
+<p>当strictNullChecks关闭时，null和undefined可以赋值给任何类型。缺乏对这些值得检查往往是bug的主要来源，建议总是打开strictNullChecks。</p>
+<p>当strictNullChecks为开启时，你需要在使用前检测值是否为空。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">doSomething</span><span class="p">(</span><span class="nx">x</span>: <span class="kt">string</span> <span class="o">|</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">x</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+     <span class="c1">//do nothing</span>
+   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Hello</span><span class="p">,</span> <span class="err">`</span><span class="o">+</span> <span class="nx">x</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">())</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">非空断言运算符</h3>
+<p>TS有一个特殊的语法可以将null和undefined从类型中移除。在任意表达式后面加!即可。注意：这不会改变运行时(编译后)的代码，当你确信不会是null或undefined时，才能使用。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">liveDangerously</span><span class="p">(</span><span class="nx">x?</span>:<span class="kt">number</span><span class="o">|</span><span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="o">!</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">());</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">枚举</h3>
+<p>枚举是TS添加到JS中的一项功能，它允许描述一个值，该值可能是一组可能的命名常量之一。这会添加代码到运行时中(编译后)。</p>
+<h3 id="-">非常见基础类型</h3>
+<h4 id="bigint">bigint</h4>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">oneHundred</span>:<span class="kt">bigint</span> <span class="o">=</span> <span class="nx">BigInt</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="c1">//</span>
+<span class="kr">const</span> <span class="nx">oneHundred</span> <span class="o">=</span> <span class="mi">100</span><span class="nx">n</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h4 id="symbol">symbol</h4>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">firstName</span> <span class="o">=</span> <span class="nx">Symbol</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">secondName</span> <span class="o">=</span> <span class="nx">Symbol</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">);</span>
+
+<span class="k">if</span><span class="p">(</span><span class="nx">firstName</span> <span class="o">===</span> <span class="nx">secondName</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// This condition will always return false </span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
-<p><a href="https://www.typescriptlang.org/docs/handbook/2">https://www.typescriptlang.org/docs/handbook/2</a></p>
+<p><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html">https://www.typescriptlang.org/docs/handbook/2/everyday-types.html</a></p>
 </body>
 </html>

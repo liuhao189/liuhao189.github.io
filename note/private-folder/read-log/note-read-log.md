@@ -74,3 +74,7 @@ https://refactoring.guru/design-patterns/catalog
 ## NSIS脚本
 
 https://omega.idv.tw/nsis/Contents.html
+
+## 修改为python3
+
+pygmentize-bundled的index.js

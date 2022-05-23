@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Typescript-Two</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1653272137478">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="typescript-two">Typescript-Two</h1>
+<h2 id="-">缩小类型范围</h2>
+<p>TS使用静态类型分析运行时值，它在JS的运行时控制流(if/else，条件三元，循环，真实性检查)上覆盖类型分析，这些都会影响类型。</p>
+<p>在代码的if检测中，TS看到typeof padding === &#39;number&#39;，TS会将这些代码认为类型守护。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">padLeft</span><span class="p">(</span><span class="nx">padding</span>:<span class="kt">number</span><span class="o">|</span><span class="kt">string</span><span class="p">,</span><span class="nx">input</span>:<span class="kt">string</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">padding</span> <span class="o">===</span> <span class="s1">&#39;numbr&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// number now</span>
+    <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="p">.</span><span class="nx">repeat</span><span class="p">(</span><span class="nx">padding</span><span class="p">)</span> <span class="o">+</span> <span class="nx">input</span><span class="p">;</span>
+  <span class="p">}</span> 
+  <span class="c1">// string now</span>
+  <span class="k">return</span> <span class="nx">padding</span> <span class="o">+</span> <span class="nx">input</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="typeof-">typeof类型守护</h2>
+<p>JS支持typeof运算符来返回值的基本类型。</p>
+<p>TS期望返回的数值集合：string，number，bigint，boolean，symbol，undefined，object，function。</p>
+<h2 id="-">真值缩小</h2>
+<p>在JS中，if会强制转换条件为boolean。</p>
+<p>false值：0，NaN，&quot;&quot;，0n，null，undefined。</p>
+<p>可以使用Boolean函数或!!来强制转换。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">printAll</span><span class="p">(</span><span class="nx">strs</span>: <span class="kt">string</span> <span class="o">|</span> <span class="kt">string</span><span class="p">[]</span> <span class="o">|</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">strs</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">strs</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//string[]</span>
+  <span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">strs</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//string</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html">https://www.typescriptlang.org/docs/handbook/2/narrowing.html</a></p>
+</body>
+</html>

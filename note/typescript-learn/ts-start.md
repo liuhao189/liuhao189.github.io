@@ -460,7 +460,7 @@ const x = 'hello' as unknown as number
 
 ### 字面类型
 
-主要是声明只有特定值得变量类型。有一个只能有一个值的遍历没有多大用处。
+主要是声明只有特定值的变量类型。有一个只能有一个值的变量没有多大用处。
 
 ```ts
 let x: "hello" = "hello"
@@ -475,11 +475,10 @@ function printText(s:string, alignment:"left"| "right"| "center") {
 }
 printText("Hello, world", "left");
 printText("G'day, mate", "centre");
-//数字字面类型也可以
+//Error，centre不存在，数字字面类型也可以
 ```
 
 还有一种字面量类型，布尔类型，type boolean = true | false;
-
 
 ### 字面类型推断
 
@@ -514,6 +513,57 @@ const req = { url: "https://example.com", method: "GET" } as const;
 
 as const确保所有属性分配字面量类型（GET），而不是更通用的类型(string)。
 
+### null和undefined
+
+当strictNullChecks关闭时，null和undefined可以赋值给任何类型。缺乏对这些值得检查往往是bug的主要来源，建议总是打开strictNullChecks。
+
+当strictNullChecks为开启时，你需要在使用前检测值是否为空。
+
+```ts
+function doSomething(x: string | null) {
+   if(x === null) {
+     //do nothing
+   } else {
+     console.log(`Hello, `+ x.toUpperCase())
+   }
+}
+```
+
+### 非空断言运算符
+
+TS有一个特殊的语法可以将null和undefined从类型中移除。在任意表达式后面加!即可。注意：这不会改变运行时(编译后)的代码，当你确信不会是null或undefined时，才能使用。
+
+```ts
+function liveDangerously(x?:number|null) {
+  console.log(x!.toFixed());
+}
+```
+
+### 枚举
+
+枚举是TS添加到JS中的一项功能，它允许描述一个值，该值可能是一组可能的命名常量之一。这会添加代码到运行时中(编译后)。
+
+### 非常见基础类型
+
+#### bigint
+
+```ts
+const oneHundred:bigint = BigInt(100)
+//
+const oneHundred = 100n;
+```
+
+#### symbol
+
+```ts
+const firstName = Symbol("name");
+const secondName = Symbol("name");
+
+if(firstName === secondName) {
+  // This condition will always return false 
+}
+```
+
 ## 参考文档
 
-https://www.typescriptlang.org/docs/handbook/2
+https://www.typescriptlang.org/docs/handbook/2/everyday-types.html
