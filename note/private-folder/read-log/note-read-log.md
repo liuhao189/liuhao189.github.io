@@ -78,3 +78,8 @@ https://omega.idv.tw/nsis/Contents.html
 ## 修改为python3
 
 pygmentize-bundled的index.js
+
+## eletron-memory相关
+
+https://stackoverflow.com/questions/69827243/how-to-properly-debug-electron-memory-issues/69934235#69934235
+
