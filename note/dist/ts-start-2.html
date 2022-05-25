@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Typescript-Two</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1653272137478">
+  <link rel="stylesheet" href="/note/note.css?ts=1653495997714">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -30,7 +30,7 @@
 <h2 id="typeof-">typeof类型守护</h2>
 <p>JS支持typeof运算符来返回值的基本类型。</p>
 <p>TS期望返回的数值集合：string，number，bigint，boolean，symbol，undefined，object，function。</p>
-<h2 id="-">真值缩小</h2>
+<h2 id="-">真值缩小范围</h2>
 <p>在JS中，if会强制转换条件为boolean。</p>
 <p>false值：0，NaN，&quot;&quot;，0n，null，undefined。</p>
 <p>可以使用Boolean函数或!!来强制转换。</p>
@@ -41,9 +41,140 @@
     <span class="c1">//string</span>
   <span class="p">}</span>
 <span class="p">}</span>
+<span class="c1">//也可以使用!来过滤false值</span>
+<span class="kd">function</span> <span class="nx">multiplyAll</span><span class="p">(</span><span class="nx">values</span>: <span class="kt">number</span><span class="p">[]</span> <span class="o">|</span> <span class="kc">undefined</span><span class="p">,</span> <span class="nx">factor</span>: <span class="kt">number</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">values</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">values</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">values</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">x</span> <span class="o">*</span> <span class="nx">factor</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 
 </code></pre>
+<h2 id="-">相等缩小类型范围</h2>
+<p>TS也使用switch，===，!==和!=来缩小类型。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">example</span><span class="p">(</span><span class="nx">x</span>: <span class="kt">string</span> <span class="o">|</span> <span class="kt">number</span><span class="p">,</span> <span class="nx">y</span>: <span class="kt">string</span> <span class="o">|</span> <span class="kr">boolean</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">x</span> <span class="o">===</span> <span class="nx">y</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// x and y should be string</span>
+        <span class="nx">x</span><span class="p">.</span><span class="nx">toLocaleLowerCase</span><span class="p">();</span>
+        <span class="nx">y</span><span class="p">.</span><span class="nx">toLocaleLowerCase</span><span class="p">();</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// x string | number;</span>
+        <span class="c1">// y string | boolean;</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>JS的==和!=也可以类型范围。一个变量==null，null和undefined都会返回true，一个变量!=null，只要不是null和undefined都可以。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">Container</span> <span class="p">{</span>
+    <span class="nx">value</span>: <span class="kt">number</span> <span class="o">|</span> <span class="kc">null</span> <span class="o">|</span> <span class="kc">undefined</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">//</span>
+<span class="kd">function</span> <span class="nx">multiplyValue</span><span class="p">(</span><span class="nx">container</span>: <span class="kt">Container</span><span class="p">,</span> <span class="nx">factor</span>: <span class="kt">number</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">container</span><span class="p">.</span><span class="nx">value</span> <span class="o">!=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// container.value should be number</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">container</span><span class="p">.</span><span class="nx">value</span> <span class="o">*</span> <span class="nx">factor</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="in-">in缩小类型范围</h2>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">Fish</span> <span class="p">{</span> <span class="nx">swim</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="k">void</span> <span class="p">};</span>
+<span class="kr">interface</span> <span class="nx">Bird</span> <span class="p">{</span> <span class="nx">fly</span><span class="o">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="k">void</span> <span class="p">};</span>
+
+<span class="kd">function</span> <span class="nx">move</span><span class="p">(</span><span class="nx">animal</span>: <span class="kt">Fish</span> <span class="o">|</span> <span class="nx">Bird</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;swim&#39;</span> <span class="k">in</span> <span class="nx">animal</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// animal should be Fish</span>
+        <span class="k">return</span> <span class="nx">animal</span><span class="p">.</span><span class="nx">swim</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="c1">// animal should be Bird</span>
+    <span class="nx">animal</span><span class="p">.</span><span class="nx">fly</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="instanceof-">instanceof缩小类型范围</h2>
+<p>x instanceof Foo检查x的原型链中是否包含Foo.prototype。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">logValue</span><span class="p">(</span><span class="nx">val</span>: <span class="kt">Date</span> <span class="o">|</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">val</span> <span class="k">instanceof</span> <span class="nb">Date</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// val should be Date</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">val</span><span class="p">.</span><span class="nx">toUTCString</span><span class="p">());</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// val should be string</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">val</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">赋值缩小类型范围</h2>
+<p>主要根据右侧的值类型来缩小左边的类型范围。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="c1">//由于声明类型为string|number，所以后续的赋值是没问题的。</span>
+<span class="kd">let</span> <span class="nx">x</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="o">?</span> <span class="mi">10</span> <span class="o">:</span> <span class="s2">&quot;Hello World!&quot;</span><span class="p">;</span>
+
+<span class="nx">x</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="c1">// after x should be number;</span>
+
+<span class="nx">x</span> <span class="o">=</span> <span class="s2">&quot;goodbye&quot;</span><span class="p">;</span>
+<span class="c1">// after x should be string</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">控制流分析</h2>
+<p>这种基于代码可访问性的代码分析称为控制流分析，TS在遇到类型保护和赋值时使用此控制流分析来缩小类型范围。当分析一个变量时，根据控制流可以观察到该变量在每个点上具有不同的类型。</p>
+<h2 id="-">自定义类型守护</h2>
+<p>有时我们想直接在我们的代码中控制类型。实现用户定义的类型守护，需要在函数的返回类型中添加类型断言信息。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">isFish</span><span class="p">(</span><span class="nx">pet</span>: <span class="kt">Fish</span> <span class="o">|</span> <span class="nx">Bird</span><span class="p">)</span><span class="o">:</span> <span class="nx">pet</span> <span class="nx">is</span> <span class="nx">Fish</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nx">pet</span> <span class="kr">as</span> <span class="nx">Fish</span><span class="p">).</span><span class="nx">swim</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">move2</span><span class="p">(</span><span class="nx">animal</span>: <span class="kt">Fish</span> <span class="o">|</span> <span class="nx">Bird</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">isFish</span><span class="p">(</span><span class="nx">animal</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// animal should be Fish</span>
+        <span class="k">return</span> <span class="nx">animal</span><span class="p">.</span><span class="nx">swim</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="c1">// animal should be Bird</span>
+    <span class="nx">animal</span><span class="p">.</span><span class="nx">fly</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">复杂类型联合体</h2>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">interface</span> <span class="nx">Shape</span> <span class="p">{</span>
+    <span class="nx">kind</span><span class="o">:</span> <span class="s2">&quot;circle&quot;</span> <span class="o">|</span> <span class="s2">&quot;square&quot;</span><span class="p">;</span>
+    <span class="nx">radius?</span>: <span class="kt">number</span><span class="p">;</span>
+    <span class="nx">sideLength?</span>: <span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">// 下面的Shape定义会好于上面的Shape定义，因为提供了更多的信息</span>
+<span class="kr">interface</span> <span class="nx">Circle</span> <span class="p">{</span>
+    <span class="nx">kind</span><span class="o">:</span> <span class="s1">&#39;circle&#39;</span><span class="p">;</span>
+    <span class="nx">radius</span>: <span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">interface</span> <span class="nx">Square</span> <span class="p">{</span>
+    <span class="nx">kind</span><span class="o">:</span> <span class="s1">&#39;square&#39;</span><span class="p">;</span>
+    <span class="nx">sideLength</span>: <span class="kt">number</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">type</span> <span class="nx">Shape</span> <span class="o">=</span> <span class="nx">Circle</span> <span class="o">|</span> <span class="nx">Square</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">caclArea</span><span class="p">(</span><span class="nx">shape</span>: <span class="kt">Shape</span><span class="p">)</span><span class="o">:</span> <span class="kt">number</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">shape</span><span class="p">.</span><span class="nx">kind</span> <span class="o">===</span> <span class="s1">&#39;circle&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// shape should be Circle</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nx">shape</span><span class="p">.</span><span class="nx">radius</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+       <span class="c1">// shape shold be Square</span>
+        <span class="k">return</span> <span class="nx">shape</span><span class="p">.</span><span class="nx">sideLength</span> <span class="o">**</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>当联合体中的每个类型都包含具有文本类型的公共属性时，TS会将其视为区分的联合，可以缩小类型范围。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html">https://www.typescriptlang.org/docs/handbook/2/narrowing.html</a></p>
 </body>
