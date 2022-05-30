@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Electron应用关联特定文件格式</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1653755980533">
+  <link rel="stylesheet" href="/note/note.css?ts=1653927262494">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -26,7 +26,7 @@
 </code></pre>
 <p>然后监听app的open-file事件。open-file事件通常在应用已经打开，并且系统再次使用该应用打开文件时发出。</p>
 <p>open-file也会在一个文件被拖到dock并且还没有运行的时候发出。请确认在应用启动的时候(甚至在ready事件发出前)就对open-file事件进行监听。</p>
-<p>如果你想处理这个事件，你应该调用event.preventDefault()。在windows系统上，你需要自己解析process.argv来获取文件路径。</p>
+<p>如果你想处理这个事件，你应该调用event.preventDefault()。</p>
 <pre><code class="lang-ts"><div class="highlight"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;open-file&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">,</span><span class="nx">path</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="c1">//如果你想要处理该事件，需要调用该方法</span>
   <span class="nx">ev</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
@@ -35,7 +35,27 @@
 </pre></div>
 
 </code></pre>
+<p>在windows系统上，你需要自己解析process.argv来获取文件路径。</p>
+<p>如果应用已打开，文件路径会在second-instance中argv的最后一个参数传递过来。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;second-instance&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">ev</span><span class="p">,</span> <span class="nx">argv</span><span class="p">,</span> <span class="nx">workingDirectory</span><span class="p">,</span> <span class="nx">additionalData</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// argv [&quot;C:\\Users\\xxx\\AppData\\Local\\Programs\\learn-electron\\learn-electron.exe&quot;,&quot;--allow-file-access-from-files&quot;,&quot;C:\\Users\\xxxx\\Desktop\\one.eml&quot;]</span>
+  <span class="nx">writeLog</span><span class="p">({</span> <span class="nx">event</span><span class="o">:</span> <span class="s1">&#39;second-instance&#39;</span><span class="p">,</span> <span class="nx">argv</span><span class="p">,</span> <span class="nx">workingDirectory</span><span class="p">,</span> <span class="nx">additionalData</span> <span class="p">});</span>
+<span class="p">});</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">whenReady</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// [&quot;C:\\Users\\xxx\\AppData\\Local\\Programs\\learn-electron\\learn-electron.exe&quot;,&quot;C:\\Users\\xxx\\Desktop\\one.eml&quot;]</span>
+  <span class="nx">writeLog</span><span class="p">({</span> <span class="nx">windows</span>: <span class="kt">process.argv</span> <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h1 id="windows-">Windows上的发送至</h1>
+<p>sendTo里的快捷方式一部分是存放到文件夹中的快捷方式。你可以在C:\Users\&lt;yourusername&gt;\AppData\Roaming\Microsoft\Windows\SendTo中发现sendTo的快捷方式。</p>
+<p><img src="/note/assets/imgs/electron-file-assoc/Windows_sendTo_folder.webp" alt="windows发送至文件夹"></p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://zhuanlan.zhihu.com/p/511443154">https://zhuanlan.zhihu.com/p/511443154</a></p>
+<p><a href="https://developer.apple.com/design/human-interface-guidelines/macos/extensions/share-extensions/">https://developer.apple.com/design/human-interface-guidelines/macos/extensions/share-extensions/</a></p>
+<p><a href="https://www.ghacks.net/2022/04/25/add-custom-context-menu-items-to-windows-11s-file-explorer-menu/">https://www.ghacks.net/2022/04/25/add-custom-context-menu-items-to-windows-11s-file-explorer-menu/</a></p>
+<p><a href="https://github.com/ikas-mc/ContextMenuForWindows11/wiki/%E5%B8%AE%E5%8A%A9">https://github.com/ikas-mc/ContextMenuForWindows11/wiki/%E5%B8%AE%E5%8A%A9</a></p>
 </body>
 </html>
