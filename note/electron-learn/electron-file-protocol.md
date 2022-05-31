@@ -52,7 +52,6 @@ sendTo里的快捷方式一部分是存放到文件夹中的快捷方式。你�
 
 
 
-
 ## 参考文档
 
 https://zhuanlan.zhihu.com/p/511443154
@@ -60,6 +59,5 @@ https://zhuanlan.zhihu.com/p/511443154
 https://developer.apple.com/design/human-interface-guidelines/macos/extensions/share-extensions/
 
 https://www.ghacks.net/2022/04/25/add-custom-context-menu-items-to-windows-11s-file-explorer-menu/
-
 
 https://github.com/ikas-mc/ContextMenuForWindows11/wiki/%E5%B8%AE%E5%8A%A9
