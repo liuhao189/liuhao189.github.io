@@ -83,3 +83,12 @@ pygmentize-bundled的index.js
 
 https://stackoverflow.com/questions/69827243/how-to-properly-debug-electron-memory-issues/69934235#69934235
 
+## electron auto update failed
+
+https://philo.dev/electron-auto-update-explained/
+
+### shipIt log file
+
+https://github.com/Squirrel/Squirrel.Mac/issues/161
+
+https://github.com/electron-userland/electron-builder/issues/2317
