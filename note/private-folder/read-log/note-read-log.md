@@ -92,3 +92,8 @@ https://philo.dev/electron-auto-update-explained/
 https://github.com/Squirrel/Squirrel.Mac/issues/161
 
 https://github.com/electron-userland/electron-builder/issues/2317
+
+
+## NSIS自定义脚本
+
+https://www.jianshu.com/p/73e401c57823
