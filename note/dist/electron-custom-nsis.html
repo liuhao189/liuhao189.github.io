@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>NSIS自定义脚本</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1654704904954">
+  <link rel="stylesheet" href="/note/note.css?ts=1654791574411">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -41,7 +41,7 @@
 <p>NSIS脚本格式和用于界面的格式是容易的、人性化的且易读的，可以使用你喜欢的编辑器来编辑你的档案。</p>
 <h2 id="-">特性列表</h2>
 <p>1、生成包含可执行安装程序的外壳。</p>
-<p>2、支持ZLib，BZIP2和LZMA资料压缩，档案个别压缩或同时。</p>
+<p>2、支持ZLib，BZIP2和LZMA资料压缩，文件个别压缩。</p>
 <p>3、支持卸载，生成安装程序和卸载程序。</p>
 <p>4、可自定义的用户界面，对话，字型，背景，文字，检测标记，图档等。</p>
 <p>5、典型和新式向导页面。</p>
@@ -52,20 +52,20 @@
 <p>10、安装程序自我验证使用CRC32校验和。</p>
 <p>11、可以显示文字或RTF格式的许可协议。</p>
 <p>12、可以通过注册表检测目标目录。</p>
-<p>13、易用的插件系统，大多数插件用户建立自定义对话，网络连接，HTTP下载，档案打补丁，调用Win32 API等。</p>
+<p>13、易用的插件系统，大多数插件可帮用户建立自定义对话，网络连接，HTTP下载，档案打补丁，调用Win32 API等。</p>
 <p>14、安装程序可以达到2GB最高限制。</p>
 <p>15、可选性的静默安装模式用于自动安装。</p>
 <p>16、预处理器支持定义符号、宏、条件编辑，标准预设定义。</p>
 <p>17、有意义的类似与PHP和汇编的编程体验，包含用户变量，堆栈，流程控制等。</p>
-<p>18、安装程序有它们自己的VM，使你书写的代码可以支持：档案解压；档案、目录复制、重命名、删除、搜寻；调用插件DLL；DLL/Active控件注册、反注册；可执行外部程序，外部执行并带有等待选项；建立快捷方式；注册表读取、设定、搜寻、删除；INI档案读取、写入；惯用文字档案读取、写入；强大的字符和整数处理；基于类名和标题判断视窗；用户界面操作字型、文字设定；发送windows消息；通过消息框或自定义页面与用户交流；分支，比较等等；错误检测；支持重启，包括重启后删除或重命名档案；安装程序行为命令，比如显示、隐藏、等待等等；在脚本可以使用用户函数；对用户的动作回调函数。</p>
+<p>18、安装程序有它们自己的VM，使你书写的代码可以支持：文件解压；文件、目录复制、重命名、删除、搜寻；调用插件DLL；DLL/Active控件注册、反注册；可执行外部程序，外部执行并带有等待选项；建立快捷方式；注册表读取、设定、搜寻、删除；INI档案读取、写入；惯用文字档案读取、写入；强大的字符和整数处理；基于类名和标题判断视窗；用户界面操作字型、文字设定；发送windows消息；通过消息框或自定义页面与用户交流；分支，比较等等；错误检测；支持重启，包括重启后删除或重命名档案；安装程序行为命令，比如显示、隐藏、等待等等；在脚本可以使用用户函数；对用户的动作回调函数。</p>
 <h2 id="-">基础</h2>
 <p>你下载或购买的软件，大多带有安装程序。安装程序能复制及更新档案，写入注册表键值、写入设定信息，建立快捷方式等。用户所做的仅仅是补充一些必要信息。</p>
 <p>NSIS是开发者建立安装程序的工具，NSIS允许你建立任何事情，从最基本的复制档案的安装程序，到含有注册表主键、设定环境变量。从网络下载最新版本、定制配置档案等大量复杂任务的安装程序。NSIS具有极高的灵活性，而其脚本语言也易于学习。</p>
 <h3 id="-">脚本档案</h3>
 <p>要建立NSIS安装程序，首先要写一个NSIS脚本，NSIS脚本仅仅是一个包含了特殊语法的文字档案。</p>
-<p>NSIS脚本里每一行都作为一个命令处理，如果这一行太长的话可以使用“\”来分隔，编译器会自动把下一行接到上一行来作为完整的一行，而不是看作新的行。</p>
+<p>NSIS脚本里每一行都作为一个命令处理，如果这一行太长的话可以使用\来分隔，编译器会自动把下一行接到上一行来作为完整的一行，而不是看作新的行。</p>
 <p>如果在字符串里需要使用双引号，应该使用$\&quot;来避免误解，或者使用另外的不引起歧义的引号`或&#39;。</p>
-<p>脚本文件后缀为.nsi，头文件为.nsh，头档案可以通过把它划分为一个或多个代码块来帮你编排脚本。也可以在头文件里加入功能函数或宏，并且在多个安装程序里包含头档案，这样可以更容易升级你的程序。</p>
+<p>脚本文件后缀为.nsi，头文件为.nsh，头档案可以通过把它划分为一个或多个代码块来帮你编排脚本。也可以在头文件里加入功能函数或宏，并且在多个安装程序里包含头文件，这样可以更容易升级你的程序。</p>
 <p>把一个头文件包含在你的脚本里可以使用!include，这样就可以仅使用名字包含位于NSIS目录下的Include目录下的头文件。</p>
 <pre><code class="lang-bash"><div class="highlight"><pre>!include Secttions.nsh
 </pre></div>
@@ -87,6 +87,94 @@ UninstPage instfiles
 </pre></div>
 
 </code></pre>
+<h4 id="-">区段</h4>
+<p>在一个普通的安装包里用户需要安装许多东西。eg：NSIS分配安装包里你可以选择安装源码、附加插件、脚本样例或其它。里面的每个组件都有它自己的代码块，当用户选择了安装该组件，那么安装程序就会执行对应的代码。</p>
+<p>在脚本里，这些代码称为区段。每个可见的区段都可以作为一个组件给用户选择是否安装。你可以只使用一个区段来构建安装包，如果你想要使用组件页来让用户选择可选的组件，那么你就需要使用多个区段。</p>
+<p>卸载程序也可以有多个区段，卸载程序区段名前要加上前缀un.。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Section <span class="s2">&quot;Installer Section&quot;</span>
+SectionEnd
+
+Section <span class="s2">&quot;un.Uninstaller Section&quot;</span>
+SectionEnd
+</pre></div>
+
+</code></pre>
+<p>使用在段里的指令和安装程序属性指令不一样，他们在用户电脑运行环境里执行。这些指令可以解压文件，读取和写入注册表，ini档案或普通文件，建立目录，建立快捷方式和更多功能。你可以在指令找到更多。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Section <span class="s2">&quot;My Program&quot;</span>
+   SetOutPath <span class="nv">$INSTDIR</span>
+   File <span class="s2">&quot;My Program.exe&quot;</span>
+   File <span class="s2">&quot;Readme.txt&quot;</span>
+SectionEnd
+</pre></div>
+
+</code></pre>
+<h4 id="-">函数</h4>
+<p>函数和区段类似，也包含代码。区段和函数所不同的是他们被调用的形式，一共有两种函数类型，用户函数和回调函数。</p>
+<p>用户函数可以从一个区段里或另一个函数使用call指令。用户函数不能直接执行而只能调用它。在函数内的代码都会被执行然后安装程序会继续执行Call指令后面的指令，除非你在函数里使用了退出指令。</p>
+<p>回调函数可以在某些定义事件之前被调用比如当安装程序开始运行时。回调是可选的。eg：欢迎用户使用你的安装程序你可以定义一个名为.onInit的函数，NSIS编译器会由它的名字知道它是一个回调函数。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Function .onInit
+  MessageBox MB_YESNO <span class="s2">&quot;即将安装我的程序，要继续吗？&quot;</span> IDYES gogogo
+    Abort
+  gogogo:
+FunctionEnd
+</pre></div>
+
+</code></pre>
+<p>Abort有特殊含义。</p>
+<p>回调函数：onGUIInit，onInit，onInstFailed，onInstSuccess，onGUIEnd，onMouseOverSection，onRebootFailed，onSelChange，onUserAbort，onVerifyInstDir，un.onGUIInit，un.onInit，un.onUninstFailed，un.onUninstSuccess，un.onGUIEnd，un.onRebootFailed，un.onUserAbort。</p>
+<h2 id="-">脚本的工作方式</h2>
+<h3 id="-">变量</h3>
+<p>可以用Var命令来声明自己的变量，变量是全局的并且在任何区段或函数中使用。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Var BLA<span class="p">;</span>
+Section bla
+  StrCpy <span class="nv">$BLA</span> <span class="s2">&quot;123&quot;</span><span class="p">;</span>
+  <span class="c"># now $BLA is &quot;123&quot;</span>
+SectionEnd
+</pre></div>
+
+</code></pre>
+<p>另外堆栈可以用来临时存储，使用Push和Pop命令来浏览堆栈。Push添加到堆栈，Pop移除一个值并设定该变量。</p>
+<p>已注册变量：$0-$9，$R0-$R9。</p>
+<p>$INSTDIR安装目录，可以使用Strcpy，ReadRegStr，ReadINIStr等等来更改，eg：在.onInit函数可以用来做高级的检测安装定位。<br>注意在卸载程序中，$INSTDIR为卸载程序所在的目录而不是安装程序中所指定的目录。</p>
+<p>$OUTDIR，目前输出目录，通过SetOutPath设定或通过StrCpy，ReadRegStr，ReadINIStr等。</p>
+<p>$CMDLINE，安装程序的命令行输入。eg：xxx.exe 参数 参数 参数。对于解析参数，参阅GetParameters，如果在命令行中指定了/D，那么/D后面的参数不会存储到$CMDLINE。</p>
+<p>$LANGUAGE，目前使用的语言标识符。eg：英语是1033，可以在.onInit里更改。</p>
+<p>对于公共代码，这里有20个已注册的变量($0,$R0)，想在公共代码里使用这些变量，可以把原始的值存储到堆栈并随后还原原始值。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Function bla
+  Push <span class="nv">$R0</span>
+  Push <span class="nv">$R1</span>
+  <span class="c"># ...code... #</span>
+  Pop <span class="nv">$R1</span>
+  Pop <span class="nv">$R0</span>
+FunctionEnd
+</pre></div>
+
+</code></pre>
+<h3 id="-">常量</h3>
+<p>常量通常用在InstallDir属性里。</p>
+<p>需要注意的是，一些新的常量并不是在所有OS上都是正常的。</p>
+<p>$PROGRAMFILES，通常为C:\Program Files但是运行时会检测。</p>
+<p>$DESKTOP，windows桌面目录。预设为目前用户桌面。</p>
+<p>$EXEDIR，安装程序运行时的位置。</p>
+<p>${NSISDIR}，包含NSIS安装目录的一个标记，在编译时会检测，常用于你想调用一个在NSIS目录下的资源时，例如：图片，界面。</p>
+<p>$WINDIR，windows目录，通常为c:\Windows。</p>
+<p>$SYSDIR，Windows系统目录，通常为c:\Windows\system。</p>
+<p>$TEMP，系统临时目录。通常为c:\windows\temp。</p>
+<p>$STARTMENU，开始菜单目录，常用于新增一个开始选项，使用CreateShortCut。</p>
+<p>$SMPROGRAMS，开始菜单程序目录。</p>
+<p>$SMSTARTUP，开始菜单，启动目录。</p>
+<p>$QUICKLAUNCH，快速启动目录。</p>
+<p>$DOCUMENTS，文档目录。</p>
+<p>$SENDTO，该目录包含了发送到菜单快捷项。</p>
+<p>$RECENT，最近文件的快捷方式。</p>
+<p>$FAVORITES，该目录包含了指向用户网络收藏夹、文件等的快捷方式。</p>
+<p>$MUSIC，音乐。</p>
+<p>$PICTURES，图片。</p>
+<p>$VIDEOS，视频。</p>
+<p>$NETHOOD，我的网络位置。</p>
+<p>$FONTS，系统字型目录。</p>
+<p>$TEMPLATES，文件模板目录。</p>
+<p>$APPDATA，应用程序数据目录。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://omega.idv.tw/nsis/Contents.html">https://omega.idv.tw/nsis/Contents.html</a></p>
 <p><a href="https://nsis.sourceforge.io/Wiki/">https://nsis.sourceforge.io/Wiki/</a></p>
