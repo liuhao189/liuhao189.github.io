@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>NSIS自定义脚本</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1654791574411">
+  <link rel="stylesheet" href="/note/note.css?ts=1655050132907">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -88,7 +88,7 @@ UninstPage instfiles
 
 </code></pre>
 <h4 id="-">区段</h4>
-<p>在一个普通的安装包里用户需要安装许多东西。eg：NSIS分配安装包里你可以选择安装源码、附加插件、脚本样例或其它。里面的每个组件都有它自己的代码块，当用户选择了安装该组件，那么安装程序就会执行对应的代码。</p>
+<p>在一个普通的安装包里用户需要安装许多东西。eg：NSIS安装包里你可以选择安装源码、附加插件、脚本样例或其它。里面的每个组件都有它自己的代码块，当用户选择了安装该组件，那么安装程序就会执行对应的代码。</p>
 <p>在脚本里，这些代码称为区段。每个可见的区段都可以作为一个组件给用户选择是否安装。你可以只使用一个区段来构建安装包，如果你想要使用组件页来让用户选择可选的组件，那么你就需要使用多个区段。</p>
 <p>卸载程序也可以有多个区段，卸载程序区段名前要加上前缀un.。</p>
 <pre><code class="lang-bash"><div class="highlight"><pre>Section <span class="s2">&quot;Installer Section&quot;</span>
@@ -175,6 +175,188 @@ FunctionEnd
 <p>$FONTS，系统字型目录。</p>
 <p>$TEMPLATES，文件模板目录。</p>
 <p>$APPDATA，应用程序数据目录。</p>
+<h2 id="-">调试脚本</h2>
+<p>如果你想实现更多的功能，那么你的脚本就会变得更复杂。这将会增加出错的可能性。使用MessageBoxes或DetailPrint来显示变量的内容，所有变量使用DumpState插件来勾画总体大纲。</p>
+<h2 id="-">编译器命令</h2>
+<p>编译器命令在你编译时在你的电脑上执行。他们可以用于条件编译、包含头文件、运行一个应用程序、改变工作目录和更多。最常见的用法是，定义编译时的常量。例如：定义你的产品版本号并在你的脚本里使用。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>!define VERSION <span class="s2">&quot;1.0.3&quot;</span>
+Name <span class="s2">&quot;My Program ${VERSION}&quot;</span>
+OutFile <span class="s2">&quot;My Program Installer - ${VERSION}.exe&quot;</span>
+</pre></div>
+
+</code></pre>
+<p>另一种场景的命令是宏。宏用于在编译时插入代码，依赖于定义并使用定义的值。宏的命令在编译时会插入，这样你只需要写一个通用的代码并只需要作为小的更改就可以多次使用。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>!marcro MyFunc UN
+Function <span class="k">${</span><span class="nv">UN</span><span class="k">}</span>DoRegStuff
+  Call <span class="k">${</span><span class="nv">UN</span><span class="k">}</span>DoRegStuff
+  ReadRegStr <span class="nv">$0</span> HKLM Software<span class="se">\M</span>yProgram Key
+  DetailPrint <span class="nv">$0</span>
+FunctionEnd
+!marcroend
+!insertmacro MyFunc <span class="s2">&quot;&quot;</span>
+!insertmacro MyFunc <span class="s2">&quot;un.&quot;</span>
+</pre></div>
+
+</code></pre>
+<p>宏帮助你避免在安装部分和卸载部分写重复的代码。上面的!insertmarcro插入了两个函数，一个用于MyFunc用于安装部分，另一个是un.MyFunc用于卸载部分。</p>
+<h2 id="-">编译器</h2>
+<p>建立了你的脚本后所要做的第二件事是编译你的脚本。MakeNSIS.exe就是NSIS编译器，它会载入你的脚本，解析并建立你的安装程序。</p>
+<p>要编译你的.nsi文件，可以点击右键并选择「Compile NSI」，这样将会使用MakeNSISw来引导并调用MakeNSIS来编译你的脚本。</p>
+<p>编译器会检查你的脚本并给出警告或错误。也可以在Linux、BSD或Mac OS X上编译安装程序。</p>
+<h2 id="-">新用户界面</h2>
+<p>一个流行的NSIS用户界面就是新式用户界面，它有着像最近的windows版本一样的界面。它的特点在于有白色的顶部来描述目前步骤、在组件选择页面有一个描述区域、一个欢迎页面、一个安装结束页面并允许用户选择额进行安装的应用程序或是重启电脑及更多功能。</p>
+<h2 id="-">插件</h2>
+<p>NSIS支持从脚本里调用插件，插件是由一些C、C++、Delphi或其它程序语言写的DLL文件，可以提供基于NSIS的更多增强型代码。</p>
+<p>一个插件的调用像这样：DLL名::函数名 &quot;参数1&quot; &quot;参数2&quot; &quot;参数3&quot;</p>
+<p>NSIS可识别的插件会列表出编译器输出的顶部。NSIS会在NSIS目录下的Plugins目录里寻找插件并且会列出所有可用的函数。你也可以使用!addPluginDir来告诉NSIS在另外的目录里寻找插件。</p>
+<p>NSIS已有很多插件，InstallOptions是一个受欢迎的插件，它允许你建立自定义的页面，并与NSIS页面命令结合。</p>
+<h2 id="makensis-">MakeNSIS的使用</h2>
+<p>NSIS的安装程序通过MakeNSIS程序来把.nsi脚本编译成可执行的安装程序。NSIS开发工具包已安装在你的电脑里，你只需要在资源管理器的.nsi档案上点击右键即可。</p>
+<p>命令行里使用MakeNSIS，MakeNSIS命令的语法为：</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>makensis 选项 script.nsi - <span class="o">[</span>...<span class="o">]</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">选项</h3>
+<p>/LICENSE，显示一个许可页面</p>
+<p>/V，后面跟随0-4数字设定了输出。0，无输出，1，仅错误，2、警告和错误，3、信息、警告和错误；4、全部输出。</p>
+<p>/O，后面跟随的文件告诉编译器输出记录到文件而不是屏幕。</p>
+<p>/PAUSE，使得makensis在退出前暂停。</p>
+<p>/NOCONFIG，禁止包含\nsiconf.nsh，没有这个参数的话，安装程序预设从nsiconf.nsi读取设定。</p>
+<p>/CMDHELP，输出基本的命令用户信息，或所有命令。</p>
+<p>/HDRINFO，输出Makensis编译的选项讯息。</p>
+<p>/NOCD，禁止把目前目录更改到.nsi文件。</p>
+<p>使用/D或将符号新增到全局定义列表。请看!define。</p>
+<p>使用/X将会执行你随后指定的代码，/X AutoCloseWindow false。</p>
+<p>对脚本名指定一个破折号-将会通知Makensis把标准输入作为源来使用。</p>
+<h3 id="-">注意事项</h3>
+<p>参数是按照次序来处理的，makensis /Ddef script.nsi和makensis script.nsi /Ddef是不同的。</p>
+<p>如果指定了多个脚本，他们将会被连接起来作为一个脚本来处理。</p>
+<h2 id="-">例子</h2>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># 基本用法</span>
+makensis.exe myscript.nsi
+<span class="c"># 安静模式</span>
+makensis.exe /V1 myscript.nsi
+<span class="c"># 强行设定压缩器</span>
+makensis.exe /X<span class="s2">&quot;SetCompressor /FINAL lama&quot;</span> myscript.nsi
+<span class="c"># 改变脚本的行为</span>
+makensis.exe /DUSE_UPX /DVERSION<span class="o">=</span>1.337 /DNO_IMAGES myscript.nsi
+</pre></div>
+
+</code></pre>
+<h2 id="-">安装程序的使用</h2>
+<p>生成的安装程序和卸载程序接受一些命令行的参数，这些参数可以让用户在安装过中对安装程序做部分控制。</p>
+<h3 id="-">公共选项</h3>
+<p>/NCRC，禁止CRC检测，除非在脚本里强制使用了CRCCheck。</p>
+<p>/S，静默运行安装程序或卸载程序。</p>
+<p>/D，指定预设的安装目录，可以越过InstallDir和InstallDirRegKey，这个参数必须是最后一个参数并且不能带任何引号即使路径带有空格。</p>
+<h3 id="-">卸载程序特殊选项</h3>
+<p>_?=指定的$INSTDIR，这也会阻止卸载程序把它自己复制到临时文件夹再运行。</p>
+<h3 id="-">例子</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>installer.exe /NCRC
+installer.exe /S
+installer.exe /D<span class="o">=</span>C:<span class="se">\P</span>rogram Files<span class="se">\N</span>SIS
+installer.exe /NCRC /S /D<span class="o">=</span>C:<span class="se">\P</span>rogram Files<span class="se">\N</span>SIS
+uninstaller.exe /s _?<span class="o">=</span>C:<span class="se">\P</span>rogram Files<span class="se">\N</span>SIS
+<span class="c">#静默卸载旧版本，并等待它完成后才继续</span>
+ExecWait <span class="s1">&#39;&quot;$INSTDIR\uninstaller.exe&quot; /S _?=$INSTDIR&#39;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">脚本档案的格式</h2>
+<p>一个NSIS脚本文件.nsi就是一个包含了脚本代码的文本文件。</p>
+<h3 id="-">命令</h3>
+<p>行为命令 「参数」 这样的格式。</p>
+<h3 id="-">注释</h3>
+<p>以「;」或「#」开始的行为注释。可在命令后添加注释。也可以使用C规范的注释来注释一行或多行。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="p">;</span>注释
+<span class="c">#注释</span>
+/*
+注释
+*/
+<span class="nb">command </span>commandParam <span class="p">;</span>注释
+</pre></div>
+
+</code></pre>
+<h3 id="-">插件</h3>
+<p>要调用一个插件，使用插件::命令 [参数]。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>nsExec::Exec <span class="s2">&quot;我的文件&quot;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">数字</h3>
+<p>数字参数，十进制，十六进制(0x开头)，或八进制(00)。颜色设定为HTML-RGB的形式，但没有#。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>IntCmp <span class="m">1</span> 0x1 lbl_equal
+SetCtlColors <span class="nv">$HWND</span> CCCCCC
+</pre></div>
+
+</code></pre>
+<h3 id="-">字符串</h3>
+<p>字符串需要用引号括起来。可以使用$\来省略引号的解析。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>MessageBox MB_OK <span class="s2">&quot;我会很开心&quot;</span>
+MessageBox MB_OK <span class="s1">&#39;他对我说“你好!”&#39;</span>
+MessageBox MB_OK <span class="sb">`</span>然后他对我说“我不好”<span class="sb">`</span>
+MessageBox MB_OK <span class="s2">&quot;$\&quot;智者名言$\&quot;&quot;</span>
+</pre></div>
+
+</code></pre>
+<p>在字符串里使用Enter、换行、Tab等，请使用$\r,$\n,$\t等。</p>
+<h3 id="-">变量</h3>
+<p>用户变量应该实现声明，并且不区分大小写。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Var MYVAR
+StrCpy <span class="nv">$MYVAR</span> <span class="s2">&quot;变量值&quot;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">长命令</h3>
+<p>要把命令扩充为多行，需要在行尾使用反斜杠\。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>CreateShortCur <span class="s2">&quot;$PROGRAMS\NSIS\ZIP2EXE project workspace.lnk&quot;</span> <span class="se">\</span>
+   <span class="s2">&quot;$INSTDIR\source\zip2exe\zip2exe.dsw&quot;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-">配置档案</h3>
+<p>如果在makensis.exe同目录下存在nsiconf.nsh，它里面的代码将会被包含在任何脚本里。除非使用/NOCONFIG命令参数。</p>
+<h2 id="-">标记</h2>
+<p>标记是Goto指令的的目标，或各种分支指令的目标。标记必须存在于一个区段或函数里，标记是局限于该范围里的。</p>
+<p>声明一个标记，标记不能以-、+、!、$或0-0开头。一个标记以.开头表示这是一个全局的标记。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>MyLabel:
+</pre></div>
+
+</code></pre>
+<h2 id="-">相对跳转</h2>
+<p>相对于被调用的地方，在任何你可用到标记的地方你都可以相对跳转。+1转移到下一条指令，+2会跳过一条指令并且从目前指令转到第二条指令。-2，+10依次类推。</p>
+<p>一条指令就是在安装程序时可以被执行的所有命令。MesageBox，Goto、GetDLLVersion、FileRead、SetShellVarContext都是指令。AddSize、Section、SectrionGroup、SectionEnd、SetOverwrite，Name，SetFont、LanguageString都不是指令，因为它们在编译时就被执行。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Goto +2
+  MessageBox MB_OK <span class="s2">&quot;看不到这条消息&quot;</span>
+MessageBox MB_OK <span class="s2">&quot;上一条信息被略过，这条讯息被展示&quot;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">页面</h2>
+<p>每个NSIS都有一个页面设定，每个页面可以是一个NSIS内建页面或由一个用户函数建立的自定义页面。</p>
+<p>使用这些脚本你可以控制这些页面的次序、外观、作用。可以略过页面、颜色绘为白色、强制用户停留在某个页面直到特定条件成立、显示一个说明文件页面、给输入显示一个自定义页面或者更多的功能。</p>
+<p>两个基本的命令：Page和UninstPage，前一个为新增一个页面到安装程序，后一个为新增一个页面到卸载程序。PageEx命令在它们前面可以新增一个页面且包括一些选项。</p>
+<h3 id="-">次序</h3>
+<p>页面的次序由Page，UninstPage或PageEx出现在脚本里的次序决定。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>Page license
+Page components
+Page directrory
+Page instfiles
+UnistPage unistConfirm
+UnistPage instfiles
+</pre></div>
+
+</code></pre>
+<p>为了向后兼容，如果没有使用到安装程序页面命令，一些预设的程序页面会被新增。</p>
+<h3 id="-">页面选项</h3>
+<p>每个页面都有它自己唯一的信息设定外观和作用。</p>
+<p>下面列表列出了某个页面类型受到什么样的命令的影响。</p>
+<p>许可页面：LicenseText，LicenseData，LicenseForceSelection。</p>
+<p>组件选择页面：ComponentText。</p>
+<p>目录选择页面：DirText，DirVar(仅PageEx可用)，DirVerify</p>
+<p>卸载安装记录页面：DetailsButtonText，CompletedText。</p>
+<p>卸载确认页面：DirVar(仅PageEx可用)，UninstallText。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://omega.idv.tw/nsis/Contents.html">https://omega.idv.tw/nsis/Contents.html</a></p>
 <p><a href="https://nsis.sourceforge.io/Wiki/">https://nsis.sourceforge.io/Wiki/</a></p>
