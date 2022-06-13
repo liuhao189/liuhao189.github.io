@@ -83,6 +83,8 @@ pygmentize-bundled的index.js
 
 https://stackoverflow.com/questions/69827243/how-to-properly-debug-electron-memory-issues/69934235#69934235
 
+https://seenaburns.com/debugging-electron-memory-usage/
+
 ## electron auto update failed
 
 https://philo.dev/electron-auto-update-explained/
@@ -97,3 +99,4 @@ https://github.com/electron-userland/electron-builder/issues/2317
 ## NSIS自定义脚本
 
 https://www.jianshu.com/p/73e401c57823
+
