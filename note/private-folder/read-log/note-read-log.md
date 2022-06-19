@@ -85,6 +85,8 @@ https://stackoverflow.com/questions/69827243/how-to-properly-debug-electron-memo
 
 https://seenaburns.com/debugging-electron-memory-usage/
 
+https://docs.microsoft.com/en-us/microsoftteams/teams-memory-usage-perf
+
 ## electron auto update failed
 
 https://philo.dev/electron-auto-update-explained/
