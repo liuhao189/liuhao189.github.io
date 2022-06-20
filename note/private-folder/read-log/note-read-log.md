@@ -87,6 +87,12 @@ https://seenaburns.com/debugging-electron-memory-usage/
 
 https://docs.microsoft.com/en-us/microsoftteams/teams-memory-usage-perf
 
+https://www.lifewire.com/understanding-compressed-memory-os-x-2260327
+
+https://www.imyfone.com/mac-tips/how-to-reduce-memory-usage-on-mac
+
+
+
 ## electron auto update failed
 
 https://philo.dev/electron-auto-update-explained/
