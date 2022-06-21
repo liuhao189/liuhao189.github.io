@@ -24,6 +24,8 @@
 
 ## Mac活动监视器相关
 
+![mac-activity-monitor](/note/assets/imgs/electron-memory/mac-memory.png)
+
 ### memory标签页下方
 
 物理内存（Physical Memory）：就是物理内存。
@@ -38,7 +40,11 @@
 
 已使用的交换（Swap Used），虚拟内存的使用量。
 
-已缓存的文件（Cached Files）,MacOS将最近关闭的应用使用的内存作为缓存，已使用户快速启动相同的应用。这部分内存也可以被其它应用使用。
+已缓存的文件（Cached Files）,MacOS将最近关闭的应用使用的内存作为缓存，已使用户可以快速启动相同的应用。这部分内存也可以被其它应用使用。purge命令可清理文件缓存。
+
+实际内存（Real Memory）,Unix通常所说的RSS或常驻内存集Resident Set Size，这是进程当前占用的页的数量，包括虚拟页。
+
+内存（Memory）,在物理内存中使用的内存量。
 
 
 
@@ -46,4 +52,9 @@
 ## 参考文档
 
 https://docs.microsoft.com/zh-cn/windows/win32/memory/virtual-address-space
+
+
+https://apple.stackexchange.com/questions/107578/memory-terminology-in-mavericks-activity-monitory/112502#112502
+
+https://forums.macrumors.com/threads/memory-vs-real-memory.1749505
 
