@@ -46,7 +46,62 @@
 
 内存（Memory）,在物理内存中使用的内存量。
 
+## electron内存相关API
 
+### app.getAppMetrics
+
+返回ProcessMetric[]。ProcessMetric结构中有memory信息。
+
+```json
+{
+    "cpu": {
+        "percentCPUUsage": 0.2858202539941989, 
+        "idleWakeupsPerSecond": 4
+    }, 
+    "pid": 580, 
+    "type": "Browser", 
+    "creationTime": 1655908106692.505, 
+    "memory": {
+        "workingSetSize": 186736, // Mac的和活动监视器一致
+        "peakWorkingSetSize": 187552,  // Mac的和活动监视器一致
+        "privateBytes": 103424, // windows only
+    }, 
+    "sandboxed": false
+}
+```
+
+### process.getBlinkMemoryInfo
+
+主要是返回blink的内存信息，对于调试DOM相关内存问题有帮助。
+
+```json
+{
+  allocated: 24543, //已分配的对象大小
+  total: 30398, // 分配的总空间
+}
+```
+
+### process.getProcessMemoryInfo
+
+
+```json
+{
+  private: 203760, // 私有内存 Mac的和活动监视器有差异
+  shared: 4252, // 共享内存 Mac的和活动监视器差异很大
+}
+```
+
+
+### process.getSystemMemoryInfo
+
+返回系统的内存信息。
+
+```json
+{
+    free: 326724, // 319M，Mac的不正确，应该减去文件缓存的部分。
+    total: 16777216,// 16G，Mac的正确
+}
+```
 
 
 ## 参考文档
