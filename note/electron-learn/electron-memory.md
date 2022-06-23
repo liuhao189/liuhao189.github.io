@@ -53,6 +53,7 @@
 返回ProcessMetric[]。ProcessMetric结构中有memory信息。
 
 ```json
+//Mac端
 {
     "cpu": {
         "percentCPUUsage": 0.2858202539941989, 
@@ -67,6 +68,23 @@
         "privateBytes": 103424, // windows only
     }, 
     "sandboxed": false
+},
+// windows端
+{
+	"cpu": {
+		"percentCPUUsage": 0,
+		"idleWakeupsPerSecond": 0
+	},
+	"creationTime":  1655908106692.505,
+	"integrityLevel": "medium",
+	"memory": {
+		"workingSetSize": 275352, // 任务管理器，270648，差距不大
+		"peakWorkingSetSize": 353264, 
+		"privateBytes": 175640, // 171.5M，任务管理器为171.7M，此次差异不大，但某些情况下差异会很大，该值应该等于任务管理器内存 + 虚拟内存的值。
+	},
+	"pid": 9852,
+	"sandboxed": false,
+	"type": "Tab"
 }
 ```
 
@@ -85,9 +103,17 @@
 
 
 ```json
+// mac端
 {
-  private: 203760, // 私有内存 Mac的和活动监视器有差异
-  shared: 4252, // 共享内存 Mac的和活动监视器差异很大
+  
+  private: 111128, //(108M) 私有内存 Mac监视器：118M；
+  shared: 4252,//(3.54M) 共享内存 Mac活动监视器：191.9M 主要是因为统计口径不同，mac活动监视器包含了其它进程共享的。
+}
+// windows端
+{ 
+  residentSet: 281192, 
+  private: 193324, //188.8M 任务管理器为166.1M，该值明显大于任务管理器
+  shared: 24580, // 24M，任务管理器为89.88M，同mac的，统计口径不一致
 }
 ```
 
@@ -97,11 +123,21 @@
 返回系统的内存信息。
 
 ```json
+//Mac端
 {
-    free: 326724, // 319M，Mac的不正确，应该减去文件缓存的部分。
+    free: 2554776, // 2.44G，Mac的不正确，此时有8.42G可用内存，主要是加上已缓存文件的大小。
     total: 16777216,// 16G，Mac的正确
 }
+// windows端
+{ 
+   total: 7812864, // 7.45G，准确
+   free: 4717092, // 4.5G，准确
+   swapTotal: 9058048,  //8.64G
+   swapFree: 5895496, // 5.6G
+}
 ```
+
+
 
 
 ## 参考文档
