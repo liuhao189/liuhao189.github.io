@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>electron-memory相关</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1656037169986">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="electron-memory-">electron-memory相关</h1>
+<h2 id="-">内存概念分享</h2>
+<h3 id="-virtual-address-space-">虚拟地址空间（Virtual Address Space）</h3>
+<p>进程的虚拟地址空间是它可以使用的虚拟内存地址集。每个进程的地址空间是私有的，除非其它进程共享，否则其它进程无法访问该地址空间。</p>
+<h3 id="-virtual-memory-">虚拟内存 （Virtual Memory）</h3>
+<p>为了最大程度地提高管理内存的灵活性，系统可以将物理内存页移入磁盘上的分页文件，或从磁盘上的分页文件移入物理内存。磁盘上的分页文件称为虚拟内存。</p>
+<h3 id="-working-set-">工作集（Working Set）</h3>
+<p>驻留在物理内存中的进程的虚拟地址空间子集称为工作集。工作集不能反映实际物理内存占用情况，因为它会计算进程共享内存。</p>
+<h3 id="-private-bytes">私有内存 Private Bytes</h3>
+<p>私有内存表示已申请的(不一定被使用)内存页文件总量。不包括进程共享内存的部分。</p>
+<h3 id="-working-set-private-">私有工作集 (Working Set Private)</h3>
+<p>工作集的子集，只包含进程私有的工作集，它不会重复计算进程共享内存。共享内存的只会加到创建共享内存的进程中。Windows的任务管理器的内存列使用私有工作集。</p>
+<h2 id="mac-">Mac活动监视器相关</h2>
+<p><img src="/note/assets/imgs/electron-memory/mac-memory.png" alt="mac-activity-monitor"></p>
+<h3 id="memory-">memory标签页下方</h3>
+<p>物理内存（Physical Memory）：就是物理内存。</p>
+<p>已使用内存（Memory Used）：所有进程使用的内存。这里面包括：</p>
+<p>1、App内存（App Memory），apps使用的内存。</p>
+<p>2、联动内存（Wired Memory），这些通常是机器的主要进程，它们需要快速访问，不能与磁盘上的内存交换。</p>
+<p>3、被压缩内存（Compressed），macOS会在系统内存压力大时，压缩一部分不活跃的内存。当压缩区域的内存被请求时，macOS会立即解压缩。</p>
+<p>已使用的交换（Swap Used），虚拟内存的使用量。</p>
+<p>已缓存的文件（Cached Files）,MacOS将最近关闭的应用使用的内存作为缓存，已使用户可以快速启动相同的应用。这部分内存也可以被其它应用使用。purge命令可清理文件缓存。</p>
+<p>实际内存（Real Memory）,Unix通常所说的RSS或常驻内存集Resident Set Size，这是进程当前占用的页的数量，包括虚拟页。</p>
+<p>内存（Memory）,在物理内存中使用的内存量。</p>
+<h2 id="electron-api">electron内存相关API</h2>
+<h3 id="app-getappmetrics">app.getAppMetrics</h3>
+<p>返回ProcessMetric[]。ProcessMetric结构中有memory信息。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="err">//Mac端</span>
+<span class="p">{</span>
+    <span class="nt">&quot;cpu&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;percentCPUUsage&quot;</span><span class="p">:</span> <span class="mf">0.2858202539941989</span><span class="p">,</span> 
+        <span class="nt">&quot;idleWakeupsPerSecond&quot;</span><span class="p">:</span> <span class="mi">4</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;pid&quot;</span><span class="p">:</span> <span class="mi">580</span><span class="p">,</span> 
+    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Browser&quot;</span><span class="p">,</span> 
+    <span class="nt">&quot;creationTime&quot;</span><span class="p">:</span> <span class="mf">1655908106692.505</span><span class="p">,</span> 
+    <span class="nt">&quot;memory&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;workingSetSize&quot;</span><span class="p">:</span> <span class="mi">186736</span><span class="p">,</span> <span class="err">//</span> <span class="err">Mac的和活动监视器一致</span>
+        <span class="nt">&quot;peakWorkingSetSize&quot;</span><span class="p">:</span> <span class="mi">187552</span><span class="p">,</span>  <span class="err">//</span> <span class="err">Mac的和活动监视器一致</span>
+        <span class="nt">&quot;privateBytes&quot;</span><span class="p">:</span> <span class="mi">103424</span><span class="p">,</span> <span class="err">//</span> <span class="err">windows</span> <span class="err">only</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;sandboxed&quot;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span><span class="err">,</span>
+<span class="err">//</span> <span class="err">windows端</span>
+<span class="p">{</span>
+    <span class="nt">&quot;cpu&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;percentCPUUsage&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="nt">&quot;idleWakeupsPerSecond&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;creationTime&quot;</span><span class="p">:</span>  <span class="mf">1655908106692.505</span><span class="p">,</span>
+    <span class="nt">&quot;integrityLevel&quot;</span><span class="p">:</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;memory&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;workingSetSize&quot;</span><span class="p">:</span> <span class="mi">275352</span><span class="p">,</span> <span class="err">//</span> <span class="err">任务管理器，270648，差距不大</span>
+        <span class="nt">&quot;peakWorkingSetSize&quot;</span><span class="p">:</span> <span class="mi">353264</span><span class="p">,</span> 
+        <span class="nt">&quot;privateBytes&quot;</span><span class="p">:</span> <span class="mi">175640</span><span class="p">,</span> <span class="err">//</span> <span class="err">171.5M，任务管理器为171.7M，此次差异不大，但某些情况下差异会很大，该值应该等于任务管理器内存</span> <span class="err">+</span> <span class="err">虚拟内存的值。</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;pid&quot;</span><span class="p">:</span> <span class="mi">9852</span><span class="p">,</span>
+    <span class="nt">&quot;sandboxed&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Tab&quot;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="process-getblinkmemoryinfo">process.getBlinkMemoryInfo</h3>
+<p>主要是返回blink的内存信息，对于调试DOM相关内存问题有帮助。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="p">{</span>
+  <span class="err">allocated:</span> <span class="err">24543,</span> <span class="err">//已分配的对象大小</span>
+  <span class="err">total:</span> <span class="err">30398,</span> <span class="err">//</span> <span class="err">分配的总空间</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="process-getprocessmemoryinfo">process.getProcessMemoryInfo</h3>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="err">//</span> <span class="err">mac端</span>
+<span class="p">{</span>
+
+  <span class="err">private:</span> <span class="err">111128,</span> <span class="err">//(108M)</span> <span class="err">私有内存</span> <span class="err">Mac监视器：118M；</span>
+  <span class="err">shared:</span> <span class="err">4252,//(3.54M)</span> <span class="err">共享内存</span> <span class="err">Mac活动监视器：191.9M</span> <span class="err">主要是因为统计口径不同，mac活动监视器包含了其它进程共享的。</span>
+<span class="p">}</span>
+<span class="err">//</span> <span class="err">windows端</span>
+<span class="p">{</span> 
+  <span class="err">residentSet:</span> <span class="err">281192,</span> 
+  <span class="err">private:</span> <span class="err">193324,</span> <span class="err">//188.8M</span> <span class="err">任务管理器为166.1M，该值明显大于任务管理器</span>
+  <span class="err">shared:</span> <span class="err">24580,</span> <span class="err">//</span> <span class="err">24M，任务管理器为89.88M，同mac的，统计口径不一致</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="process-getsystemmemoryinfo">process.getSystemMemoryInfo</h3>
+<p>返回系统的内存信息。</p>
+<pre><code class="lang-json"><div class="highlight"><pre><span class="err">//Mac端</span>
+<span class="p">{</span>
+    <span class="err">free:</span> <span class="err">2554776,</span> <span class="err">//</span> <span class="err">2.44G，Mac的不正确，此时有8.42G可用内存，主要是加上已缓存文件的大小。</span>
+    <span class="err">total:</span> <span class="err">16777216,//</span> <span class="err">16G，Mac的正确</span>
+<span class="p">}</span>
+<span class="err">//</span> <span class="err">windows端</span>
+<span class="p">{</span> 
+   <span class="err">total:</span> <span class="err">7812864,</span> <span class="err">//</span> <span class="err">7.45G，准确</span>
+   <span class="err">free:</span> <span class="err">4717092,</span> <span class="err">//</span> <span class="err">4.5G，准确</span>
+   <span class="err">swapTotal:</span> <span class="err">9058048,</span>  <span class="err">//8.64G</span>
+   <span class="err">swapFree:</span> <span class="err">5895496,</span> <span class="err">//</span> <span class="err">5.6G</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">参考文档</h2>
+<p><a href="https://docs.microsoft.com/zh-cn/windows/win32/memory/virtual-address-space">https://docs.microsoft.com/zh-cn/windows/win32/memory/virtual-address-space</a></p>
+<p><a href="https://apple.stackexchange.com/questions/107578/memory-terminology-in-mavericks-activity-monitory/112502#112502">https://apple.stackexchange.com/questions/107578/memory-terminology-in-mavericks-activity-monitory/112502#112502</a></p>
+<p><a href="https://forums.macrumors.com/threads/memory-vs-real-memory.1749505">https://forums.macrumors.com/threads/memory-vs-real-memory.1749505</a></p>
+</body>
+</html>
