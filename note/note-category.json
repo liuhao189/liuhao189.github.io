@@ -86,5 +86,13 @@
             "others"
         ],
         "distFileName": "others"
+    },
+    {
+        "id": "terminal",
+        "name": "命令行相关",
+        "path": [
+            "terminal"
+        ],
+        "distFileName": "terminal"
     }
 ]
