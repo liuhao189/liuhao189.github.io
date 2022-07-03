@@ -1,4 +1,4 @@
-# Clipboard
+# Clipboard && contentTracing
 
 在系统剪贴板上执行复制和粘贴操作。
 
@@ -74,4 +74,74 @@ availableFormats([type])，返回剪贴板支持的格式。
 ### has
 
 has(format[,type])，剪贴板是否支持指定的format。
+
+# ContentTracing
+
+从Chromium收集追踪数据以找到性能瓶颈和慢操作。
+
+进程：主进程。
+
+此模块不包含Web界面。若要查看记录的轨迹，请使用跟踪查看器。
+
+注意：在应用的ready事件触发之前，不应该使用该模块。
+
+```js
+const { app, contentTracing } = require('electron')
+
+app.whenReady().then(() => {
+  (async () => {
+    await contentTracing.startRecording({
+      included_categories: ['*']
+    })
+    console.log('Tracing started')
+    await new Promise(resolve => setTimeout(resolve, 5000))
+    const path = await contentTracing.stopRecording()
+    console.log('追踪数据记录到： ' + path)
+  })()
+})
+```
+
+返回的path的内容为一堆JSON数据。
+
+## 方法
+
+contentTracing.getCategories()，返回Promise<string[]>。
+
+注意：electron添加了一个名为electron的非默认追踪类别，此类别用于捕捉Electron特定的追踪事件。
+
+contentTracing.startRecording(options)，返回Promise<void>，当所有的子进程都确认了startRecording请求后resolve。
+
+options: 
+
+recording_mode：string，可选，值可以是record-until-full，record-continously，record-as-much-as-possible，trace-to-console。默认值为record-until-full。
+
+trace_buffer_size_in_kb，number，可选，追踪记录缓冲区的最大容量，以kb为单位，默认大小为100MB。
+
+trace_buffer_size_in_events，number，可选，追踪记录缓冲区的最大事件数量。
+
+enable_argument_filter，boolean，可选，true为筛选结果是根据手动设置的列表来进行条件筛选。
+
+include_categories，string[]，可选，要排除的追踪列类别列表，可以包含glob-like匹配模式，在类别末尾使用*。
+
+include_process_ids，number[]，可选，追踪要包含的进程ID列表。不指定，则追踪所有进程。
+
+histogram_names，string[]，可选，与追踪一同报告的直方图的名称列表。
+
+memory_dump_config，Record<string,any>，可选，如果启动了disabled-by-default-memory-infra类别，则包含用于数据收集的可选附加配置。
+
+一旦收到EnableRecording请求，记录立即在本地开始进程，并在子进程上异步执行。如果一个记录已经运行了，promise将立即resolve，因为一次只能进行一个跟踪操作。
+
+contentTracing.stopRecording([resultFilePath])，resultFilePath:string，可选，返回Promise<string>，一旦所有子进程都确认了stopRecording请求，会resolve一个包含了追踪数据的文件路径。
+
+子进程通常缓存跟踪数据，并且很少清空或发送跟踪数据回主进程，因为通过IPC发送跟踪数据可能是一个开销巨大的操作。为了结束追踪，Chromium异步地要求所有子进程刷新所有挂起的跟踪数据，追踪数据将被写入resultFilePath。
+
+contentTracing.getTraceBufferUsage():Promise<{value:numnber,percentage:number}>，获取追踪缓存区间在进程间的最大使用量。
+
+# DesktopCapturer
+
+进程：主进程。
+
+访问关于使用naviagtor.mediaDevices.getUserMedia API获取的可以用来从桌面捕捉音频和视频的媒体源的信息。
+
+
 

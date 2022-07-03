@@ -18,7 +18,14 @@ eg：rm，rm -fr(force,recursive)。
 
 Flags有很多不同长度的版本，缩写版本-f，完全版本--force，完全版本通常使用两个中划线。
 
-eg：ls -la (long,all)
+eg：ls -la (long,all)。
+
+## 常用命令
+
+open .可以在访达中打开当前目录。explorer .可以在windows中用资源管理器打开当前目录。
+
+alias可以设置命令别名。
+
 
 ## 参考文档 
 
