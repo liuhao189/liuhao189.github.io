@@ -129,7 +129,7 @@ histogram_names，string[]，可选，与追踪一同报告的直方图的名称
 
 memory_dump_config，Record<string,any>，可选，如果启动了disabled-by-default-memory-infra类别，则包含用于数据收集的可选附加配置。
 
-一旦收到EnableRecording请求，记录立即在本地开始进程，并在子进程上异步执行。如果一个记录已经运行了，promise将立即resolve，因为一次只能进行一个跟踪操作。
+一旦收到EnableRecording请求，记录立即在本地开始进行，并在子进程上异步执行。如果一个记录已经运行了，promise将立即resolve，因为一次只能进行一个跟踪操作。
 
 contentTracing.stopRecording([resultFilePath])，resultFilePath:string，可选，返回Promise<string>，一旦所有子进程都确认了stopRecording请求，会resolve一个包含了追踪数据的文件路径。
 
@@ -143,5 +143,44 @@ contentTracing.getTraceBufferUsage():Promise<{value:numnber,percentage:number}>�
 
 访问关于使用naviagtor.mediaDevices.getUserMedia API获取的可以用来从桌面捕捉音频和视频的媒体源的信息。
 
+```ts
+//主进程
+async function sendDeskTopSource(win: BrowserWindow) {
+  let sources = await desktopCapturer.getSources({ types: ['window', 'screen'] });
+  for (let source of sources) {
+    win.webContents.send(`SET_SOURCE`, source.id);
+  }
+}
+//渲染进程
+import { ipcRenderer } from 'electron';
 
+ipcRenderer.on('SET_SOURCE', async (event, sourceId) => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+                //@ts-ignore
+                mandatory: {
+                    chromeMediaSource: 'desktop',
+                    chromeMediaSourceId: sourceId,
+                    minWidth: 1280,
+                    maxWidth: 1280,
+                    minHeight: 720,
+                    maxHeight: 720
+                }
+            }
+        });
+        if (stream) {
+            handleStream(stream);
+        }
+    } catch (ex) {
+        console.error(ex)
+    }
+});
 
+function handleStream(stream: MediaStream) {
+    const video = document.querySelector('video') as HTMLVideoElement;
+    video.srcObject = stream;
+    video.onloadedmetadata = () => video.play();
+}
+```

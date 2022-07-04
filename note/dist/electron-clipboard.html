@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clipboard && contentTracing</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1656950961069">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="clipboard-contenttracing">Clipboard &amp;&amp; contentTracing</h1>
+<p>在系统剪贴板上执行复制和粘贴操作。</p>
+<p>进程：Main和Render。</p>
+<p>在Linux上，还有一个selection粘贴板，想要操作该剪切板，你需要为每个函数传递selection参数。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">{</span> <span class="nx">clipboard</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;electron&#39;</span><span class="p">);</span>
+<span class="nx">clipboard</span><span class="p">.</span><span class="nx">writeText</span><span class="p">(</span><span class="s1">&#39;Example String&#39;</span><span class="p">,</span><span class="s1">&#39;selection&#39;</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">clipboard</span><span class="p">.</span><span class="nx">readText</span><span class="p">(</span><span class="s1">&#39;selectron&#39;</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">方法</h2>
+<h3 id="readtext">readText</h3>
+<p>clipboard.readText([type])，type可选，可以是selection或clipboard（仅linux可用）。默认为clipboard。</p>
+<p>返回string，剪贴板中的内容为纯文本。</p>
+<h3 id="writetext-text-type-">writeText(text[,type])</h3>
+<p>将text作为纯文本写入剪贴板。</p>
+<h3 id="readhtml">readHTML</h3>
+<p>readHTML([type])，返回string，剪贴板中作为标记的内容。</p>
+<h3 id="writehtml">writeHTML</h3>
+<p>writeHTML(markup[,type])，eg：writeHTML(&#39;&lt;b&gt;Hi&lt;/b&gt;&#39;)</p>
+<h3 id="readimage">readImage</h3>
+<p>readImage([type])，返回NativeImage。</p>
+<h3 id="writeimage">writeImage</h3>
+<p>writeImage(image[,type])，将NativeImage写入剪贴板。</p>
+<h3 id="readrtf">readRTF</h3>
+<p>readRtg([type])，返回RTF内容。</p>
+<h3 id="writertf">writeRTF</h3>
+<p>writeRTF(text[,type])，写入RTF格式的text。</p>
+<h3 id="readbookmark">readBookMark</h3>
+<p>MacOS &amp;&amp; Windows可用，返回{title:string,url:string}，windows上title值永远为空。</p>
+<h3 id="writebookmark">writeBookMark</h3>
+<p>MacOS &amp;&amp; Windows可用，writeBookMark(title,url[,type])，windows上title值永远为空。</p>
+<p>注意：windows上大多数应用程序不支持粘贴书签。</p>
+<h3 id="readfindtext-writefindtext">readFindText &amp; writeFindText</h3>
+<p>MacOS，操作查找剪贴板。</p>
+<h3 id="clear">clear</h3>
+<p>clear([type])，清除剪贴板内容。</p>
+<h3 id="availableformats">availableFormats</h3>
+<p>åå<br>availableFormats([type])，返回剪贴板支持的格式。</p>
+<h3 id="has">has</h3>
+<p>has(format[,type])，剪贴板是否支持指定的format。</p>
+<h1 id="contenttracing">ContentTracing</h1>
+<p>从Chromium收集追踪数据以找到性能瓶颈和慢操作。</p>
+<p>进程：主进程。</p>
+<p>此模块不包含Web界面。若要查看记录的轨迹，请使用跟踪查看器。</p>
+<p>注意：在应用的ready事件触发之前，不应该使用该模块。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="p">{</span> <span class="nx">app</span><span class="p">,</span> <span class="nx">contentTracing</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;electron&#39;</span><span class="p">)</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">whenReady</span><span class="p">().</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">await</span> <span class="nx">contentTracing</span><span class="p">.</span><span class="nx">startRecording</span><span class="p">({</span>
+      <span class="nx">included_categories</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">]</span>
+    <span class="p">})</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Tracing started&#39;</span><span class="p">)</span>
+    <span class="nx">await</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="nx">setTimeout</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span>
+    <span class="kr">const</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">contentTracing</span><span class="p">.</span><span class="nx">stopRecording</span><span class="p">()</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;追踪数据记录到： &#39;</span> <span class="o">+</span> <span class="nx">path</span><span class="p">)</span>
+  <span class="p">})()</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>返回的path的内容为一堆JSON数据。</p>
+<h2 id="-">方法</h2>
+<p>contentTracing.getCategories()，返回Promise&lt;string[]&gt;。</p>
+<p>注意：electron添加了一个名为electron的非默认追踪类别，此类别用于捕捉Electron特定的追踪事件。</p>
+<p>contentTracing.startRecording(options)，返回Promise&lt;void&gt;，当所有的子进程都确认了startRecording请求后resolve。</p>
+<p>options: </p>
+<p>recording_mode：string，可选，值可以是record-until-full，record-continously，record-as-much-as-possible，trace-to-console。默认值为record-until-full。</p>
+<p>trace_buffer_size_in_kb，number，可选，追踪记录缓冲区的最大容量，以kb为单位，默认大小为100MB。</p>
+<p>trace_buffer_size_in_events，number，可选，追踪记录缓冲区的最大事件数量。</p>
+<p>enable_argument_filter，boolean，可选，true为筛选结果是根据手动设置的列表来进行条件筛选。</p>
+<p>include_categories，string[]，可选，要排除的追踪列类别列表，可以包含glob-like匹配模式，在类别末尾使用*。</p>
+<p>include_process_ids，number[]，可选，追踪要包含的进程ID列表。不指定，则追踪所有进程。</p>
+<p>histogram_names，string[]，可选，与追踪一同报告的直方图的名称列表。</p>
+<p>memory_dump_config，Record&lt;string,any&gt;，可选，如果启动了disabled-by-default-memory-infra类别，则包含用于数据收集的可选附加配置。</p>
+<p>一旦收到EnableRecording请求，记录立即在本地开始进行，并在子进程上异步执行。如果一个记录已经运行了，promise将立即resolve，因为一次只能进行一个跟踪操作。</p>
+<p>contentTracing.stopRecording([resultFilePath])，resultFilePath:string，可选，返回Promise&lt;string&gt;，一旦所有子进程都确认了stopRecording请求，会resolve一个包含了追踪数据的文件路径。</p>
+<p>子进程通常缓存跟踪数据，并且很少清空或发送跟踪数据回主进程，因为通过IPC发送跟踪数据可能是一个开销巨大的操作。为了结束追踪，Chromium异步地要求所有子进程刷新所有挂起的跟踪数据，追踪数据将被写入resultFilePath。</p>
+<p>contentTracing.getTraceBufferUsage():Promise&lt;{value:numnber,percentage:number}&gt;，获取追踪缓存区间在进程间的最大使用量。</p>
+<h1 id="desktopcapturer">DesktopCapturer</h1>
+<p>进程：主进程。</p>
+<p>访问关于使用naviagtor.mediaDevices.getUserMedia API获取的可以用来从桌面捕捉音频和视频的媒体源的信息。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="c1">//主进程</span>
+<span class="nx">async</span> <span class="kd">function</span> <span class="nx">sendDeskTopSource</span><span class="p">(</span><span class="nx">win</span>: <span class="kt">BrowserWindow</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">sources</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">desktopCapturer</span><span class="p">.</span><span class="nx">getSources</span><span class="p">({</span> <span class="nx">types</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;window&#39;</span><span class="p">,</span> <span class="s1">&#39;screen&#39;</span><span class="p">]</span> <span class="p">});</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">source</span> <span class="nx">of</span> <span class="nx">sources</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">win</span><span class="p">.</span><span class="nx">webContents</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="err">`</span><span class="nx">SET_SOURCE</span><span class="err">`</span><span class="p">,</span> <span class="nx">source</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">//渲染进程</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">ipcRenderer</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;electron&#39;</span><span class="p">;</span>
+
+<span class="nx">ipcRenderer</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;SET_SOURCE&#39;</span><span class="p">,</span> <span class="nx">async</span> <span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">sourceId</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">stream</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">navigator</span><span class="p">.</span><span class="nx">mediaDevices</span><span class="p">.</span><span class="nx">getUserMedia</span><span class="p">({</span>
+            <span class="nx">audio</span>: <span class="kt">false</span><span class="p">,</span>
+            <span class="nx">video</span><span class="o">:</span> <span class="p">{</span>
+                <span class="c1">//@ts-ignore</span>
+                <span class="nx">mandatory</span><span class="o">:</span> <span class="p">{</span>
+                    <span class="nx">chromeMediaSource</span><span class="o">:</span> <span class="s1">&#39;desktop&#39;</span><span class="p">,</span>
+                    <span class="nx">chromeMediaSourceId</span>: <span class="kt">sourceId</span><span class="p">,</span>
+                    <span class="nx">minWidth</span>: <span class="kt">1280</span><span class="p">,</span>
+                    <span class="nx">maxWidth</span>: <span class="kt">1280</span><span class="p">,</span>
+                    <span class="nx">minHeight</span>: <span class="kt">720</span><span class="p">,</span>
+                    <span class="nx">maxHeight</span>: <span class="kt">720</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">stream</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">handleStream</span><span class="p">(</span><span class="nx">stream</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">ex</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">ex</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kd">function</span> <span class="nx">handleStream</span><span class="p">(</span><span class="nx">stream</span>: <span class="kt">MediaStream</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">video</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;video&#39;</span><span class="p">)</span> <span class="kr">as</span> <span class="nx">HTMLVideoElement</span><span class="p">;</span>
+    <span class="nx">video</span><span class="p">.</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="nx">stream</span><span class="p">;</span>
+    <span class="nx">video</span><span class="p">.</span><span class="nx">onloadedmetadata</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">video</span><span class="p">.</span><span class="nx">play</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+</body>
+</html>
