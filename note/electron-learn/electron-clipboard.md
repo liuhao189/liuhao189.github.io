@@ -184,3 +184,41 @@ function handleStream(stream: MediaStream) {
     video.onloadedmetadata = () => video.play();
 }
 ```
+
+为了从desktopCapturer提供的源捕获视频，传递给navigator.mediaDevices.getUserMedia的约束条件包括ChromeMediaSource:'desktop'和audio:false。
+
+为了同时捕获桌面的音视频，传递给navigator.mediaDevcies.getUserMedia的约束条件需包括ChromeMediaSource:'desktop'，audio和video。但不应该包括ChromeMediaSourceId约束。
+
+```ts
+const constraints = {
+  audio: {
+    mandatory: {
+      chromeMediaSource: 'desktop'
+    }
+  },
+  video: {
+    mandatory: {
+      chromeMediaSource: 'desktop'
+    }
+  }
+}
+```
+
+## 方法
+
+### getSources(options)
+
+options:
+
+types:string[]，列出要捕获的桌面源类型的字符串数组，可用类型为screen和window。
+
+thumbnailSize:Size，媒体源缩略图应缩放到的尺寸大小，默认是150* 150，不需要缩略图时，设置宽度或高度为0，这将用于节省获取每个窗口和屏幕内容时的时间。
+
+fetchWindowsIcon:boolean，设置为true以启用提取窗口体表。默认为false。
+
+返回：Promise<DesktopCapturerSource[]>，每一个DesktopCapturerSource代表一个屏幕或一个可以被捕获的独立窗口。
+
+注意：在MacOS10.15以上的版本，捕获屏幕内容需要用户同意，可通过systemPreferences.getMediaAccessStatus检测是否授权。
+
+注意：由于存在基本限制，navigator.mediaDevices.getUserMedia无法在MacOS上进行音频捕获，因为要访问系统音频的应用需要一个签名内拓展，Chromium以及Electron扩展不提供这个。通过使用另一个MacOS应用捕获系统音频并将其通过虚拟音频输入设备来规避此限制是可能的。然后可以用navigator.mediaDevices.getUserMedia查询该虚拟设备。
+
