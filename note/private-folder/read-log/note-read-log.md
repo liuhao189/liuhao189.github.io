@@ -107,12 +107,14 @@ https://github.com/electron-userland/electron-builder/issues/2317
 
 https://www.jianshu.com/p/73e401c57823
 
-
 ## 谷歌软件工程
 
 https://qiangmzsx.github.io/Software-Engineering-at-Google/#/zh-cn/Chapter-1_What_Is_Software_Engineering/Chapter-1_What_Is_Software_Engineering
 
-
 ## Tauri 系列
 
 https://www.zhihu.com/column/c_1519079232848785408
+
+https://chromestatus.com/feature/5730701489995776
+
+https://chromestatus.com/feature/5375472036741120
