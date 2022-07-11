@@ -92,7 +92,6 @@ https://www.lifewire.com/understanding-compressed-memory-os-x-2260327
 https://www.imyfone.com/mac-tips/how-to-reduce-memory-usage-on-mac
 
 
-
 ## electron auto update failed
 
 https://philo.dev/electron-auto-update-explained/
@@ -108,3 +107,12 @@ https://github.com/electron-userland/electron-builder/issues/2317
 
 https://www.jianshu.com/p/73e401c57823
 
+
+## 谷歌软件工程
+
+https://qiangmzsx.github.io/Software-Engineering-at-Google/#/zh-cn/Chapter-1_What_Is_Software_Engineering/Chapter-1_What_Is_Software_Engineering
+
+
+## Tauri 系列
+
+https://www.zhihu.com/column/c_1519079232848785408
