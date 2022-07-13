@@ -463,8 +463,7 @@ myDB.friends.mapToClass(Friend);
 
 不适用于过滤的查询，Collection.filter，Collection.and，Collection.modify，Collection.Raw。
 
-值得注意的是，它不适用于任何钩子函数。Table.hook('creating')，Table.hook('update')，Table.hook(`reading`)，Table.hook(‘deleting’)。
-
+值得注意的是，它不适用于任何钩子函数。Table.hook('creating')，Table.hook('update')，Table.hook('reading')，Table.hook('deleting')。
 
 ### Add Items
 
