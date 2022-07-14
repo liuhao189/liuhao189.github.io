@@ -187,27 +187,27 @@
 // }
 // myDB.friends.mapToClass(Friend);
 // import Dexie from 'dexie';
-class MyDB extends Dexie {
-    // folders!: Dexie.Table<any>;
-    constructor() {
-        super('MyAppDB');
-        this.version(1).stores({
-            folders: '++id,&path'
-        });
-        // this.folders = this.table('folders');
-    }
-}
-const myDB = new MyDB();
-//@ts-ignore
-const Folder = myDB.folders.defineClass({
-    id: Number,
-    path: String,
-    desc: String
-});
-Folder.prototype.save = function () {
-    //@ts-ignore
-    return myDB.folders.put(this);
-};
+// class MyDB extends Dexie {
+//   // folders!: Dexie.Table<any>;
+//   constructor() {
+//     super('MyAppDB');
+//     this.version(1).stores({
+//       folders: '++id,&path'
+//     });
+//     // this.folders = this.table('folders');
+//   }
+// }
+// const myDB = new MyDB();
+// //@ts-ignore
+// const Folder = myDB.folders.defineClass({
+//   id: Number,
+//   path: String,
+//   desc: String
+// });
+// Folder.prototype.save = function () {
+//   //@ts-ignore
+//   return myDB.folders.put(this);
+// }
 // class Folder {
 //   path!: string
 //   desc!: string;
@@ -216,3 +216,28 @@ Folder.prototype.save = function () {
 //   }
 // }
 // myDB.folders.mapToClass(Folder);
+// import Dexie from "dexie";
+class FriendDataBase extends Dexie {
+    constructor() {
+        super('FriendDataBase', { chromeTransactionDurability: 'relaxed' });
+        this.version(1).stores({
+            friends: '++id,name,age,*tags'
+        });
+    }
+}
+const db = new FriendDataBase();
+// db.friends.hook('creating', (...args) => {
+//   console.log(args);
+// })
+let arr = [];
+for (let i = 0; i < 10; ++i) {
+    arr.push({
+        name: 'Hao',
+        age: 21,
+        tags: ['Good Person']
+    })
+}
+console.time('Default');
+db.friends.bulkAdd(arr).then(res => {
+    console.timeEnd('Default');
+});

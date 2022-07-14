@@ -239,32 +239,32 @@
 // myDB.friends.mapToClass(Friend);
 
 
-import Dexie from 'dexie';
+// import Dexie from 'dexie';
 
-class MyDB extends Dexie {
-  // folders!: Dexie.Table<any>;
+// class MyDB extends Dexie {
+//   // folders!: Dexie.Table<any>;
 
-  constructor() {
-    super('MyAppDB');
-    this.version(1).stores({
-      folders: '++id,&path'
-    });
-    // this.folders = this.table('folders');
-  }
-}
+//   constructor() {
+//     super('MyAppDB');
+//     this.version(1).stores({
+//       folders: '++id,&path'
+//     });
+//     // this.folders = this.table('folders');
+//   }
+// }
 
-const myDB = new MyDB();
-//@ts-ignore
-const Folder = myDB.folders.defineClass({
-  id: Number,
-  path: String,
-  desc: String
-});
+// const myDB = new MyDB();
+// //@ts-ignore
+// const Folder = myDB.folders.defineClass({
+//   id: Number,
+//   path: String,
+//   desc: String
+// });
 
-Folder.prototype.save = function () {
-  //@ts-ignore
-  return myDB.folders.put(this);
-}
+// Folder.prototype.save = function () {
+//   //@ts-ignore
+//   return myDB.folders.put(this);
+// }
 
 
 // class Folder {
@@ -277,4 +277,43 @@ Folder.prototype.save = function () {
 // }
 
 // myDB.folders.mapToClass(Folder);
+
+import Dexie, { Table } from "dexie";
+
+
+interface Friend {
+  id?: number;
+  name: string;
+  age: number;
+  tags: string[];
+}
+
+class FriendDataBase extends Dexie {
+  public friends!: Dexie.Table<Friend, number>;
+
+  public constructor() {
+    super('FriendDataBase', { chromeTransactionDurability: 'relaxed' });
+    this.version(1).stores({
+      friends: '++id,name,age,*tags'
+    });
+  }
+}
+
+const db = new FriendDataBase();
+// db.friends.hook('creating', (...args) => {
+//   console.log(args);
+// })
+console.time('Default');
+for (let i = 0; i < 10000; ++i) {
+  db.friends.add({
+    name: 'Hao',
+    age: 21,
+    tags: ['Good Person']
+  }).then(res => {
+    // console.log(res);
+  })
+}
+console.timeEnd('Default');
+
+
 
