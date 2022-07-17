@@ -603,7 +603,48 @@ keyPathArray，需要索引的keyPaths，需要是复合索引或主键。
 
 {keyPath1:val1,keyPath2:val2,...}，要筛选的条件。
 
+如果提供了string，或string数组，返回一个基于给定索引键或主键的where分句。返回的where分句可以用来声明如何从数据中取数据的方式。
+
+如果提供了一个包含筛选条件的对象，返回一个Collection。如果提供一个筛选条件，keyPath需要是索引的键。如果提供多个筛选条件，推荐使用复合索引，如果没有复合索引，至少一个keyPath关联到一个简单索引。如果Dexie,debug=true，并且没有包含所有keyPath的复合索引，会使用console.warn打印警告信息。
+
+```js
+const friends = await db.friends.where("name").equalsIgnoreCase('david').toArray();
+for(const friend of friends) {
+  console.log(`Found ` + friend.name);
+}
+// 两个条件，需要复合索引。这种方式也是效率比较高的方式，因为用到了索引。
+const davids = await db.friends.where(['name','age']).between(['Diavid',23],['Diavid',43],true ,true).toArray();
+//
+const david43 = await db.friends.where({name:'David',age:43}).first();
+//和下面的方式等效
+const david43 = await db.friends.get({name: 'David',age:43})
+```
+
+## db.transaction
+
+```js
+db.transaction(mode,tables,tx=>{
+  // Transcation Scope
+}).then(result=>{
+  //Transcation Committed
+}).catch(err=>{
+  //Transaction Failed
+})
+```
+mode: rw(read-write)，r(readonly)，rw!()，rw?()，r!()，r?()。
+
+tables: Table实例或table-names，可以提供table数组。
+
+callback：在transcation内执行的函数。
+
+tx参数：transcation的实例。
+
+
+
+
 
 ## 参考文档
 
 https://dexie.org/docs/API-Reference#quick-reference
+
+https://dexie.org/docs/Dexie/Dexie.transaction()#specify-reusage-of-parent-transaction

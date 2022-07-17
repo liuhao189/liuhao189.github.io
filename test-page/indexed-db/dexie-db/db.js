@@ -229,15 +229,27 @@ const db = new FriendDataBase();
 // db.friends.hook('creating', (...args) => {
 //   console.log(args);
 // })
-let arr = [];
-for (let i = 0; i < 10; ++i) {
-    arr.push({
-        name: 'Hao',
-        age: 21,
-        tags: ['Good Person']
-    })
-}
-console.time('Default');
-db.friends.bulkAdd(arr).then(res => {
-    console.timeEnd('Default');
+// console.time('Default');
+// for (let i = 0; i < 10000; ++i) {
+//   db.friends.add({
+//     name: 'Hao',
+//     age: 21,
+//     tags: ['Good Person']
+//   }).then(res => {
+//     // console.log(res);
+//   })
+// }
+// console.timeEnd('Default');
+db.friends.hook('reading', (...args) => {
+    console.log(args);
+});
+console.time(`Where-Time`);
+db.friends.where('id').equals(1).toArray().then(res => {
+    console.log(res);
+    console.timeEnd(`Where-Time`);
+});
+console.time('Between-time');
+db.friends.where({ name: 'Hao', id: 1 }).toArray().then(res => {
+    console.timeEnd(`Between-time`);
+    console.log(res);
 });
