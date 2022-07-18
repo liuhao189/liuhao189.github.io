@@ -639,8 +639,101 @@ callback：在transcation内执行的函数。
 
 tx参数：transcation的实例。
 
+### 复用父级事务
 
+当进入一个嵌套的事务，Dexie首先检查当前进行中的事务是否和要创建的事务的兼容性。嵌套的事务的store-names需要在父事务中呈现，如果嵌套的是rw模式，父事务也需要是rw模式。
 
+如果两个事务不兼容，默认的表现是嵌套的和父级的事务都会reject-promise。
+
+如果你的代码想要独立的事务（同进行中的事务独立），你可以添加!或?到模式的结尾。
+
+```js
+db.transcation('rw!',db.Table,()=>{
+  // 创建独立的事务
+});
+db.transcation('rw?',db.Table,()=>{
+  // 如果兼容，使用已存在的事务，否则，创建独立的事务
+})
+```
+
+!总是创建独立的顶层事务。
+
+?兼容则使用正在进行中的事务，否则创建一个顶层事务。
+
+### 使用!后缀的例子
+
+设想：你有一个Logger组件，该组件是独立的，只和db和logentries table有关，Logger组件的使用者不需要关心底层实现。在这些场景下，推荐使用!后缀。
+
+```js
+class LoggerClass {
+    log(msg) {
+        return db.transaction('rw!', db.logger, function () {
+            db.logger.add({ messgae: msg, date: new Date().getTime() });
+        });
+    }
+}
+const logger = new LoggerClass();
+db.transaction('rw', db.friends, () => {
+    logger.log(`Now adding hillary...`);
+    return db.friends.add({ name: 'Liu', age: 32, tags: ['Boy'] }).then(() => {
+        logger.log("Hillary wa added!");
+    });
+}).then(() => {
+    logger.log(`Transcation successfully commited!`);
+});
+```
+
+由于logger组件需要独立工作，不关心是否有活跃的事务。
+
+注意：这只是一个理论示例，在真实的场景中，建议使用专用的Dexie实例进行日志记录，而不是将其作为表。在这种情况下，你不必使用!后缀，因为只有logger组件才能知道数据库，永远不会有该数据库的持续事务。
+
+### 嵌套事务的实现细节
+
+嵌套事务在IndexedDB中没有现成的支持，Dexie通过在新的Dexie Transcation对象中重用IDBTranscation来模拟嵌套事务。嵌套事务将阻止对父事务执行的任何操作，知道嵌套事务提交。当没有更多的持续请求时，嵌套事务将提交。
+
+嵌套事务的提交仅意味着事务Promise将resolve，并且主事务上任何挂起的操作都可以恢复。在提交后父事务中发生的错误仍将终止整个事务，包括嵌套事务。
+
+### 并行事务
+
+Dexie.currentTranscation是一个Promise-Local静态属性，它确保始终返回绑定到启动操作的事务范围的事务实例。
+
+一旦你进入了一个事务，任何DB操作都将复用同一个事务。如果你想要再创建一个顶层的事务，可以使用!后缀或使用Dexie.ignoreTranscation()。
+
+```js
+db.transaction('rw', db.friends, () => {
+  db.transaction('r!', db.pets, () => {
+    //使用了!，并行事务
+  });
+  // Dexie.ignoreTranscation也可以创建并行的事务。
+  Dexie.ignoreTransaction(() => {
+    db.pets.toArray((res) => {
+      console.log(res);
+    })
+  });
+});
+```
+
+默认情况下，数据库操作是并行启动的，除非您等待上一个操作完成。
+
+```js
+function logCars() {
+    return db.transaction('r', db.cars, () => {
+        db.cars.where('brand').equals('Wu-Ling').each(car => {
+            console.log(car);
+        });
+        db.cars.where('brand').equals('Jin-Bei').each(car => {
+            console.log(car);
+        });
+    });
+}
+console.time('Into-Car');
+db.transaction('rw', db.cars, () => {
+    return db.cars.bulkAdd([{ brand: 'Wu-Ling' }, { brand: 'Jin-Bei' }]);
+}).then(res => {
+    console.timeEnd(`Into-Car`);
+    logCars();
+});
+```
 
 
 ## 参考文档

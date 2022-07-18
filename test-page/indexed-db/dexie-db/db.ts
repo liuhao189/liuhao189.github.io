@@ -288,13 +288,35 @@ interface Friend {
   tags: string[];
 }
 
+interface Logger {
+  id?: number;
+  messgae: string;
+  date: number;
+}
+
+interface Pet {
+  id?: number;
+  name: string;
+}
+
+interface Car {
+  id?: number;
+  brand: string;
+}
+
 class FriendDataBase extends Dexie {
   public friends!: Dexie.Table<Friend, number>;
+  public logger!: Dexie.Table<Logger, number>;
+  public pets!: Dexie.Table<Pet, number>;
+  public cars!: Dexie.Table<Car, number>;
 
   public constructor() {
     super('FriendDataBase', { chromeTransactionDurability: 'relaxed' });
-    this.version(1).stores({
-      friends: '++id,name,age,*tags'
+    this.version(4).stores({
+      friends: '++id,name,age,*tags',
+      logger: '++id',
+      pets: '++id',
+      cars: '++id,brand'
     });
   }
 }
@@ -314,18 +336,70 @@ const db = new FriendDataBase();
 //   })
 // }
 // console.timeEnd('Default');
-db.friends.hook('reading', (...args) => {
-  console.log(args);
-})
-console.time(`Where-Time`);
-db.friends.where('id').equals(1).toArray().then(res => {
-  console.log(res);
-  console.timeEnd(`Where-Time`);
+// db.friends.hook('reading', (obj) => {
+//   console.log('reading', obj);
+// });
+
+// console.time(`Where-Time`);
+// db.friends.where('id').equals(1).toArray().then(res => {
+//   console.log(res);
+//   console.timeEnd(`Where-Time`);
+// });
+
+// console.time('Between-time');
+// db.friends.where({ name: 'Hao', id: 1 }).toArray().then(res => {
+//   console.timeEnd(`Between-time`)
+//   console.log(res);
+// });
+
+// class LoggerClass {
+//   log(msg: string) {
+//     return db.transaction('rw!', db.logger, function () {
+//       db.logger.add({ messgae: msg, date: new Date().getTime() as number });
+//     })
+//   }
+// }
+
+
+// const logger = new LoggerClass();
+// db.transaction('rw', db.friends, () => {
+//   logger.log(`Now adding hillary...`);
+//   return db.friends.add({ name: 'Liu', age: 32, tags: ['Boy'] }).then(() => {
+//     logger.log("Hillary wa added!");
+//   });
+// }).then(() => {
+//   logger.log(`Transcation successfully commited!`)
+// })
+
+
+// db.transaction('rw', db.friends, () => {
+//   db.transaction('r!', db.pets, () => {
+//     //使用了!，并行事务
+//   });
+//   // Dexie.ignoreTranscation也可以创建并行的事务。
+//   Dexie.ignoreTransaction(() => {
+//     db.pets.toArray((res) => {
+//       console.log(res);
+//     })
+//   });
+// })
+
+function logCars() {
+  return db.transaction('r', db.cars, () => {
+    db.cars.where('brand').equals('Wu-Ling').each(car => {
+      console.log(car);
+    });
+
+    db.cars.where('brand').equals('Jin-Bei').each(car => {
+      console.log(car);
+    });
+  })
+}
+
+console.time('Into-Car');
+db.transaction('rw', db.cars, () => {
+  return db.cars.bulkAdd([{ brand: 'Wu-Ling' }, { brand: 'Jin-Bei' }]);
+}).then(res => {
+  console.timeEnd(`Into-Car`);
+  logCars();
 });
-
-console.time('Between-time');
-db.friends.where({ name: 'Hao', id: 1 }).toArray().then(res => {
-  console.timeEnd(`Between-time`)
-  console.log(res);
-})
-
