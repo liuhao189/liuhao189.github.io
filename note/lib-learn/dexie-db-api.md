@@ -631,7 +631,7 @@ db.transaction(mode,tables,tx=>{
   //Transaction Failed
 })
 ```
-mode: rw(read-write)，r(readonly)，rw!()，rw?()，r!()，r?()。
+mode: rw(read-write)，r(readonly)，rw!(开启独立事务)，rw?(和正在进行的事务不兼容才开启独立事务)，r!(开启独立只读事务)，r?(和正在进行的事务不兼容才开启独立只读事务)。
 
 tables: Table实例或table-names，可以提供table数组。
 
@@ -676,7 +676,7 @@ const logger = new LoggerClass();
 db.transaction('rw', db.friends, () => {
     logger.log(`Now adding hillary...`);
     return db.friends.add({ name: 'Liu', age: 32, tags: ['Boy'] }).then(() => {
-        logger.log("Hillary wa added!");
+        logger.log("Hillary was added!");
     });
 }).then(() => {
     logger.log(`Transcation successfully commited!`);
@@ -689,7 +689,7 @@ db.transaction('rw', db.friends, () => {
 
 ### 嵌套事务的实现细节
 
-嵌套事务在IndexedDB中没有现成的支持，Dexie通过在新的Dexie Transcation对象中重用IDBTranscation来模拟嵌套事务。嵌套事务将阻止对父事务执行的任何操作，知道嵌套事务提交。当没有更多的持续请求时，嵌套事务将提交。
+嵌套事务在IndexedDB中没有现成的支持，Dexie通过在新的Dexie Transcation对象中重用IDBTranscation来模拟嵌套事务。嵌套事务将阻止对父事务执行的任何操作，直到嵌套事务提交。当没有更多的持续请求时，嵌套事务将提交。
 
 嵌套事务的提交仅意味着事务Promise将resolve，并且主事务上任何挂起的操作都可以恢复。在提交后父事务中发生的错误仍将终止整个事务，包括嵌套事务。
 
@@ -733,6 +733,50 @@ db.transaction('rw', db.cars, () => {
     console.timeEnd(`Into-Car`);
     logCars();
 });
+```
+
+### Async和Await
+
+Dexie支持原生的Async和Await，也支持TS编译的Async和Await。
+
+```js
+await db.transaction('rw',db.friends,async() => {
+  let friendId = await db.friends.add({name: 'New Friend'});
+  let petId = await db.pets.add({name: "New Pet", kind: "snake"})
+})
+```
+
+## Dexie.on
+
+### storagemutated
+
+静态事件storagemutated是一个全局的底层事件，它会在写事务提交时触发。在同一个window，另一个window/Tab，web-worker，shared worker或service worker下，该事件都会触发。
+
+开发者一般不需要关注该事件，本文档主要解释在IndexedDB中如何收到DB写入操作的通知。ObservabilitySet包含受影响的索引和主键。
+
+该事件依赖于BroadcaseChannel API的支持。对于不支持的浏览器，需要自己添加message事件监听器来转发事件。
+
+### populate
+
+在db的生命周期中只触发一次，当db.open调用时DB不存在，object-store需要创建时。
+
+当更新数据库时，populate事件不会被触发。populate事件在db.open成功提交之前执行，如果发生了异常，整个DB将不会创建，同时db.open会失败。
+
+限制：当populate事件触发时，一个升级的事务正在执行。这意味着你不能调用任何异步APIS，否则升级事务会提交，DB会被创建。
+
+如果你想通过ajax或其它异步请求的内容来创建DB，你需要使用ready事件。
+
+
+### blocked
+
+blocked在db升级被其它tab或window保持对DB的连接时触发。在该事件被触发之前，其它窗口会收到versionchange事件，只有其它窗口不关闭连接时，blocked事件才会触发。
+
+默认情况下，Dexie会在接收到versionchange事件时，关闭数据库连接。如果其它窗口都使用Dexie，则一般不会出现block的情况。
+
+```js
+db.on('blcoked',()=>{
+  alert(`Database upgrading was blocked by another window.Please close down any other tabs or windows that has this page open`)
+})
 ```
 
 

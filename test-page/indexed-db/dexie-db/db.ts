@@ -278,7 +278,7 @@
 
 // myDB.folders.mapToClass(Folder);
 
-import Dexie, { Table } from "dexie";
+import Dexie, { ObservabilitySet, Table } from "dexie";
 
 
 interface Friend {
@@ -384,22 +384,28 @@ const db = new FriendDataBase();
 //   });
 // })
 
-function logCars() {
-  return db.transaction('r', db.cars, () => {
-    db.cars.where('brand').equals('Wu-Ling').each(car => {
-      console.log(car);
-    });
+// function logCars() {
+//   return db.transaction('r', db.cars, () => {
+//     db.cars.where('brand').equals('Wu-Ling').each(car => {
+//       console.log(car);
+//     });
 
-    db.cars.where('brand').equals('Jin-Bei').each(car => {
-      console.log(car);
-    });
-  })
-}
+//     db.cars.where('brand').equals('Jin-Bei').each(car => {
+//       console.log(car);
+//     });
+//   })
+// }
+
+Dexie.on('storagemutated', (changeParts: ObservabilitySet) => {
+  console.log(`Change-Parts`, changeParts);
+});
 
 console.time('Into-Car');
 db.transaction('rw', db.cars, () => {
   return db.cars.bulkAdd([{ brand: 'Wu-Ling' }, { brand: 'Jin-Bei' }]);
 }).then(res => {
   console.timeEnd(`Into-Car`);
-  logCars();
+  // logCars();
 });
+
+
