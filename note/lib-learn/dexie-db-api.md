@@ -769,7 +769,7 @@ await db.transaction('rw',db.friends,async() => {
 
 ### blocked
 
-blocked在db升级被其它tab或window保持对DB的连接时触发。在该事件被触发之前，其它窗口会收到versionchange事件，只有其它窗口不关闭连接时，blocked事件才会触发。
+blocked在db升级被其它tab或window保持对DB的连接Block时触发。在该事件被触发之前，其它窗口会收到versionchange事件，只有其它窗口不关闭连接时，blocked事件才会触发。
 
 默认情况下，Dexie会在接收到versionchange事件时，关闭数据库连接。如果其它窗口都使用Dexie，则一般不会出现block的情况。
 
@@ -778,6 +778,95 @@ db.on('blcoked',()=>{
   alert(`Database upgrading was blocked by another window.Please close down any other tabs or windows that has this page open`)
 })
 ```
+
+## DBCore
+
+DBCore是Dexie的中间件的一种实现方式，优于Hook API。这些是由于Hook API的原因：
+
+1、它允许injector在方法转调中执行异步操作。
+
+2、它允许injector在调用前和调用后执行操作。
+
+3、它涵盖了更多的使用场景，例如创建事务时，允许自定义索引代理。
+
+从Dexie 3.0开始，所有运行时的调用都通过DBCore来调用IndexedDB。Hooks API为了兼容Dexie2.0，也继续存在，但是Hook API的实现方式有所变化。内部通过DBCore的中间件实现。
+并不是所有的代码都通过DBCore来调用IndexedDB，数据库升级处理，打开数据库等都是直接使用IndexedDB。
+
+## Dexie.use 
+
+```js
+db.use({stack, name?, create});
+// stack:string StackType,目前只支持，dbcore
+// name string 中间件名称
+// create:Function， 中间件，接受一个DBCore实例，应该返回一个修改的DBCore实例。
+```
+
+注意：你提供的create方法，接收一个DBCore，需要返回一个新的并且实现了DBCore接口的对象。
+
+```js
+db.use({
+  stack: "dbcore", // The only stack supported so far.
+  name: "MyMiddleware", // Optional name of your middleware
+  create (downlevelDatabase) {
+    // Return your own implementation of DBCore:
+    return {
+      // Copy default implementation.
+      ...downlevelDatabase, 
+      // Override table method
+      table (tableName) {
+        // Call default table method
+        const downlevelTable = downlevelDatabase.table(tableName);
+        // Derive your own table from it:
+        return {
+          // Copy default table implementation:
+          ...downlevelTable,
+          // Override the mutate method:
+          mutate: req => {
+            // Copy the request object
+            const myRequest = {...req};
+            // Do things before mutate, then
+            // call downlevel mutate:
+            return downlevelTable.mutate(myRequest).then(res => {
+              // Do things after mutate
+              const myResponse = {...res};
+              // Then return your response:
+              return myResponse;
+            });
+          }
+        }
+      }
+    };
+  }
+});
+```
+
+本质上，所有的改变数据的操作都是面向批量的。bulkPut，bulkAdd，bulkDelete和deleteRange。目前这四个操作都通过mutate方法来实现。
+
+```ts
+export interface DBCore {
+    stack: 'dbcore';
+    //Transaction and Object Stores
+    transcation(tables:string[], mode: 'readwritre'|'readonly'):DBCoreTranscation;
+    //Utility methods
+    cmp(a:any, b:any) : number;
+    readonly MIN_KEY: any;
+    readonly MAX_KEY: any;
+    readonly schema: DBCoreSchema;
+    table(name:string): DBCoreTable
+}
+//DBCoreTable
+export interface DBCoreTable {
+  readonly name: string;
+  readonly schema: DBCoreTableSchema;
+
+  mutate(req: DBCoreMutateRequest):Promise<DBCoreMutateResponse>;
+  get(req:DBCoreGetRequest):Promise<any>;
+  getMany(req:DBCoreGetManyRequest):Promise<any[]>;
+  query(req:DBCoreOpenCursorRequest):Promise<DBCoreCursor|null>;
+  count(req:DBCoreCountRequest):Promise<number>;
+}
+```
+
 
 
 ## 参考文档

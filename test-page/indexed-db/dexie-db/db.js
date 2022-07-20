@@ -11,8 +11,31 @@ class FriendDataBase extends Dexie {
     }
 }
 const db = new FriendDataBase();
-Dexie.on('storagemutated', (changeParts) => {
-    console.log(`Change-Parts`, changeParts);
+db.use({
+    stack: 'dbcore',
+    name: 'my-middle',
+    create(downLevelDatabase) {
+        return {
+            ...downLevelDatabase,
+            table(tableName) {
+                const downlevelTable = downLevelDatabase.table(tableName);
+                return {
+                    ...downlevelTable,
+                    mutate: req => {
+                        const myRequest = { ...req };
+                        console.time(`Insert-Time`);
+                        console.log(myRequest);
+                        return downlevelTable.mutate(myRequest).then(res => {
+                            const myResponse = { ...res };
+                            console.log(myResponse);
+                            console.timeEnd(`Insert-Time`);
+                            return myResponse;
+                        });
+                    }
+                };
+            },
+        };
+    }
 });
 console.time('Into-Car');
 db.transaction('rw', db.cars, () => {
