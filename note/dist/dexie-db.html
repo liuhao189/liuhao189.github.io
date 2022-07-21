@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>DexieDB学习</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1648481422397">
+  <link rel="stylesheet" href="/note/note.css?ts=1658420171029">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -426,7 +426,7 @@
 <p>实现上，原始的DB对象通过Object.create的方法来浅拷贝到你绑定的类的实例上。</p>
 <p>这个功能只适用于Table.get，Table.toArray，Table.each，Collection.toArray()，Collection.each()，Collection.first()，Collection.last()。</p>
 <p>不适用于过滤的查询，Collection.filter，Collection.and，Collection.modify，Collection.Raw。</p>
-<p>值得注意的是，它不适用于任何钩子函数。Table.hook(&#39;creating&#39;)，Table.hook(&#39;update&#39;)，Table.hook(<code>reading</code>)，Table.hook(‘deleting’)。</p>
+<p>值得注意的是，它不适用于任何钩子函数。Table.hook(&#39;creating&#39;)，Table.hook(&#39;update&#39;)，Table.hook(&#39;reading&#39;)，Table.hook(&#39;deleting&#39;)。</p>
 <h3 id="add-items">Add Items</h3>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">myDB</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">firstName</span><span class="o">:</span> <span class="s1">&#39;White&#39;</span><span class="p">,</span><span class="nx">lastName</span><span class="o">:</span> <span class="s1">&#39;If&#39;</span><span class="p">,</span><span class="nx">yearOfBirth</span><span class="o">:</span> <span class="mi">1999</span><span class="p">,</span> <span class="nx">tags</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;one&#39;</span><span class="p">,</span><span class="s1">&#39;two&#39;</span><span class="p">,</span><span class="s1">&#39;three&#39;</span><span class="p">]});</span>
 </pre></div>

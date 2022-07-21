@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Dexie-DB-2</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1648481422397">
+  <link rel="stylesheet" href="/note/note.css?ts=1658420171029">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -436,7 +436,264 @@
 </pre></div>
 
 </code></pre>
+<h2 id="table-api">Table API</h2>
+<p>属性：</p>
+<p>1、name。</p>
+<p>2、schema。</p>
+<p>事件：</p>
+<p>1、hook(&#39;creating&#39;)，创建新数据时。</p>
+<p>2、hook(&#39;reading&#39;)，从DB中读取，将要发给调用者时。</p>
+<p>3、hook(&#39;updating&#39;)，从DB中更新数据时。</p>
+<p>4、hook(&#39;deleting&#39;)，从DB中删除数据时。</p>
+<p>方法：</p>
+<p>1、add，添加单条数据。</p>
+<p>2、bulkAdd，添加多条数据，传数组，为大量数据添加做了优化。</p>
+<p>3、bulkDelete，传递keys，为大量数据删除做了优化。</p>
+<p>4、bulkPut，传递数组，为大量数据更新做了优化。</p>
+<p>5、clear，删除所有数据。</p>
+<p>6、count，返回数据条数。</p>
+<p>7、defineClass，映射到JS的构造类。</p>
+<p>8、delete，删除数据，传递key。</p>
+<p>9、each，遍历表中的数据项。</p>
+<p>10、filter，JS过滤器应用到所有条目。</p>
+<p>11、get，通过主键读取对象。</p>
+<p>12、limit，按主键排序返回Collection，限制N条。</p>
+<p>13、mapToClass，映射到JS的构造类。</p>
+<p>14、orderBy，通过给定的索引排序。返回Collection。</p>
+<p>15、offset，返回一个Collection，前N条忽略。</p>
+<p>16、put，更新或插入数据。</p>
+<p>17、reverse，返回Collection，按主键倒序排。</p>
+<p>18、toArray，返回所有数据的数组。</p>
+<p>19、toCollection，返回所有数据的Collection。</p>
+<p>20、update，已存在的对象去更新。</p>
+<p>21、where，通过查询来得到数据。</p>
+<h2 id="table-where">Table.where</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">keyPathArray</span><span class="p">);</span>
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nx">keyPath1</span><span class="o">:</span><span class="nx">value1</span><span class="p">,</span><span class="nx">keyPath2</span><span class="o">:</span><span class="nx">value2</span><span class="p">,...});</span>
+</pre></div>
+
+</code></pre>
+<p>参数说明：</p>
+<p>indexOrPrimaryKey:string，索引或主键名，:id表示主键。</p>
+<p>keyPathArray，需要索引的keyPaths，需要是复合索引或主键。</p>
+<p>{keyPath1:val1,keyPath2:val2,...}，要筛选的条件。</p>
+<p>如果提供了string，或string数组，返回一个基于给定索引键或主键的where分句。返回的where分句可以用来声明如何从数据中取数据的方式。</p>
+<p>如果提供了一个包含筛选条件的对象，返回一个Collection。如果提供一个筛选条件，keyPath需要是索引的键。如果提供多个筛选条件，推荐使用复合索引，如果没有复合索引，至少一个keyPath关联到一个简单索引。如果Dexie,debug=true，并且没有包含所有keyPath的复合索引，会使用console.warn打印警告信息。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">const</span> <span class="nx">friends</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">).</span><span class="nx">equalsIgnoreCase</span><span class="p">(</span><span class="s1">&#39;david&#39;</span><span class="p">).</span><span class="nx">toArray</span><span class="p">();</span>
+<span class="k">for</span><span class="p">(</span><span class="kr">const</span> <span class="nx">friend</span> <span class="nx">of</span> <span class="nx">friends</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Found</span> <span class="err">`</span> <span class="o">+</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="c1">// 两个条件，需要复合索引。这种方式也是效率比较高的方式，因为用到了索引。</span>
+<span class="kr">const</span> <span class="nx">davids</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;age&#39;</span><span class="p">]).</span><span class="nx">between</span><span class="p">([</span><span class="s1">&#39;Diavid&#39;</span><span class="p">,</span><span class="mi">23</span><span class="p">],[</span><span class="s1">&#39;Diavid&#39;</span><span class="p">,</span><span class="mi">43</span><span class="p">],</span><span class="kc">true</span> <span class="p">,</span><span class="kc">true</span><span class="p">).</span><span class="nx">toArray</span><span class="p">();</span>
+<span class="c1">//</span>
+<span class="kr">const</span> <span class="nx">david43</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span><span class="s1">&#39;David&#39;</span><span class="p">,</span><span class="nx">age</span><span class="o">:</span><span class="mi">43</span><span class="p">}).</span><span class="nx">first</span><span class="p">();</span>
+<span class="c1">//和下面的方式等效</span>
+<span class="kr">const</span> <span class="nx">david43</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">get</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;David&#39;</span><span class="p">,</span><span class="nx">age</span><span class="o">:</span><span class="mi">43</span><span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="db-transaction">db.transaction</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="nx">mode</span><span class="p">,</span><span class="nx">tables</span><span class="p">,</span><span class="nx">tx</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="c1">// Transcation Scope</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">result</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="c1">//Transcation Committed</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="c1">//Transaction Failed</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>mode: rw(read-write)，r(readonly)，rw!(开启独立事务)，rw?(和正在进行的事务不兼容才开启独立事务)，r!(开启独立只读事务)，r?(和正在进行的事务不兼容才开启独立只读事务)。</p>
+<p>tables: Table实例或table-names，可以提供table数组。</p>
+<p>callback：在transcation内执行的函数。</p>
+<p>tx参数：transcation的实例。</p>
+<h3 id="-">复用父级事务</h3>
+<p>当进入一个嵌套的事务，Dexie首先检查当前进行中的事务是否和要创建的事务的兼容性。嵌套的事务的store-names需要在父事务中呈现，如果嵌套的是rw模式，父事务也需要是rw模式。</p>
+<p>如果两个事务不兼容，默认的表现是嵌套的和父级的事务都会reject-promise。</p>
+<p>如果你的代码想要独立的事务（同进行中的事务独立），你可以添加!或?到模式的结尾。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transcation</span><span class="p">(</span><span class="s1">&#39;rw!&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">Table</span><span class="p">,()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="c1">// 创建独立的事务</span>
+<span class="p">});</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">transcation</span><span class="p">(</span><span class="s1">&#39;rw?&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">Table</span><span class="p">,()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="c1">// 如果兼容，使用已存在的事务，否则，创建独立的事务</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<p>!总是创建独立的顶层事务。</p>
+<p>?兼容则使用正在进行中的事务，否则创建一个顶层事务。</p>
+<h3 id="-">使用!后缀的例子</h3>
+<p>设想：你有一个Logger组件，该组件是独立的，只和db和logentries table有关，Logger组件的使用者不需要关心底层实现。在这些场景下，推荐使用!后缀。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kr">class</span> <span class="nx">LoggerClass</span> <span class="p">{</span>
+    <span class="nx">log</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw!&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">logger</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">db</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span> <span class="nx">messgae</span><span class="o">:</span> <span class="nx">msg</span><span class="p">,</span> <span class="nx">date</span><span class="o">:</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">()</span> <span class="p">});</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="kr">const</span> <span class="nx">logger</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">LoggerClass</span><span class="p">();</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Now</span> <span class="nx">adding</span> <span class="nx">hillary</span><span class="p">...</span><span class="err">`</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;Liu&#39;</span><span class="p">,</span> <span class="nx">age</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span> <span class="nx">tags</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;Boy&#39;</span><span class="p">]</span> <span class="p">}).</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Hillary was added!&quot;</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Transcation</span> <span class="nx">successfully</span> <span class="nx">commited</span><span class="o">!</span><span class="err">`</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>由于logger组件需要独立工作，不关心是否有活跃的事务。</p>
+<p>注意：这只是一个理论示例，在真实的场景中，建议使用专用的Dexie实例进行日志记录，而不是将其作为表。在这种情况下，你不必使用!后缀，因为只有logger组件才能知道数据库，永远不会有该数据库的持续事务。</p>
+<h3 id="-">嵌套事务的实现细节</h3>
+<p>嵌套事务在IndexedDB中没有现成的支持，Dexie通过在新的Dexie Transcation对象中重用IDBTranscation来模拟嵌套事务。嵌套事务将阻止对父事务执行的任何操作，直到嵌套事务提交。当没有更多的持续请求时，嵌套事务将提交。</p>
+<p>嵌套事务的提交仅意味着事务Promise将resolve，并且主事务上任何挂起的操作都可以恢复。在提交后父事务中发生的错误仍将终止整个事务，包括嵌套事务。</p>
+<h3 id="-">并行事务</h3>
+<p>Dexie.currentTranscation是一个Promise-Local静态属性，它确保始终返回绑定到启动操作的事务范围的事务实例。</p>
+<p>一旦你进入了一个事务，任何DB操作都将复用同一个事务。如果你想要再创建一个顶层的事务，可以使用!后缀或使用Dexie.ignoreTranscation()。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;r!&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">//使用了!，并行事务</span>
+  <span class="p">});</span>
+  <span class="c1">// Dexie.ignoreTranscation也可以创建并行的事务。</span>
+  <span class="nx">Dexie</span><span class="p">.</span><span class="nx">ignoreTransaction</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">.</span><span class="nx">toArray</span><span class="p">((</span><span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+    <span class="p">})</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>默认情况下，数据库操作是并行启动的，除非您等待上一个操作完成。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">logCars</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">cars</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nx">cars</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;brand&#39;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="s1">&#39;Wu-Ling&#39;</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="nx">car</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">car</span><span class="p">);</span>
+        <span class="p">});</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nx">cars</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;brand&#39;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="s1">&#39;Jin-Bei&#39;</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="nx">car</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">car</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">time</span><span class="p">(</span><span class="s1">&#39;Into-Car&#39;</span><span class="p">);</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span> <span class="nx">db</span><span class="p">.</span><span class="nx">cars</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nx">cars</span><span class="p">.</span><span class="nx">bulkAdd</span><span class="p">([{</span> <span class="nx">brand</span><span class="o">:</span> <span class="s1">&#39;Wu-Ling&#39;</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">brand</span><span class="o">:</span> <span class="s1">&#39;Jin-Bei&#39;</span> <span class="p">}]);</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">timeEnd</span><span class="p">(</span><span class="err">`</span><span class="nx">Into</span><span class="o">-</span><span class="nx">Car</span><span class="err">`</span><span class="p">);</span>
+    <span class="nx">logCars</span><span class="p">();</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h3 id="async-await">Async和Await</h3>
+<p>Dexie支持原生的Async和Await，也支持TS编译的Async和Await。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span><span class="nx">async</span><span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">friendId</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;New Friend&#39;</span><span class="p">});</span>
+  <span class="kd">let</span> <span class="nx">petId</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">pets</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;New Pet&quot;</span><span class="p">,</span> <span class="nx">kind</span><span class="o">:</span> <span class="s2">&quot;snake&quot;</span><span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="dexie-on">Dexie.on</h2>
+<h3 id="storagemutated">storagemutated</h3>
+<p>静态事件storagemutated是一个全局的底层事件，它会在写事务提交时触发。在同一个window，另一个window/Tab，web-worker，shared worker或service worker下，该事件都会触发。</p>
+<p>开发者一般不需要关注该事件，本文档主要解释在IndexedDB中如何收到DB写入操作的通知。ObservabilitySet包含受影响的索引和主键。</p>
+<p>该事件依赖于BroadcaseChannel API的支持。对于不支持的浏览器，需要自己添加message事件监听器来转发事件。</p>
+<h3 id="populate">populate</h3>
+<p>在db的生命周期中只触发一次，当db.open调用时DB不存在，object-store需要创建时。</p>
+<p>当更新数据库时，populate事件不会被触发。populate事件在db.open成功提交之前执行，如果发生了异常，整个DB将不会创建，同时db.open会失败。</p>
+<p>限制：当populate事件触发时，一个升级的事务正在执行。这意味着你不能调用任何异步APIS，否则升级事务会提交，DB会被创建。</p>
+<p>如果你想通过ajax或其它异步请求的内容来创建DB，你需要使用ready事件。</p>
+<h3 id="blocked">blocked</h3>
+<p>blocked在db升级被其它tab或window保持对DB的连接Block时触发。在该事件被触发之前，其它窗口会收到versionchange事件，只有其它窗口不关闭连接时，blocked事件才会触发。</p>
+<p>默认情况下，Dexie会在接收到versionchange事件时，关闭数据库连接。如果其它窗口都使用Dexie，则一般不会出现block的情况。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;blcoked&#39;</span><span class="p">,()</span><span class="o">=&gt;</span><span class="p">{</span>
+  <span class="nx">alert</span><span class="p">(</span><span class="err">`</span><span class="nx">Database</span> <span class="nx">upgrading</span> <span class="nx">was</span> <span class="nx">blocked</span> <span class="nx">by</span> <span class="nx">another</span> <span class="nb">window</span><span class="p">.</span><span class="nx">Please</span> <span class="nx">close</span> <span class="nx">down</span> <span class="nx">any</span> <span class="nx">other</span> <span class="nx">tabs</span> <span class="nx">or</span> <span class="nx">windows</span> <span class="nx">that</span> <span class="nx">has</span> <span class="k">this</span> <span class="nx">page</span> <span class="nx">open</span><span class="err">`</span><span class="p">)</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="dbcore">DBCore</h2>
+<p>DBCore是Dexie的中间件的一种实现方式，优于Hook API。这些是由于Hook API的原因：</p>
+<p>1、它允许injector在方法转调中执行异步操作。</p>
+<p>2、它允许injector在调用前和调用后执行操作。</p>
+<p>3、它涵盖了更多的使用场景，例如创建事务时，允许自定义索引代理。</p>
+<p>从Dexie 3.0开始，所有运行时的调用都通过DBCore来调用IndexedDB。Hooks API为了兼容Dexie2.0，也继续存在，但是Hook API的实现方式有所变化。内部通过DBCore的中间件实现。<br>并不是所有的代码都通过DBCore来调用IndexedDB，数据库升级处理，打开数据库等都是直接使用IndexedDB。</p>
+<h2 id="dexie-use">Dexie.use</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">use</span><span class="p">({</span><span class="nx">stack</span><span class="p">,</span> <span class="nx">name</span><span class="o">?</span><span class="p">,</span> <span class="nx">create</span><span class="p">});</span>
+<span class="c1">// stack:string StackType,目前只支持，dbcore</span>
+<span class="c1">// name string 中间件名称</span>
+<span class="c1">// create:Function， 中间件，接受一个DBCore实例，应该返回一个修改的DBCore实例。</span>
+</pre></div>
+
+</code></pre>
+<p>注意：你提供的create方法，接收一个DBCore，需要返回一个新的并且实现了DBCore接口的对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">use</span><span class="p">({</span>
+  <span class="nx">stack</span><span class="o">:</span> <span class="s2">&quot;dbcore&quot;</span><span class="p">,</span> <span class="c1">// The only stack supported so far.</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;MyMiddleware&quot;</span><span class="p">,</span> <span class="c1">// Optional name of your middleware</span>
+  <span class="nx">create</span> <span class="p">(</span><span class="nx">downlevelDatabase</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Return your own implementation of DBCore:</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="c1">// Copy default implementation.</span>
+      <span class="p">...</span><span class="nx">downlevelDatabase</span><span class="p">,</span> 
+      <span class="c1">// Override table method</span>
+      <span class="nx">table</span> <span class="p">(</span><span class="nx">tableName</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Call default table method</span>
+        <span class="kr">const</span> <span class="nx">downlevelTable</span> <span class="o">=</span> <span class="nx">downlevelDatabase</span><span class="p">.</span><span class="nx">table</span><span class="p">(</span><span class="nx">tableName</span><span class="p">);</span>
+        <span class="c1">// Derive your own table from it:</span>
+        <span class="k">return</span> <span class="p">{</span>
+          <span class="c1">// Copy default table implementation:</span>
+          <span class="p">...</span><span class="nx">downlevelTable</span><span class="p">,</span>
+          <span class="c1">// Override the mutate method:</span>
+          <span class="nx">mutate</span><span class="o">:</span> <span class="nx">req</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// Copy the request object</span>
+            <span class="kr">const</span> <span class="nx">myRequest</span> <span class="o">=</span> <span class="p">{...</span><span class="nx">req</span><span class="p">};</span>
+            <span class="c1">// Do things before mutate, then</span>
+            <span class="c1">// call downlevel mutate:</span>
+            <span class="k">return</span> <span class="nx">downlevelTable</span><span class="p">.</span><span class="nx">mutate</span><span class="p">(</span><span class="nx">myRequest</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+              <span class="c1">// Do things after mutate</span>
+              <span class="kr">const</span> <span class="nx">myResponse</span> <span class="o">=</span> <span class="p">{...</span><span class="nx">res</span><span class="p">};</span>
+              <span class="c1">// Then return your response:</span>
+              <span class="k">return</span> <span class="nx">myResponse</span><span class="p">;</span>
+            <span class="p">});</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p>本质上，所有的改变数据的操作都是面向批量的。bulkPut，bulkAdd，bulkDelete和deleteRange。目前这四个操作都通过mutate方法来实现。</p>
+<pre><code class="lang-ts"><div class="highlight"><pre><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">DBCore</span> <span class="p">{</span>
+    <span class="nx">stack</span><span class="o">:</span> <span class="s1">&#39;dbcore&#39;</span><span class="p">;</span>
+    <span class="c1">//Transaction and Object Stores</span>
+    <span class="nx">transcation</span><span class="p">(</span><span class="nx">tables</span>:<span class="kt">string</span><span class="p">[],</span> <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;readwritre&#39;</span><span class="o">|</span><span class="s1">&#39;readonly&#39;</span><span class="p">)</span><span class="o">:</span><span class="nx">DBCoreTranscation</span><span class="p">;</span>
+    <span class="c1">//Utility methods</span>
+    <span class="nx">cmp</span><span class="p">(</span><span class="nx">a</span>:<span class="kt">any</span><span class="p">,</span> <span class="nx">b</span>:<span class="kt">any</span><span class="p">)</span> <span class="o">:</span> <span class="kt">number</span><span class="p">;</span>
+    <span class="nx">readonly</span> <span class="nx">MIN_KEY</span>: <span class="kt">any</span><span class="p">;</span>
+    <span class="nx">readonly</span> <span class="nx">MAX_KEY</span>: <span class="kt">any</span><span class="p">;</span>
+    <span class="nx">readonly</span> <span class="nx">schema</span>: <span class="kt">DBCoreSchema</span><span class="p">;</span>
+    <span class="nx">table</span><span class="p">(</span><span class="nx">name</span>:<span class="kt">string</span><span class="p">)</span><span class="o">:</span> <span class="nx">DBCoreTable</span>
+<span class="p">}</span>
+<span class="c1">//DBCoreTable</span>
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">DBCoreTable</span> <span class="p">{</span>
+  <span class="nx">readonly</span> <span class="nx">name</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">readonly</span> <span class="nx">schema</span>: <span class="kt">DBCoreTableSchema</span><span class="p">;</span>
+
+  <span class="nx">mutate</span><span class="p">(</span><span class="nx">req</span>: <span class="kt">DBCoreMutateRequest</span><span class="p">)</span><span class="o">:</span><span class="nx">Promise</span><span class="o">&lt;</span><span class="nx">DBCoreMutateResponse</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="nx">get</span><span class="p">(</span><span class="nx">req</span>:<span class="kt">DBCoreGetRequest</span><span class="p">)</span><span class="o">:</span><span class="nx">Promise</span><span class="o">&lt;</span><span class="nx">any</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="nx">getMany</span><span class="p">(</span><span class="nx">req</span>:<span class="kt">DBCoreGetManyRequest</span><span class="p">)</span><span class="o">:</span><span class="nx">Promise</span><span class="o">&lt;</span><span class="nx">any</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="nx">query</span><span class="p">(</span><span class="nx">req</span>:<span class="kt">DBCoreOpenCursorRequest</span><span class="p">)</span><span class="o">:</span><span class="nx">Promise</span><span class="o">&lt;</span><span class="nx">DBCoreCursor</span><span class="o">|</span><span class="kc">null</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="nx">count</span><span class="p">(</span><span class="nx">req</span>:<span class="kt">DBCoreCountRequest</span><span class="p">)</span><span class="o">:</span><span class="nx">Promise</span><span class="o">&lt;</span><span class="kt">number</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
 <h2 id="-">参考文档</h2>
 <p><a href="https://dexie.org/docs/API-Reference#quick-reference">https://dexie.org/docs/API-Reference#quick-reference</a></p>
+<p><a href="https://dexie.org/docs/Dexie/Dexie.transaction()#specify-reusage-of-parent-transaction">https://dexie.org/docs/Dexie/Dexie.transaction()#specify-reusage-of-parent-transaction</a></p>
 </body>
 </html>

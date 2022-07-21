@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dexie复杂查询的算法</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1658420171029">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="dexie-">Dexie复杂查询的算法</h1>
+<h2 id="whereclause-anyof">WhereClause.anyOf</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">indexOrPrimKey</span><span class="p">).</span><span class="nx">anyof</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> 
+<span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">indexOrPrimKey</span><span class="p">).</span><span class="nx">anyOf</span><span class="p">(</span><span class="nx">key1</span><span class="p">,</span><span class="nx">key2</span><span class="p">,</span><span class="nx">keyN</span><span class="p">,...)</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">参数</h2>
+<p>indexOrPrimKey:string，索引名或主键名。<br>array：要查找的key的数组。<br>key1，key2，keyN：要查找的key。</p>
+<h2 id="-">返回</h2>
+<p>返回Collection。</p>
+<h2 id="-">实现细节</h2>
+<p>这个方法是在标准indexedDB-API之上的扩展，详细的实现方式在这篇文章有介绍。<a href="https://www.codeproject.com/Articles/744986/How-to-do-some-magic-with-indexedDB">https://www.codeproject.com/Articles/744986/How-to-do-some-magic-with-indexedDB</a></p>
+<h1 id="-indexeddb-">如何使用IndexedDB来做一些复杂查询</h1>
+<h2 id="-">介绍</h2>
+<p>使用原生的IndexedDB的API，可以执行不区分大小写的搜索，逻辑OR操作，键数组匹配等。本文主要介绍indexedDB一些隐藏的功能。我在写Dexie.js时，发现了IDBCursor的一些隐藏能力。我将这些算法称为Dexie算法，本文将揭示它们是如何工作的。</p>
+<h2 id="-">背景</h2>
+<p>IndexedDB是您在浏览器中需要本地存储大量数据使用的最合适的API。</p>
+<h3 id="indexeddb-">IndexedDB的优点</h3>
+<p>IndexedDB是一个NOSQL的数据库，支持事务，读写锁和索引。它的事务支持使其可以在所有Web场景中使用。例如页面重新加载，打开多个Tab。</p>
+<p>Tables称为Object Stores，包含JS对象而不是记录。在Object-Store中你可以添加JS对象，区别于SQL的是，你不必事先声明Table的列名称及其属性。如果你想要通过非主键列搜索对象，你需要设置该列为索引。</p>
+<p>由于它简化了索引API，浏览器厂商可以从头开始实现它。事务，数据库版本和初始化是IndexedDB令人印象最深刻的地方，它经过深思熟虑和设计。</p>
+<h3 id="indexeddb-">IndexedDB的限制</h3>
+<p>相比SQL数据库，有很多限制，比如：没有外键，没有存储过程，没有视图等。但是最重要的限制是查询的支持少。</p>
+<p>IndexedDB原生只支持：</p>
+<p>1、IDBKeyRange.only，全匹配，大小写敏感。<br>2、IDBKeyRange.bound，找到range范围内的所有数据。<br>3、IDBKeyRange.upperBound，找到比给定key小的所有数据。<br>4、IDBKeyRange.lowerBound，找到比给定key大的所有数据。</p>
+<p>无法做到以下的查询方式：<br>1、大小写敏感的搜索。<br>2、类似SQL IN (&#39;a&#39;,&#39;b&#39;,&#39;c&#39;,&#39;d&#39;)的搜索。<br>3、查询包含字符子串的数据，类似SQL LIKE。<br>4、逻辑上的OR 和 AND。</p>
+<h2 id="-any-of-a-b-c-">如何实现 any of([a,b,c])</h2>
+<p>遍历IndexedDB的Object-Store中的所有数据，可以调用IDBObjectStore或IDBIndex实例上的openCursor方法。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">let</span> <span class="nx">transcation</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">transcation</span><span class="p">([</span><span class="s1">&#39;friends&#39;</span><span class="p">]);</span>
+<span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="nx">trans</span><span class="p">.</span><span class="nx">objectSTore</span><span class="p">(</span><span class="s2">&quot;friends&quot;</span><span class="p">).</span><span class="nx">index</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">cursorReq</span> <span class="o">=</span> <span class="nx">index</span><span class="p">.</span><span class="nx">openCursor</span><span class="p">();</span>
+
+<span class="nx">cursorReq</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">cursor</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">));</span>
+        <span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">();</span>    
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// 遍历完成 </span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>cursor.continue可以指定要前进到的下一个键的值。如果调用下面的代码</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">(</span><span class="s1">&#39;David&#39;</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>下一次onsuccess时cursor会指向David的记录。该API要求游标必须以索引相同的排列顺序定位在等于或大于指定键的第一条记录上。</p>
+<p>所以如果我们想找到姓名在[&#39;David&#39;，&#39;Daniel&#39;，&#39;Zlatan&#39;]中的所有人，我们首先需要sort该数组为[&#39;Daniel&#39;，David&#39;，&#39;Zlatan&#39;]。然后做：</p>
+<p>1、call  cursor.continue(&#39;Daniel&#39;)<br>2、onsuccess，检查cursor.key==&#39;Daniel&#39;，如果是，将cursor.value包含到结果中，调用cursor.continue()。<br>3、call cursor.continue(&#39;David&#39;)<br>4、....<br>5、call cursor.continue(&#39;Zlatan&#39;)<br>6、onsuccess，如果cursor.key==&#39;Zlatan&#39;，包含cursor.value到结果中，并调用cursor.continue。如果不等于Zlatan，我们可以结束遍历并返回了。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">equalsAnyOf</span><span class="p">(</span><span class="nx">keysToFind</span><span class="p">,</span> <span class="nx">onfound</span><span class="p">,</span> <span class="nx">onfinish</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">set</span> <span class="o">=</span> <span class="nx">keysToFind</span><span class="p">.</span><span class="nx">sort</span><span class="p">();</span>
+    <span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">cursorReq</span> <span class="o">=</span> <span class="nx">index</span><span class="p">.</span><span class="nx">openCursor</span><span class="p">();</span>
+    <span class="nx">cursorReq</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">ev</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">cursor</span><span class="p">)</span> <span class="p">{</span> <span class="nx">onfinish</span><span class="p">();</span><span class="k">return</span><span class="p">;}</span>
+        <span class="kd">let</span> <span class="nx">key</span> <span class="o">=</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">key</span><span class="p">;</span>
+        <span class="k">while</span><span class="p">(</span><span class="nx">key</span> <span class="o">&gt;</span> <span class="nx">set</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="p">{</span>
+            <span class="o">++</span><span class="nx">i</span><span class="p">;</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">i</span><span class="o">===</span><span class="nx">set</span><span class="p">.</span><span class="nx">length</span><span class="p">){</span>
+                <span class="nx">onfinish</span><span class="p">();</span>
+                <span class="k">return</span><span class="p">;</span>            
+            <span class="p">}</span>        
+        <span class="p">}</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">key</span> <span class="o">===</span> <span class="nx">set</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="p">{</span>
+            <span class="nx">onfound</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+            <span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">();</span>        
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+           <span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">(</span><span class="nx">set</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>                    
+        <span class="p">}</span>                            
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">大小写不敏感的搜索实现</h2>
+<p>大小写不敏感的搜索是很多人期望数据库支持的功能。Dexie.js使用与IDBCursor.continue(key)的类似方式来实现该功能。</p>
+<p>如果我们想在friends表中查找大小写不敏感的david。最简单的方式是，创建一个包含所有大小写可能的david的数组，让使用上述SQL IN的方式查找即可。组合的数量会随着正在查找的值的长度指数级增长。这里有一个技巧，由于cursor.continue将按排列顺序落在下一条记录上。这可以揭示当落在不匹配的键上时，我们可以跳过哪些组合。</p>
+<p>具体的算法：先找到可能的最小的&#39;David&#39;的值，应该是DAVID(大写的在前面)。如果DB中没有&#39;DAVID&#39;，首先检查我们找到的值，然后从该值中，得出下一个要搜索的DAVId变体。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">findIgnoreCaseAlgorithm</span><span class="p">(</span><span class="nx">needle</span><span class="p">,</span> <span class="nx">onfound</span><span class="p">,</span> <span class="nx">onfinish</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">upperNeedle</span> <span class="o">=</span> <span class="nx">needle</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+    <span class="kd">let</span> <span class="nx">lowerNeedle</span> <span class="o">=</span> <span class="nx">needle</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">();</span>
+    <span class="kd">let</span> <span class="nx">cursorReq</span> <span class="o">=</span> <span class="nx">index</span><span class="p">.</span><span class="nx">openCursor</span><span class="p">();</span>
+    <span class="nx">cursorReq</span><span class="p">.</span><span class="nx">onsuccess</span><span class="o">=</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">cursor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// no more data</span>
+            <span class="nx">onfinish</span><span class="p">();</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kd">let</span> <span class="nx">key</span> <span class="o">=</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">key</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="o">!==</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">();</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kd">let</span> <span class="nx">lowerKey</span> <span class="o">=</span> <span class="nx">key</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">();</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">lowerKey</span> <span class="o">===</span> <span class="nx">lowerNeedle</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">onfound</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+            <span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="kd">let</span> <span class="nx">nextNeedle</span> <span class="o">=</span> <span class="nx">nextCasing</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">lowerKey</span><span class="p">,</span> <span class="nx">upperNeedle</span><span class="p">,</span> <span class="nx">lowerNeedle</span><span class="p">);</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">nextNeedle</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">cursor</span><span class="p">.</span><span class="k">continue</span><span class="p">(</span><span class="nx">nextNeedle</span><span class="p">)</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">onfinish</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-x-">以X开头的字符串的搜索</h2>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">startsWithIgnoreCase</span><span class="p">(</span><span class="s1">&#39;da&#39;</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>和上面大小写不敏搜索的实现方式类似，只是将if(lowerKey===lowerNeedle){...}改为if(lowerKey.indexOf(lowerNeedle)===0){...}。</p>
+<h2 id="-or-">逻辑OR的实现方式</h2>
+<p>IndexedDB可以实现并行的查询，我们可以并行发起多个查询，只有一件事需要关注，那就是数据去重。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">equalsIgnoreCase</span><span class="p">(</span><span class="s1">&#39;david&#39;</span><span class="p">).</span><span class="nx">or</span><span class="p">(</span><span class="s1">&#39;shoeSize&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">40</span><span class="p">).</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">logical_or</span><span class="p">(</span><span class="nx">index1</span><span class="p">,</span> <span class="nx">keyRange1</span><span class="p">,</span> <span class="nx">index2</span><span class="p">,</span> <span class="nx">keyRange2</span><span class="p">,</span> <span class="nx">onfound</span><span class="p">,</span> <span class="nx">onfinish</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">cursorReq1</span> <span class="o">=</span> <span class="nx">index1</span><span class="p">.</span><span class="nx">openCursor</span><span class="p">(</span><span class="nx">keyRange1</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">cursorReq2</span> <span class="o">=</span> <span class="nx">index2</span><span class="p">.</span><span class="nx">openCursor</span><span class="p">(</span><span class="nx">keyRange2</span><span class="p">);</span>
+    <span class="nx">assert</span><span class="p">(</span><span class="nx">index1</span><span class="p">.</span><span class="nx">objectStore</span><span class="o">===</span><span class="nx">index2</span><span class="p">.</span><span class="nx">objectStore</span><span class="p">);</span>
+
+    <span class="kd">let</span> <span class="nx">primKey</span> <span class="o">=</span> <span class="nx">index1</span><span class="p">.</span><span class="nx">objectSTore</span><span class="p">.</span><span class="nx">keyPath</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">set</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="kd">let</span> <span class="nx">resolved</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="kd">function</span> <span class="nx">complete</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">++</span><span class="nx">resolved</span> <span class="o">===</span><span class="mi">2</span><span class="p">)</span> <span class="nx">onfinish</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">union</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">key</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">item</span><span class="p">[</span><span class="nx">primKey</span><span class="p">]);</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">set</span><span class="p">.</span><span class="nx">hasOwnPerperty</span><span class="p">(</span><span class="nx">key</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">set</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="nx">onfound</span><span class="p">(</span><span class="nx">item</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nx">cursorReq1</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="p">(</span><span class="nx">ev</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">cursor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">union</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">complete</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+     <span class="nx">cursorReq2</span><span class="p">.</span><span class="nx">onsuccess</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">cursor</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">result</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">cursor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">union</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">complete</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>当使用并行的OR操作时，结果的顺序可能不符合要求，需要在返回前sort一下结果数组。</p>
+<h2 id="-and">逻辑AND</h2>
+<p>逻辑AND可以通过IndexedDB的复合索引来实现。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">store</span><span class="p">.</span><span class="nx">createIndex</span><span class="p">(</span><span class="s1">&#39;nameAndShoeSize&#39;</span><span class="p">,[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;shoeSize&#39;</span><span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<p>在IndexedDB中并没有任何技巧来模拟逻辑AND，只能使用JS filter方法。只要你选择地第一个过滤器可以过滤掉大多数数据，性能表现也没那么差。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">equalsIgnoreCase</span><span class="p">(</span><span class="s1">&#39;david&#39;</span><span class="p">).</span><span class="nx">and</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">friend</span><span class="p">){</span> <span class="k">return</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">shoeSize</span> <span class="o">&gt;</span> <span class="mi">40</span> <span class="p">}).</span>
+    <span class="p">.</span><span class="nx">toArray</span><span class="p">((</span><span class="nx">res</span><span class="p">)</span><span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+    <span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.codeproject.com/Articles/744986/How-to-do-some-magic-with-indexedDB">https://www.codeproject.com/Articles/744986/How-to-do-some-magic-with-indexedDB</a></p>
+</body>
+</html>
