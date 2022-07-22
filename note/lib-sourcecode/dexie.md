@@ -1,5 +1,220 @@
 # Dexie复杂查询的算法
 
+## WhereClause
+
+表示Index或PrimaryKey的过滤条件。
+
+```js
+db.friends.where('shoeSize').between(40,45).count(function(count)=>{
+    console.log(`I have ${count} friends with the shoe size between 40 and 45`)
+})
+```
+
+## WhereClause.above
+
+返回Collection，index的值above给定的值。
+
+## WhereClause.aboveOrEqual
+
+返回Collection，index的值above或equal给定的值。
+
+## WhereClause.anyOf
+
+返回Collection，index的值包含在指定的数组中。
+
+## WhereClause.anyOfIgnoreCase
+
+返回Collection，index的值包含在指定的数组中，忽略大小写。
+
+## WhereClause.below
+
+返回Collection，跟above类似
+
+## WhereClause.belowOrEqual
+
+返回Collection，跟AboveOrEqual类似。
+
+## WhereClause.between
+
+返回Collection，在给定的Range之间的数据。
+
+## equals
+
+返回Collection，index的值等于给定的值。
+
+## WhereClause.equalsIgnoreCase
+
+返回Collection，index的值给定的值，忽略大小写。
+
+## inAnyRange
+
+返回Collection，index的值在给定的任意Range中。
+
+## noneOf
+
+返回Collection，不在给定的key中。
+
+## notEqual
+
+返回Collection，不等于给定的值。
+
+## startsWith & startsWithIgnoreCase
+
+返回Collection，以给定的字符子串开头。
+
+## startWithAnyOf & startsWithAnyOfIgnoerCase
+
+返回Collection，不以给定的值开头。
+
+# Collection
+
+表示数据库对象的集合，请注意，它本身不包含任何对象。它会为如何执行数据库查询提供元数据，调用返回Promise的方法时，将执行查询。
+eg：toArray，keys，count，each等。
+
+## 构造函数
+
+Collection的构造函数是私有的。一般是WhereClause方法和Table的一些方法返回Collection实例。
+
+```js
+//each
+let collection = db.friends.where('name').equalsIgnoreCase('david');
+collection.each((friend)=>{
+    console.log("Found：" + friend.name );
+});
+//toArray
+db.friends.where('name').startsWithIgnoreCase('d').toArray((friends) => {
+    console.log(`Found：` + friends.length);
+});
+//offset/limit
+db.friends.where('age').above(23).offset(10).limit(10).toArray((friends) => {
+    console.log(friends);
+});
+// count
+db.friends.toCollection().count((count) => {
+    console.log(count);
+});
+// or
+db.friends.where('age').above(25).or('shoeSize').above(9).each((friend)=>{
+    console.log(friend.name);
+})
+```
+
+## 方法
+
+### and
+
+添加基于JS的过滤条件。
+
+### clone
+
+在操作查询之前拷贝查询。注意：并不会拷贝DB的items。
+
+### count
+
+获取items的条数。
+
+### delete
+
+删除Collection中的所有数据。
+
+### desc
+
+按降序排列。
+
+### distinct
+
+使用primary key去重。
+
+### each
+
+类似于数组的forEach。
+
+### eachKey
+
+类似于each，只不过是遍历的key。
+
+### eachPrimaryKey
+
+遍历的是PrimaryKey。
+
+### eachUniqueKey
+
+遍历的是去重的key。
+
+### filter
+
+JS的filter条件。
+
+### first
+
+返回第一个。
+
+### keys
+
+返回keys的数组。
+
+### last
+
+返回最后一个。
+
+### limit
+
+限定返回的条数。
+
+### modify
+
+使用给定的属性或方法修改所有对象。
+
+```js
+collection.modify(changes)
+```
+
+参数：如果是对象，对象的值会替换原来的值。如果是函数，函数会被依次调用，函数的第一个参数是数据Item，返回的值作为修改的结果。
+
+返回：Promise<number>，number的值为修改的对象条目数。如果有对象更新失败，整个操作会失败，Promise会reject。如果不处理该错误，该错误会冒泡到transcation，到db.on('error')。
+
+#### 注意
+
+如果参数是对象，且对象中有.，表示改变嵌套的对象的值。
+
+如果你catch了返回的Promise，会收到Dexie.MofifyError错误对象。
+
+```js
+{
+    failures: [],//失败的对象数组
+    failKeys:[], // 失败的keys
+    successCount: number,// 成功修改的条数
+}
+```
+
+如果你想要log这个error并且abort事务，你需要在transcation块中执行代码，然后abort事务。
+
+```js
+db.transaction('rw',db.friends, async()=>{
+     await db.friends.where('shoeSize').aboveOrEquals(47).modify({isBigfoot:1});
+     const bigfoots = await db.friends.where({isBigfoot:1}).toArray();
+     console.log("Bigfoots:",bigfoots)
+}).ctach(err=>{
+    console.log(err.failures.length + 'items failed to modify');
+})
+```
+
+```js
+//using function
+db.friends.toCollection().modify(friend=>{
+    friend.shoeSize * = .31;
+});
+// Sample Replace Object
+db.friends.where('isKindToMe').equals("no").modify(function(val){
+    this.value = new Friend({name:"Another Friend"});
+});
+// Sample Replace Object with Arrow Function
+db.friends.where('isKindToMe').equals('no').modify((val,ref)=>{
+    ref.value = new Friend({name:"Another Friend"})
+})
+```
+
+
 ## WhereClause.anyOf
 
 ```js
@@ -241,7 +456,20 @@ db.friends.where('name').equalsIgnoreCase('david').and(function(friend){ return 
     });
 ```
 
+## 搜索以X开头的字符串-SQL LIKE prefix%
+搜索字符串的前缀是您可以使用IndexedDB执行的最直接的技巧。
 
+```js
+IDBKeyRange.bound(prefix,prefix+'\uffff',false,false)
+```
+
+## 其它实现
+
+受到这个算法的启发，其它的查询操作也是可能的。
+
+1、startsWithAnyOf([str1,str2,strN,...])。
+2、SQL IN ignoreing case。
+3、betweenAnyOfRanges([from,to],[form2,to2],...)。
 
 
 ## 参考文档
