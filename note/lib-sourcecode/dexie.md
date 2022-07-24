@@ -171,7 +171,7 @@ collection.modify(changes)
 
 参数：如果是对象，对象的值会替换原来的值。如果是函数，函数会被依次调用，函数的第一个参数是数据Item，返回的值作为修改的结果。
 
-返回：Promise<number>，number的值为修改的对象条目数。如果有对象更新失败，整个操作会失败，Promise会reject。如果不处理该错误，该错误会冒泡到transcation，到db.on('error')。
+返回：Promise<number>，number的值为修改的对象条目数。如果有对象更新失败，整个操作会失败，Promise会reject。如果不处理该错误，该错误会冒泡到transcation，冒泡到db.on('error')。
 
 #### 注意
 
@@ -211,8 +211,55 @@ db.friends.where('isKindToMe').equals("no").modify(function(val){
 // Sample Replace Object with Arrow Function
 db.friends.where('isKindToMe').equals('no').modify((val,ref)=>{
     ref.value = new Friend({name:"Another Friend"})
-})
+});
+// Delete all friends that have been mean
+db.friends.where('hasBeenMeanToMe').equals("yes").modify(function(value){
+    delete this.value;
+});
+//
+db.friends.where('hasBeenMeanToMe').equals("yes").modify((value,ref)=>{
+    delete ref.value;
+});
+
 ```
+
+### offset
+
+忽略前N条数据，返回剩余的所有数据。
+
+### or
+
+逻辑或操作。
+
+### primaryKeys
+
+返回主键数组，primaryKeys。
+
+### raw
+
+忽略所有Table.hook('reading')的订阅事件。例如：不会map对象到mapped class。
+
+### reverse
+
+反序排列结果数据。
+
+### sortBy
+
+通过指定属性sortBy。
+
+### toArray
+
+执行查询，返回结果数组。
+
+### uniqueKeys
+
+返回不重复的key数组。
+
+### until
+
+忽略所有数据，知道给定的filter条件为true。
+
+
 
 
 ## WhereClause.anyOf
