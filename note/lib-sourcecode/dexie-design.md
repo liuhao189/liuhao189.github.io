@@ -162,7 +162,6 @@ and方法接受一个filter函数。
 逻辑AND最优的实现方式是使用前一个query查询过滤大多数数据，然后使用JS的filter来过滤剩下的数据。
 
 
-
 ## 参考文档
 
 https://dexie.org/docs/Tutorial/Design
