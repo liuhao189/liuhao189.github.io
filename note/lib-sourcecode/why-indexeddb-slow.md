@@ -144,9 +144,78 @@ if(transaction.commit) {
 理想的方案是使用SharedWorker。如果浏览器不支持SharedWorker，可以使用BroadcaseChannel API来跨Tab通信，并选举一个Tab为Leader。
 
 
+#  回复：为什么IndexedDB so slow
+
+IndexedDB有事务的概念，这个可以让写入更加安全。我发现IndexedDB在Chromium上是基于LevelDB的，LevelDB的问题是事务提交需要fsync方法，fsync很慢。
+
+很多数据库需要处理该问题，通常的做法是允许事务合并。很多关系型数据库会写入log，然后在一个fsync中提交多个事务。
+
+在客户端中，可行的行为是批量写入来提高性能。
+
+# 加快IndexedDB的读写速度
+
+本文主要介绍如何利用一些小技巧来提高IndexedDB的性能。
+
+## 分页获取数据
+
+在IndexedDB中，cursor是依次遍历数据库中数据的方式。这存在一个问题，一次只能获取一个数据。这很慢，因为在每一步中，JS需要决定cursor是否需要continue还是stop。
+
+实际上，这意味着JS主线程和IndexedDB引擎之间的来回切换。
+
+注意：在cursor.continue中，每一个都有一个小的JS task。每一个task之间都有一小段空闲时间，这在遍历大数据量的DB时浪费了很多时间。
+
+![cursor-continue](/note/assets/imgs/indexeddb-so-slow/cursor-continue-issue.png)
+
+在IndexedDB V2版本中，添加了两个新方法getAll和getAllKeys方法。这允许你一次获取多个数据。
+
+这项技术的缺点：1、你需要显式传递batch size，理想的数值取决于数据的大小和使用模式。2、需要考虑超量取数据的问题，需要使用upper bound来避免此类情况。
+
+## 宽松的持久性
+
+getAll和getAllKeys可以提高DB的读取性能。提高写入性能最重要的方法是宽松的持久性。
+
+将测试修改为一个事务提交一个文档，我们可以看到巨大的写入性能提升。
+
+![relaxed-trans](/note/assets/imgs/indexeddb-so-slow/reflaxed-trans.png)
+
+即使模式设置为宽松的持久性，Chrome仍然比Firefox和Safari慢。
+
+![chrome-slower](/note/assets/imgs/indexeddb-so-slow/chrome-slower.png)
 
 
+## 显式地事务提交
+
+我发现它的性能提升比宽松的持久性更少，但值得一提。
+
+这个API在Chrome和Firefox上都可用，Safaru在预览版中也支持。
+
+```js
+if(transcation.commit) {
+    transcation.commit();
+}
+```
+
+如果JS tasks很多，transcation.commit可以提高一些性能。
+
+![dev-commit](/note/assets/imgs/indexeddb-so-slow/dev-commit.png)
+
+
+## 结论
+
+IndexedDB有很多批评者，我认为大多数批评都是有道理的，IndexedDB API在各种浏览器中都有bug和陷阱，它甚至不是特别快。特别是域SQLlite相比。
+
+IndexedDB V3推出的API也没有太大的影响。需要开发人员坚持使用LocalStorage，或者在IndexedDB之上创建了其它解决方案(absurd-sql)。
+
+但是我认为没那么糟糕，命令法和API有一些奇怪，但一旦你把它包装起来，它就是一个强大的工具，具有广泛的浏览器支持，甚至可以在Node.js中工作。
+
+IndexedDB绝不会一直成为浏览器中存储的唯一玩家。未来，随着Storage Foundation API的大规模部署，可以更直接地构建底层存储自定义数据库。
+
+我也乐于看到浏览器厂商提高IndexedDB的性能，Chrome团队说他们会更加专注于读取性能，而不是写入性能。但是，读取和写入性能都至关重要。
 
 ## 参考文档
 
 https://rxdb.info/slow-indexeddb.html
+
+https://ravendb.net/articles/re-why-indexeddb-is-slow-and-what-to-use-instead
+
+https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/
