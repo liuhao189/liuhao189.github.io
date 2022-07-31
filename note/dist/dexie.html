@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Dexie复杂查询的算法</title>
-  <link rel="stylesheet" href="/note/note.css?ts=1658420171029">
+  <link rel="stylesheet" href="/note/note.css?ts=1659283072577">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
 <body><script>var _hmt = _hmt || [];
 (function () {
@@ -13,6 +13,172 @@
 })();
 </script>
 <h1 id="dexie-">Dexie复杂查询的算法</h1>
+<h2 id="whereclause">WhereClause</h2>
+<p>表示Index或PrimaryKey的过滤条件。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;shoeSize&#39;</span><span class="p">).</span><span class="nx">between</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="mi">45</span><span class="p">).</span><span class="nx">count</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">count</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">I</span> <span class="nx">have</span> <span class="nx">$</span><span class="p">{</span><span class="nx">count</span><span class="p">}</span> <span class="nx">friends</span> <span class="kd">with</span> <span class="nx">the</span> <span class="nx">shoe</span> <span class="nx">size</span> <span class="nx">between</span> <span class="mi">40</span> <span class="nx">and</span> <span class="mi">45</span><span class="err">`</span><span class="p">)</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="whereclause-above">WhereClause.above</h2>
+<p>返回Collection，index的值above给定的值。</p>
+<h2 id="whereclause-aboveorequal">WhereClause.aboveOrEqual</h2>
+<p>返回Collection，index的值above或equal给定的值。</p>
+<h2 id="whereclause-anyof">WhereClause.anyOf</h2>
+<p>返回Collection，index的值包含在指定的数组中。</p>
+<h2 id="whereclause-anyofignorecase">WhereClause.anyOfIgnoreCase</h2>
+<p>返回Collection，index的值包含在指定的数组中，忽略大小写。</p>
+<h2 id="whereclause-below">WhereClause.below</h2>
+<p>返回Collection，跟above类似</p>
+<h2 id="whereclause-beloworequal">WhereClause.belowOrEqual</h2>
+<p>返回Collection，跟AboveOrEqual类似。</p>
+<h2 id="whereclause-between">WhereClause.between</h2>
+<p>返回Collection，在给定的Range之间的数据。</p>
+<h2 id="equals">equals</h2>
+<p>返回Collection，index的值等于给定的值。</p>
+<h2 id="whereclause-equalsignorecase">WhereClause.equalsIgnoreCase</h2>
+<p>返回Collection，index的值给定的值，忽略大小写。</p>
+<h2 id="inanyrange">inAnyRange</h2>
+<p>返回Collection，index的值在给定的任意Range中。</p>
+<h2 id="noneof">noneOf</h2>
+<p>返回Collection，不在给定的key中。</p>
+<h2 id="notequal">notEqual</h2>
+<p>返回Collection，不等于给定的值。</p>
+<h2 id="startswith-startswithignorecase">startsWith &amp; startsWithIgnoreCase</h2>
+<p>返回Collection，以给定的字符子串开头。</p>
+<h2 id="startwithanyof-startswithanyofignoercase">startWithAnyOf &amp; startsWithAnyOfIgnoerCase</h2>
+<p>返回Collection，不以给定的值开头。</p>
+<h1 id="collection">Collection</h1>
+<p>表示数据库对象的集合，请注意，它本身不包含任何对象。它会为如何执行数据库查询提供元数据，调用返回Promise的方法时，将执行查询。<br>eg：toArray，keys，count，each等。</p>
+<h2 id="-">构造函数</h2>
+<p>Collection的构造函数是私有的。一般是WhereClause方法和Table的一些方法返回Collection实例。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//each</span>
+<span class="kd">let</span> <span class="nx">collection</span> <span class="o">=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">equalsIgnoreCase</span><span class="p">(</span><span class="s1">&#39;david&#39;</span><span class="p">);</span>
+<span class="nx">collection</span><span class="p">.</span><span class="nx">each</span><span class="p">((</span><span class="nx">friend</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Found：&quot;</span> <span class="o">+</span> <span class="nx">friend</span><span class="p">.</span><span class="nx">name</span> <span class="p">);</span>
+<span class="p">});</span>
+<span class="c1">//toArray</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">).</span><span class="nx">startsWithIgnoreCase</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">).</span><span class="nx">toArray</span><span class="p">((</span><span class="nx">friends</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="err">`</span><span class="nx">Found</span><span class="err">：`</span> <span class="o">+</span> <span class="nx">friends</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="c1">//offset/limit</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">23</span><span class="p">).</span><span class="nx">offset</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="nx">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="nx">toArray</span><span class="p">((</span><span class="nx">friends</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">friends</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="c1">// count</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">toCollection</span><span class="p">().</span><span class="nx">count</span><span class="p">((</span><span class="nx">count</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">count</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="c1">// or</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">25</span><span class="p">).</span><span class="nx">or</span><span class="p">(</span><span class="s1">&#39;shoeSize&#39;</span><span class="p">).</span><span class="nx">above</span><span class="p">(</span><span class="mi">9</span><span class="p">).</span><span class="nx">each</span><span class="p">((</span><span class="nx">friend</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">friend</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">方法</h2>
+<h3 id="and">and</h3>
+<p>添加基于JS的过滤条件。</p>
+<h3 id="clone">clone</h3>
+<p>在操作查询之前拷贝查询。注意：并不会拷贝DB的items。</p>
+<h3 id="count">count</h3>
+<p>获取items的条数。</p>
+<h3 id="delete">delete</h3>
+<p>删除Collection中的所有数据。</p>
+<h3 id="desc">desc</h3>
+<p>按降序排列。</p>
+<h3 id="distinct">distinct</h3>
+<p>使用primary key去重。</p>
+<h3 id="each">each</h3>
+<p>类似于数组的forEach。</p>
+<h3 id="eachkey">eachKey</h3>
+<p>类似于each，只不过是遍历的key。</p>
+<h3 id="eachprimarykey">eachPrimaryKey</h3>
+<p>遍历的是PrimaryKey。</p>
+<h3 id="eachuniquekey">eachUniqueKey</h3>
+<p>遍历的是去重的key。</p>
+<h3 id="filter">filter</h3>
+<p>JS的filter条件。</p>
+<h3 id="first">first</h3>
+<p>返回第一个。</p>
+<h3 id="keys">keys</h3>
+<p>返回keys的数组。</p>
+<h3 id="last">last</h3>
+<p>返回最后一个。</p>
+<h3 id="limit">limit</h3>
+<p>限定返回的条数。</p>
+<h3 id="modify">modify</h3>
+<p>使用给定的属性或方法修改所有对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">collection</span><span class="p">.</span><span class="nx">modify</span><span class="p">(</span><span class="nx">changes</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<p>参数：如果是对象，对象的值会替换原来的值。如果是函数，函数会被依次调用，函数的第一个参数是数据Item，返回的值作为修改的结果。</p>
+<p>返回：Promise&lt;number&gt;，number的值为修改的对象条目数。如果有对象更新失败，整个操作会失败，Promise会reject。如果不处理该错误，该错误会冒泡到transcation，冒泡到db.on(&#39;error&#39;)。</p>
+<h4 id="-">注意</h4>
+<p>如果参数是对象，且对象中有.，表示改变嵌套的对象的值。</p>
+<p>如果你catch了返回的Promise，会收到Dexie.MofifyError错误对象。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nx">failures</span><span class="o">:</span> <span class="p">[],</span><span class="c1">//失败的对象数组</span>
+    <span class="nx">failKeys</span><span class="o">:</span><span class="p">[],</span> <span class="c1">// 失败的keys</span>
+    <span class="nx">successCount</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span><span class="c1">// 成功修改的条数</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>如果你想要log这个error并且abort事务，你需要在transcation块中执行代码，然后abort事务。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="s1">&#39;rw&#39;</span><span class="p">,</span><span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">,</span> <span class="nx">async</span><span class="p">()</span><span class="o">=&gt;</span><span class="p">{</span>
+     <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;shoeSize&#39;</span><span class="p">).</span><span class="nx">aboveOrEquals</span><span class="p">(</span><span class="mi">47</span><span class="p">).</span><span class="nx">modify</span><span class="p">({</span><span class="nx">isBigfoot</span><span class="o">:</span><span class="mi">1</span><span class="p">});</span>
+     <span class="kr">const</span> <span class="nx">bigfoots</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">({</span><span class="nx">isBigfoot</span><span class="o">:</span><span class="mi">1</span><span class="p">}).</span><span class="nx">toArray</span><span class="p">();</span>
+     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bigfoots:&quot;</span><span class="p">,</span><span class="nx">bigfoots</span><span class="p">)</span>
+<span class="p">}).</span><span class="nx">ctach</span><span class="p">(</span><span class="nx">err</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">failures</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="s1">&#39;items failed to modify&#39;</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//using function</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">toCollection</span><span class="p">().</span><span class="nx">modify</span><span class="p">(</span><span class="nx">friend</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">friend</span><span class="p">.</span><span class="nx">shoeSize</span> <span class="o">*</span> <span class="o">=</span> <span class="p">.</span><span class="mi">31</span><span class="p">;</span>
+<span class="p">});</span>
+<span class="c1">// Sample Replace Object</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;isKindToMe&#39;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="s2">&quot;no&quot;</span><span class="p">).</span><span class="nx">modify</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">val</span><span class="p">){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Friend</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span><span class="s2">&quot;Another Friend&quot;</span><span class="p">});</span>
+<span class="p">});</span>
+<span class="c1">// Sample Replace Object with Arrow Function</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;isKindToMe&#39;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="s1">&#39;no&#39;</span><span class="p">).</span><span class="nx">modify</span><span class="p">((</span><span class="nx">val</span><span class="p">,</span><span class="nx">ref</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="nx">ref</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Friend</span><span class="p">({</span><span class="nx">name</span><span class="o">:</span><span class="s2">&quot;Another Friend&quot;</span><span class="p">})</span>
+<span class="p">});</span>
+<span class="c1">// Delete all friends that have been mean</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;hasBeenMeanToMe&#39;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">).</span><span class="nx">modify</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">){</span>
+    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+<span class="p">});</span>
+<span class="c1">//</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">friends</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">&#39;hasBeenMeanToMe&#39;</span><span class="p">).</span><span class="nx">equals</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">).</span><span class="nx">modify</span><span class="p">((</span><span class="nx">value</span><span class="p">,</span><span class="nx">ref</span><span class="p">)</span><span class="o">=&gt;</span><span class="p">{</span>
+    <span class="k">delete</span> <span class="nx">ref</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h3 id="offset">offset</h3>
+<p>忽略前N条数据，返回剩余的所有数据。</p>
+<h3 id="or">or</h3>
+<p>逻辑或操作。</p>
+<h3 id="primarykeys">primaryKeys</h3>
+<p>返回主键数组，primaryKeys。</p>
+<h3 id="raw">raw</h3>
+<p>忽略所有Table.hook(&#39;reading&#39;)的订阅事件。例如：不会map对象到mapped class。</p>
+<h3 id="reverse">reverse</h3>
+<p>反序排列结果数据。</p>
+<h3 id="sortby">sortBy</h3>
+<p>通过指定属性sortBy。</p>
+<h3 id="toarray">toArray</h3>
+<p>执行查询，返回结果数组。</p>
+<h3 id="uniquekeys">uniqueKeys</h3>
+<p>返回不重复的key数组。</p>
+<h3 id="until">until</h3>
+<p>忽略所有数据，知道给定的filter条件为true。</p>
 <h2 id="whereclause-anyof">WhereClause.anyOf</h2>
 <pre><code class="lang-js"><div class="highlight"><pre><span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">indexOrPrimKey</span><span class="p">).</span><span class="nx">anyof</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> 
 <span class="nx">table</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="nx">indexOrPrimKey</span><span class="p">).</span><span class="nx">anyOf</span><span class="p">(</span><span class="nx">key1</span><span class="p">,</span><span class="nx">key2</span><span class="p">,</span><span class="nx">keyN</span><span class="p">,...)</span>
@@ -199,6 +365,15 @@
 </pre></div>
 
 </code></pre>
+<h2 id="-x-sql-like-prefix-">搜索以X开头的字符串-SQL LIKE prefix%</h2>
+<p>搜索字符串的前缀是您可以使用IndexedDB执行的最直接的技巧。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="nx">IDBKeyRange</span><span class="p">.</span><span class="nx">bound</span><span class="p">(</span><span class="nx">prefix</span><span class="p">,</span><span class="nx">prefix</span><span class="o">+</span><span class="s1">&#39;\uffff&#39;</span><span class="p">,</span><span class="kc">false</span><span class="p">,</span><span class="kc">false</span><span class="p">)</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">其它实现</h2>
+<p>受到这个算法的启发，其它的查询操作也是可能的。</p>
+<p>1、startsWithAnyOf([str1,str2,strN,...])。<br>2、SQL IN ignoreing case。<br>3、betweenAnyOfRanges([from,to],[form2,to2],...)。</p>
 <h2 id="-">参考文档</h2>
 <p><a href="https://www.codeproject.com/Articles/744986/How-to-do-some-magic-with-indexedDB">https://www.codeproject.com/Articles/744986/How-to-do-some-magic-with-indexedDB</a></p>
 </body>
