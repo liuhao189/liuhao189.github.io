@@ -118,3 +118,9 @@ https://www.zhihu.com/column/c_1519079232848785408
 https://chromestatus.com/feature/5730701489995776
 
 https://chromestatus.com/feature/5375472036741120
+
+## IndexedDB Slow
+
+https://rxdb.info/slow-indexeddb.html
+
+https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/

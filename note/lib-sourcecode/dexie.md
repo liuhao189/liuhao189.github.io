@@ -259,9 +259,6 @@ db.friends.where('hasBeenMeanToMe').equals("yes").modify((value,ref)=>{
 
 忽略所有数据，知道给定的filter条件为true。
 
-
-
-
 ## WhereClause.anyOf
 
 ```js
