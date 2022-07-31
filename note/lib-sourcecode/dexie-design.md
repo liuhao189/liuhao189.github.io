@@ -95,6 +95,73 @@ db.on('populate',function(){
 })
 ```
 
+## Promise
+
+Dexie中所有的异步方法都返回Promise，Dexie的实现中也有finally方法。这让Dexie API更易用，同时使得错误处理更加健壮。
+
+Dexie同时提供一种简写方式，如果Promise返回数据，大多数这类方法，可以直接传入callback方法。
+
+```js
+db.friends.where('name').startsWithIgnoreCase('arnold').toArray((a)=>{
+    console.log(a.length);
+}).catch(err => {
+    console.error(err);
+});
+```
+
+### Catch特定的Exception
+
+Dexie的Promise实现可以实现catch特定类的Error。
+
+```js
+db.friends.where('name').startsWithIgnoreCase('arnold').toArray(a=>{
+    console.log(a.length);
+}).catch(DOMError,(e)=>{
+    //DOMError
+}).catch(TypeError,(e)=>{
+    //TypeError
+}).catch(err=>{
+    // unknown error type
+});
+```
+
+## WhereClause
+
+你可以从Table实例中通过两个方法来拿到数据：
+
+1、Table.get，通过Primary key来取数据。
+
+2、Table.where，高级查询。
+
+```js
+db.friends.get(2).then(friend=>{
+    console.log(friend);
+});
+//
+db.friends.where('shoeSize').above(37).count((count)=>{
+    console.log(count);
+});
+//
+db.friends.where('shoeSize').between(37,40).or('name').anyOf(['Arnold','Ingemar'])
+    .and((friend)=>{ return friend.isCloseFriend; })
+    .limit(10).each(friend => {
+        console.log(friend);
+    });
+```
+
+## AND 和 OR
+
+原生的IndexedDB不支持逻辑AND和OR操作符。
+
+Dexie通过执行两个不同的请求，然后合并请求结果来模拟OR操作符。or接受一个字符串参数，和where语句类似。
+
+and方法接受一个filter函数。
+
+逻辑OR不能通过过滤条件来实现，我们必须执行两个查询来获得数据。
+
+逻辑AND最优的实现方式是使用前一个query查询过滤大多数数据，然后使用JS的filter来过滤剩下的数据。
+
+
 ## 参考文档
 
 https://dexie.org/docs/Tutorial/Design

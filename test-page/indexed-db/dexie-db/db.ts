@@ -277,51 +277,6 @@
 // }
 
 // myDB.folders.mapToClass(Folder);
-
-import Dexie, { ObservabilitySet, Table } from "dexie";
-
-
-interface Friend {
-  id?: number;
-  name: string;
-  age: number;
-  tags: string[];
-}
-
-interface Logger {
-  id?: number;
-  messgae: string;
-  date: number;
-}
-
-interface Pet {
-  id?: number;
-  name: string;
-}
-
-interface Car {
-  id?: number;
-  brand: string;
-}
-
-class FriendDataBase extends Dexie {
-  public friends!: Dexie.Table<Friend, number>;
-  public logger!: Dexie.Table<Logger, number>;
-  public pets!: Dexie.Table<Pet, number>;
-  public cars!: Dexie.Table<Car, number>;
-
-  public constructor() {
-    super('FriendDataBase', { chromeTransactionDurability: 'relaxed' });
-    this.version(4).stores({
-      friends: '++id,name,age,*tags',
-      logger: '++id',
-      pets: '++id',
-      cars: '++id,brand'
-    });
-  }
-}
-
-const db = new FriendDataBase();
 // db.friends.hook('creating', (...args) => {
 //   console.log(args);
 // })
@@ -399,6 +354,52 @@ const db = new FriendDataBase();
 // Dexie.on('storagemutated', (changeParts: ObservabilitySet) => {
 //   console.log(`Change-Parts`, changeParts);
 // });
+
+import Dexie, { ObservabilitySet, Table } from "dexie";
+
+
+interface Friend {
+  id?: number;
+  name: string;
+  age: number;
+  tags: string[];
+}
+
+interface Logger {
+  id?: number;
+  messgae: string;
+  date: number;
+}
+
+interface Pet {
+  id?: number;
+  name: string;
+}
+
+interface Car {
+  id?: number;
+  brand: string;
+}
+
+class FriendDataBase extends Dexie {
+  public friends!: Dexie.Table<Friend, number>;
+  public logger!: Dexie.Table<Logger, number>;
+  public pets!: Dexie.Table<Pet, number>;
+  public cars!: Dexie.Table<Car, number>;
+
+  public constructor() {
+    super('FriendDataBase', { chromeTransactionDurability: 'relaxed' });
+    this.version(4).stores({
+      friends: '++id,name,age,*tags',
+      logger: '++id',
+      pets: '++id',
+      cars: '++id,brand'
+    });
+  }
+}
+
+const db = new FriendDataBase();
+
 db.use({
   stack: 'dbcore',
   name: 'my-middle',
