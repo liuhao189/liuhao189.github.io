@@ -146,11 +146,9 @@ if(transaction.commit) {
 
 #  回复：为什么IndexedDB so slow
 
-IndexedDB有事务的概念，这个可以让写入更加安全。我发现IndexedDB在Chromium上是基于LevelDB的，LevelDB的问题是事务提交需要fsync方法，fsync很慢。
+IndexedDB有事务的概念，这个可以让写入更加安全。我发现IndexedDB在Chromium上是基于LevelDB的，LevelDB的问题是事务提交需要调用fsync方法，而fsync方法很慢。
 
-很多数据库需要处理该问题，通常的做法是允许事务合并。很多关系型数据库会写入log，然后在一个fsync中提交多个事务。
-
-在客户端中，可行的行为是批量写入来提高性能。
+很多数据库都需要处理该问题，通常的做法是允许事务合并。很多关系型数据库会写入log，然后在一个fsync中提交多个事务。在客户端中，可行的操作是批量写入来提高性能。
 
 # 加快IndexedDB的读写速度
 
@@ -158,11 +156,9 @@ IndexedDB有事务的概念，这个可以让写入更加安全。我发现Index
 
 ## 分页获取数据
 
-在IndexedDB中，cursor是依次遍历数据库中数据的方式。这存在一个问题，一次只能获取一个数据。这很慢，因为在每一步中，JS需要决定cursor是否需要continue还是stop。
+在IndexedDB中，cursor是依次遍历数据库中数据的方式。这存在一个问题，一次只能获取一个数据。这很慢，因为在每一步中，JS需要决定cursor是否需要continue还是stop。而这意味着JS主线程和IndexedDB引擎之间的来回切换。
 
-实际上，这意味着JS主线程和IndexedDB引擎之间的来回切换。
-
-注意：在cursor.continue中，每一个都有一个小的JS task。每一个task之间都有一小段空闲时间，这在遍历大数据量的DB时浪费了很多时间。
+注意：在cursor.continue中，每一次都有一个小的JS task。每一个task之间都有一小段空闲时间，这在遍历大数据量的DB时浪费了很多时间。
 
 ![cursor-continue](/note/assets/imgs/indexeddb-so-slow/cursor-continue-issue.png)
 
@@ -187,7 +183,7 @@ getAll和getAllKeys可以提高DB的读取性能。提高写入性能最重要�
 
 我发现它的性能提升比宽松的持久性更少，但值得一提。
 
-这个API在Chrome和Firefox上都可用，Safaru在预览版中也支持。
+这个API在Chrome和Firefox上都可用，Safari在预览版中也支持。
 
 ```js
 if(transcation.commit) {
@@ -202,9 +198,9 @@ if(transcation.commit) {
 
 ## 结论
 
-IndexedDB有很多批评者，我认为大多数批评都是有道理的，IndexedDB API在各种浏览器中都有bug和陷阱，它甚至不是特别快。特别是域SQLlite相比。
+IndexedDB有很多批评者，我认为大多数批评都是有道理的，IndexedDB API在各种浏览器中都有bug和陷阱，它甚至不是特别快。特别是与SQLlite相比。
 
-IndexedDB V3推出的API也没有太大的影响。需要开发人员坚持使用LocalStorage，或者在IndexedDB之上创建了其它解决方案(absurd-sql)。
+IndexedDB-V3推出的API也没有太大的影响。许多开发人员坚持使用LocalStorage，或者在IndexedDB之上创建了其它解决方案(absurd-sql)。
 
 但是我认为没那么糟糕，命令法和API有一些奇怪，但一旦你把它包装起来，它就是一个强大的工具，具有广泛的浏览器支持，甚至可以在Node.js中工作。
 
