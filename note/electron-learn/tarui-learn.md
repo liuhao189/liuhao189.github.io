@@ -53,7 +53,7 @@ Tarui相比Electron放弃了一些兼容性，换来了内存以及应用体积�
 
 ## Tauri架构
 
-Tauri是一个多语言通用工具包，其超期的组合性允许工程师制作各种应用程序。后端使用Rust和系统进行交互，包装成Tauri插件后暴露出JS API供前端使用，通过Webview进行消息传递来控制系统。
+Tauri是一个多语言通用工具包，其超强的组合性允许工程师制作各种应用程序。后端使用Rust和系统进行交互，包装成Tauri插件后暴露出JS API供前端使用，通过Webview进行消息传递来控制系统。
 不支持的功能，开发人员可以通过编写Rust来扩展默认API。
 
 因为使用操作系统的Webview，它不提供运行时，因为最终的二进制文件是从Rust编译的，使得Tauri应用程序的逆向不是一项简单的任务。
@@ -87,3 +87,162 @@ WRY：WRY是Rust中的跨平台Webview渲染库，支持Windows、MacOS和Linux�
 Tauri不是一个轻量级的内核包装器，相反，它直接使用WRY和TAO来完成对操作系统进行系统调用的繁重工作。
 
 Tauri不是虚拟机或虚拟机环境，相反，它是一个允许制作Webview OS应用程序的应用程序工具包。
+
+
+# Tarui开发环境
+
+## MacOS
+
+```bash
+xcode-select --install
+# install rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+#
+rustc --version
+```
+
+## 初始化项目
+
+```bash
+npx create-tauri-app
+```
+
+项目结构：
+
+```bash
+[tauri-app] 
+    node_modules # 前端依赖
+    src #前端代码
+    src-tauri # Tauri程序源
+        icons # 应用程序图标
+        src # Tauri App程序源
+        target # 构建的产物文件夹
+        build.rs # Tauri构建应用
+        Cargo.lock # 包含了依赖的进去描述信息，类似于yarn.lock和package-lock.json
+        Cargo.toml # Tauri项目清单
+        tauri.conf.json # 自定义Tauri应用程序的配置文件
+    index.html # 项目主界面
+    package.json # 前端项目清单
+    tsconfig.json # TS配置文件
+    vite.config.ts # Vite配置文件
+    yarn.lock # 前端依赖的精确描述
+```
+
+## 启动开发环境
+
+启动Web项目，纯前端项目，不和操作系统产生任何交互。
+
+```bash
+yarn dev
+```
+
+启动tauri项目，需要和操作系统产生交互，如系统文件读写操作。
+
+注意：第一次启动项目比较慢，tauri会根据src-tauri/Cargo.toml去下载相关依赖。第二次启动会快很多。
+
+## 构建应用
+
+Tauri Bundler是一个Rust工具，用于编译二进制文件、打包资产并准备最终包，它会检测当前的操作系统并相应地构建一个包。目前支持：
+
+Windows：.msi。
+
+MacOS：.app，.dmg。
+
+Linux：.deb，.appimage。
+
+```bash
+yarn tauri build
+```
+
+注意：未修改src-tauri/tauri.conf.json中的identifier直接build会报错。需要修改indentifier，例如com.myapp.dev。
+
+build脚本执行完后包会在src-tauri/target/release/bundle/{platform}/{app}下就可以找到应用程序安装包。
+
+# Tauri.conf.json配置
+
+tauri.conf.json是tauri init命令生成的文件，该文件位于Tauri应用程序源目录src-tauri中。可以通过修改它来自定义Tauri应用程序。
+
+## 特定平台配置
+
+除了tauri.conf.json外，Tauri还可以从tauri.linux.conf.json、tauri.windows.conf.json、tauri.macos.conf.json中读取特定于平台的配置，并将其与tauri.conf.json主配置合并。
+
+## 配置结构
+
+### package
+
+Package的设置，主要有1、productName:string?  App名称；2、version:string? 版本号，它是semver版本号或包含version字段的package.json文件的路径。
+
+### tauri
+
+pattern：patternKink，要使用的模式。
+
+windows：WindowConfig[]。
+
+```js
+// windowConfig
+{
+    label: string,// default null，窗口标识
+    url: WindowUrl,// default view， windows webview url
+    fileDropEnabled: boolean,//default true
+    center: boolean,//default false
+    x: number,// default null, 
+    y: number,// default null
+    width: number,//default 800
+    height: number,//default 600
+    minWidth: number,//
+    minHeight: number,//
+    maxWidth:number,//
+    maxHeight:number,//
+    resizable: boolean,// default true
+    title: string,// 
+    fullscreen:boolean,// 
+    foucus: boolean,//
+    transparent: boolean,//false macOS需要使用macos-private-api，使用此API，不能上架App Store
+    maximized: boolean,// false,
+    visible: boolean,// true,
+    decorations: boolean,// true, 是否有border或bars
+    alwaysOnTop: boolean,//false
+    skipTaskbar: boolean,//是否展示在taskbar中
+    theme: Theme,// 可选值light或dark
+}
+```
+
+cli: cliConfig。
+
+```js
+{
+    description?: string, // 帮助中展示的信息
+    longDescription?:string,// 长信息
+    beforeHelp?:string, //头信息
+    afterHelp?:string,// 尾信息
+    args: array,// 
+    subcommands: object// 
+}
+```
+
+bundle: BundleConfig。
+
+```js
+//
+{
+    active: boolean,// false，是否需要bundle应用，不bundle只把可执行文件输出
+    targets: BundleTarget,//目前支持["deb","appimage","msi","app","dmg","updater", "all"]
+    identifier: string, // 必须，默认null，全局唯一的值，eg：com.tauri.example
+    icon: string[],// 应用图标
+    resources: array,// null，需要打包的app资源，文件或文件夹，全局通配符也是支持的。
+    copyright:string, // null，
+    category:string,// null, Business, DeveloperTool, Education, Entertainment, Finance, Game, ActionGame, AdventureGame, ArcadeGame, BoardGame, CardGame, CasinoGame, DiceGame, EducationalGame, FamilyGame, KidsGame, MusicGame, PuzzleGame, RacingGame, RolePlayingGame, SimulationGame, SportsGame, StrategyGame, TriviaGame, WordGame, GraphicsAndDesign, HealthcareAndFitness, Lifestyle, Medical, Music, News, Photography, Productivity, Reference, SocialNetworking, Sports, Travel, Utility, Video, Weather.
+    shortDescription:string,// null 
+    longDescription: string, // null
+    appimage: AppImageConfig,// null, {bundleMediaFramework:boolean//默认false}，这会增加15-35M的文件大小。
+    deb: DebConfig, // 
+    macOS: MacConfig, // 
+    externalBin: array, // 其它的需要包含的二进制文件。会根据平台来查找对应的值。
+    windows: WindowsConfig,// 
+}
+```
+
+
+## 参考文档
+
+https://www.zhihu.com/column/c_1519079232848785408
