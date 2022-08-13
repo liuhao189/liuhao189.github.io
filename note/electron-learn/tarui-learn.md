@@ -242,6 +242,68 @@ bundle: BundleConfig。
 }
 ```
 
+### allowList
+
+allowList: allowListConfig。
+
+```js
+//allowListConfig
+{
+    all: boolean,// 默认false
+    fs: FsAllowlistConfig, // 
+    window: WindowAllowListConfig, //
+    shell: ShellAllowlistConfig,//
+    dialog: DialogAllowlist,//
+    http: HttpAllowlistConfig, //
+    notification: NotificationAllowListConfig,//
+    globalShortcut: GlobalShortcutAllowlistConfig,//
+    os: OsAllowlistConifg,//
+    path: PathAllowlistConifg,//
+    protocol: ProtocolAllowlistConfig,//
+    process: ProcessAllowlistConfig,//
+    clipborar:ClipboardAllowlistConfig,//
+}
+```
+
+### security
+
+```js
+//security
+{
+    csp: Csp, // CSP内容，会被注入到所有HTML文件
+    devScp: Csp, // dev时注入的CSP内容
+    freezePrototype: boolean,// false
+    dangerousDisableAssertCspMofification: DisableCspModificationKink, //false，
+}
+```
+
+### updater
+
+```js
+// updaterConfig
+{
+    active: boolean,// false
+    dialog: boolean, // true
+    endPoints: array,// 
+    pubKey: string , // null
+    windows: updaterWindowConfig, // basicUi, quiet, passive
+}
+```
+
+### systemTray
+
+```js
+// SystemTrayConfig
+{
+    iconPath: string, // 必须 Linux和mac上强制使用png，windows上使用.ico
+    iconAsTemplate: boolean, // false, 
+    menuOnLeftClick: boolean, // true
+}
+```
+
+### macOSPrivateApi
+
+macos私有Api设置。
 
 ## 参考文档
 
