@@ -261,7 +261,7 @@ allowList: allowListConfig。
     path: PathAllowlistConifg,//
     protocol: ProtocolAllowlistConfig,//
     process: ProcessAllowlistConfig,//
-    clipborar:ClipboardAllowlistConfig,//
+    clipborad:ClipboardAllowlistConfig,//
 }
 ```
 
