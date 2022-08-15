@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>tauri官方文档阅读</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1660578304133">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="tauri-">tauri官方文档阅读</h1>
+<h2 id="-">安装</h2>
+<p>第一步是安装rust和系统依赖。注意：只有开发者的机器上需要安装，最终用户不需要安装。</p>
+<h3 id="-macos">设置macOS</h3>
+<p>1、C语言和macOS开发依赖</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>xcode-select --install
+</pre></div>
+
+</code></pre>
+<p>2、Rust</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>curl --proto <span class="s1">&#39;https&#39;</span> -tlsv1.2 https://sh.rustup.rs -sSf <span class="p">|</span> sh
+</pre></div>
+
+</code></pre>
+<p>该脚本会安装rustup相关工具。</p>
+<h3 id="-">升级或卸载</h3>
+<p>Tauri和它的组件可以通过修改Cargo.toml来升级。或者直接运行cargo upgrade命令来升级。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="c"># upgrade</span>
+cargo upgrade
+<span class="c"># update rustup</span>
+rustup update
+<span class="c"># uninstall rustup</span>
+rustup self uninstall
+</pre></div>
+
+</code></pre>
+<h3 id="-">查看当前版本</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>rustc --version
+<span class="c"># rustc x.y.z(commitid yyyy-mm-dd)</span>
+</pre></div>
+
+</code></pre>
+<h2 id="quickstart">QuickStart</h2>
+<h3 id="html-css-js">HTML，CSS &amp; JS</h3>
+<p>Tauri是一个使用任意的前端框架和Rust核心来构建桌面应用的框架。每一个App分为两个部分：</p>
+<p>1、Rust部分：创建window，并导出原生方法到这些window。</p>
+<p>2、前端部分：创建window中的用户界面。</p>
+<h3 id="-">创建前端界面</h3>
+<pre><code class="lang-bash"><div class="highlight"><pre>mkdir ui
+touch index.html
+</pre></div>
+
+</code></pre>
+<pre><code class="lang-html"><div class="highlight"><pre><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
+
+<span class="nt">&lt;head&gt;</span>
+  <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;UTF-8&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">&quot;X-UA-Compatible&quot;</span> <span class="na">content=</span><span class="s">&quot;IE=edge&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;viewport&quot;</span> <span class="na">content=</span><span class="s">&quot;width=device-width, initial-scale=1.0&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;title&gt;</span>tauri learn<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+
+<span class="nt">&lt;body&gt;</span>
+  <span class="nt">&lt;h1&gt;</span>Welcome from tauri<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+
+</code></pre>
+<h3 id="-rust-">创建Rust项目</h3>
+<p>每一个Tauri App的核心是Rust程序。Rust程序管理窗口，webview，调用操作系统。这个项目由Cargo管理，Cargo是Rust官方的包管理器。</p>
+<p>tauri init命令会生成src-tauri的文件夹。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>src-tauri
+  Cargo.toml <span class="c"># Cargo的配置文件</span>
+  tauri.conf.json <span class="c"># tauri的配置文件</span>
+  src/main.rs <span class="c"># Rust的应用入口文件</span>
+  icons <span class="c"># 应用图标</span>
+</pre></div>
+
+</code></pre>
+<pre><code><div class="highlight"><pre><span class="err">#</span><span class="o">!</span><span class="p">[</span><span class="nx">cfg_attr</span><span class="p">(</span>
+  <span class="nx">all</span><span class="p">(</span><span class="nx">not</span><span class="p">(</span><span class="nx">debug_assertions</span><span class="p">),</span> <span class="nx">target_os</span> <span class="o">=</span> <span class="s2">&quot;windows&quot;</span><span class="p">),</span>
+  <span class="nx">windows_subsystem</span> <span class="o">=</span> <span class="s2">&quot;windows&quot;</span>
+<span class="p">)]</span>
+
+<span class="nx">fn</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">tauri</span><span class="o">::</span><span class="nx">Builder</span><span class="o">::</span><span class="k">default</span><span class="p">()</span>
+    <span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">tauri</span><span class="o">::</span><span class="nx">generate_context</span><span class="o">!</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="s2">&quot;error while running tauri application&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre><h3 id="-">调用命令</h3>
+<p>Tauri允许你调用原生的能力来增强网页的功能。我们称这些为Commands，本质上是可以通过JS调用的Rust函数。</p>
+<pre><code><div class="highlight"><pre><span class="err">#</span><span class="p">[</span><span class="nx">tauri</span><span class="o">::</span><span class="nx">command</span><span class="p">]</span>
+<span class="nx">fn</span> <span class="nx">greet</span><span class="p">(</span><span class="nx">name</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+  <span class="nx">format</span><span class="o">!</span><span class="p">(</span><span class="s2">&quot;Hello, {}!&quot;</span><span class="p">,</span><span class="nx">name</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre><p>只是一个加了#[tauri::command]注解的Rust函数。</p>
+<p>我们还需要告诉Tauri我们新创建的命令，以便它可以相应地路由。</p>
+<pre><code><div class="highlight"><pre><span class="nx">fn</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">tauri</span><span class="o">::</span><span class="nx">Builder</span><span class="o">::</span><span class="k">default</span><span class="p">()</span>
+    <span class="p">.</span><span class="nx">invoke_handler</span><span class="p">(</span><span class="nx">tauri</span><span class="o">::</span><span class="nx">generate_handler</span><span class="o">!</span><span class="p">[</span><span class="nx">greet</span><span class="p">])</span>
+    <span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">tauri</span><span class="o">::</span><span class="nx">generate_context</span><span class="o">!</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="s2">&quot;error while running tauri application&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre><p>然后，就可以在JS中调用了。我们推荐使用@tauri-apps/api包。如果不使用这个包，需要将withGlobalTauri配置打开。</p>
+<pre><code class="lang-html"><div class="highlight"><pre>  <span class="nt">&lt;script&gt;</span>
+    <span class="kr">const</span> <span class="nx">invoke</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">__TAURI__</span><span class="p">.</span><span class="nx">invoke</span><span class="p">;</span>
+    <span class="nx">invoke</span><span class="p">(</span><span class="s1">&#39;greet&#39;</span><span class="p">,</span> <span class="p">{</span>
+      <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;World&#39;</span>
+    <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">alert</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+    <span class="p">})</span>
+  <span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">架构</h2>
+<h3 id="-">多进程模型</h3>
+<p>早期的GUI应用，一般会使用一个进程来计算，绘制UI，响应用户操作。如果有大量的计算，这会导致用户操作无响应，如果进程出错，整个应用都会崩溃。</p>
+<p>现代的应用程序开始在多个进程中运行不同的组件，这可以更好地利用现代多核CPU。我们还可以通过仅向每个进程提供最少量的权限来限制潜在的漏洞利用。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://tauri.app/v1/guides/getting-started/prerequisites">https://tauri.app/v1/guides/getting-started/prerequisites</a></p>
+</body>
+</html>

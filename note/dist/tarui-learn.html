@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tauri入门篇</title>
+  <link rel="stylesheet" href="/note/note.css?ts=1660578304133">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="shortcut icon" href="/ico.png"></head>
+<body><script>var _hmt = _hmt || [];
+(function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?256376ad73e3e50091706bb3c032e74c";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<h1 id="tauri-">Tauri入门篇</h1>
+<h2 id="tauri-">Tauri是什么</h2>
+<p>Tauri使用Web前端构建更小，更快，更安全的桌面应用程序。Tauri是一个工具包，可以帮助开发者为主要桌面平台(mac，windows，linux等)制作应用程序。几乎支持现有的任何前端框架，其核心是使用Rust编写的。Rust负责系统通信，应用构建，上层应用开发只需要专注于webview中的网页的编写。</p>
+<h2 id="-">安全第一</h2>
+<p>Tarui允许你选择要发布的API端点，是否希望在你的应用程序中内置一个本地主机localhost服务器，甚至可以在运行时随机化功能句柄。</p>
+<p>默认情况下Tauri只提供二进制文件，而非asar文件。</p>
+<h2 id="asar">asar</h2>
+<p>asar可以提高在windows上等平台上读取文件的性能，而不是通过复制其所有源文件来发布您的应用程序。</p>
+<p>asar用于将electron应用程序文件连接到一个大文件，为了缓解windows上长路径名问题，稍微加快requie并隐藏源代码不被粗略检查，可以选择将应用程序打包成asar归档文件，而对源代码几乎没有改动。</p>
+<h2 id="-">多语言支持</h2>
+<p>目前，tarui使用Rust作为后端，但在不远的将来，其它后端如Go，Nim，Python，CSharp等也将成为可能。目前官方维护的是Rust与Webview组织的绑定，因为API可以用任何带有C语言互操作的语言来实现，可以选择自己喜欢的语言作为后端。</p>
+<h2 id="tarui-vs-electron">Tarui vs Electron</h2>
+<p>Electron的一个主要好处是可以针对单个浏览器和运行时版本进行开发，而不必处理所有小而耗时的兼容性问题。</p>
+<p>Tarui相比Electron放弃了一些兼容性，换来了内存以及应用体积的更小化，在安全方面也做了一些事。</p>
+<p>从Tarui的架构来看，它是Webview2和系统之间的一个胶水层，目前后端是Rust实现。Tauri后期可以跨平台到IOS/IpadOS，Android。</p>
+<table>
+<thead>
+<tr>
+<th>Detail</th>
+<th>Tarui</th>
+<th>Electron</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Install Size Linux</td>
+<td>3.1M</td>
+<td>52.1M</td>
+</tr>
+<tr>
+<td>Memory Consumption Linux</td>
+<td>180M</td>
+<td>462M</td>
+</tr>
+<tr>
+<td>Launch Time Linux</td>
+<td>0.39s</td>
+<td>0.80s</td>
+</tr>
+<tr>
+<td>Interface Service Provider</td>
+<td>WRY</td>
+<td>Chromium</td>
+</tr>
+<tr>
+<td>Backend Binding</td>
+<td>Rust</td>
+<td>Node.js</td>
+</tr>
+<tr>
+<td>Underlying Engine</td>
+<td>Rust</td>
+<td>V8(C/C++)</td>
+</tr>
+<tr>
+<td>FLOSS</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>MultiThreading</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Bytecode Delivery</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Multiple Windows</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Auto Updater</td>
+<td>Yes</td>
+<td>Yes(Linux not supported)</td>
+</tr>
+<tr>
+<td>Custom App Icon</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Windows Binary</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>MacOS Binary</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Linux Binary</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>IOS Binary</td>
+<td>Soon</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Androind Binary</td>
+<td>Soon</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Desktop Tray</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Sidecar Binaries</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tauri-">Tauri架构</h2>
+<p>Tauri是一个多语言通用工具包，其超强的组合性允许工程师制作各种应用程序。后端使用Rust和系统进行交互，包装成Tauri插件后暴露出JS API供前端使用，通过Webview进行消息传递来控制系统。<br>不支持的功能，开发人员可以通过编写Rust来扩展默认API。</p>
+<p>因为使用操作系统的Webview，它不提供运行时，因为最终的二进制文件是从Rust编译的，使得Tauri应用程序的逆向不是一项简单的任务。</p>
+<h3 id="-core">核心Core</h3>
+<p>1、Tauri，把所有东西（运行时、宏、实用程序和API）都集中在一起构成最终产品。在编译时读取tauri.conf.json文件，以引入功能并进行应用程序的实际配置。在运行时处理脚本注入，托管系统交互的API及管理更新。</p>
+<p>2、Tauri-runtime，Tarui本身和较低级别的webview库之间的胶水层。</p>
+<p>3、taruri-macros，通过利用tauri-codegen create为上下文，处理程序和命令创建宏。</p>
+<p>4、tauri-utils，在许多地方重用的通用代码，并提供有用的使用方法，例如解析配置文件，检查平台，注入CSP和管理资源。</p>
+<p>5、tauri-build，在构建时应用宏，为cargo装配所需的一些特殊功能。</p>
+<p>6、tauri-codegen，嵌入，散列和压缩资源，包括图标。在编译时解析tauri.conf.json并生成配置结构。</p>
+<p>7、tauri-runtime-wry，专门为WRY开辟了直接的系统交互，例如打印，显示器检测和其它与窗口相关的任务。</p>
+<h3 id="-upstram">上游Upstram</h3>
+<p>Tauri组织维护了Tauri的两个上游类库，即用于创建和管理应用程序窗口的TAO，以及用于与窗口内的Webview交互的WRY。</p>
+<p>TAO：Rust中的跨平台应用程序窗口创建库。支持Windows，macOS，Linux，IOS和Android等所有主要平台。</p>
+<p>WRY：WRY是Rust中的跨平台Webview渲染库，支持Windows、MacOS和Linux等所有主要桌面平台。</p>
+<h2 id="tauri-">Tauri不是什么</h2>
+<p>Tauri不是一个轻量级的内核包装器，相反，它直接使用WRY和TAO来完成对操作系统进行系统调用的繁重工作。</p>
+<p>Tauri不是虚拟机或虚拟机环境，相反，它是一个允许制作Webview OS应用程序的应用程序工具包。</p>
+<h1 id="tarui-">Tarui开发环境</h1>
+<h2 id="macos">MacOS</h2>
+<pre><code class="lang-bash"><div class="highlight"><pre>xcode-select --install
+<span class="c"># install rust</span>
+curl --proto <span class="s1">&#39;=https&#39;</span> --tlsv1.2 -sSf https://sh.rustup.rs <span class="p">|</span> sh
+<span class="c">#</span>
+rustc --version
+</pre></div>
+
+</code></pre>
+<h2 id="-">初始化项目</h2>
+<pre><code class="lang-bash"><div class="highlight"><pre>npx create-tauri-app
+</pre></div>
+
+</code></pre>
+<p>项目结构：</p>
+<pre><code class="lang-bash"><div class="highlight"><pre><span class="o">[</span>tauri-app<span class="o">]</span> 
+    node_modules <span class="c"># 前端依赖</span>
+    src <span class="c">#前端代码</span>
+    src-tauri <span class="c"># Tauri程序源</span>
+        icons <span class="c"># 应用程序图标</span>
+        src <span class="c"># Tauri App程序源</span>
+        target <span class="c"># 构建的产物文件夹</span>
+        build.rs <span class="c"># Tauri构建应用</span>
+        Cargo.lock <span class="c"># 包含了依赖的进去描述信息，类似于yarn.lock和package-lock.json</span>
+        Cargo.toml <span class="c"># Tauri项目清单</span>
+        tauri.conf.json <span class="c"># 自定义Tauri应用程序的配置文件</span>
+    index.html <span class="c"># 项目主界面</span>
+    package.json <span class="c"># 前端项目清单</span>
+    tsconfig.json <span class="c"># TS配置文件</span>
+    vite.config.ts <span class="c"># Vite配置文件</span>
+    yarn.lock <span class="c"># 前端依赖的精确描述</span>
+</pre></div>
+
+</code></pre>
+<h2 id="-">启动开发环境</h2>
+<p>启动Web项目，纯前端项目，不和操作系统产生任何交互。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>yarn dev
+</pre></div>
+
+</code></pre>
+<p>启动tauri项目，需要和操作系统产生交互，如系统文件读写操作。</p>
+<p>注意：第一次启动项目比较慢，tauri会根据src-tauri/Cargo.toml去下载相关依赖。第二次启动会快很多。</p>
+<h2 id="-">构建应用</h2>
+<p>Tauri Bundler是一个Rust工具，用于编译二进制文件、打包资产并准备最终包，它会检测当前的操作系统并相应地构建一个包。目前支持：</p>
+<p>Windows：.msi。</p>
+<p>MacOS：.app，.dmg。</p>
+<p>Linux：.deb，.appimage。</p>
+<pre><code class="lang-bash"><div class="highlight"><pre>yarn tauri build
+</pre></div>
+
+</code></pre>
+<p>注意：未修改src-tauri/tauri.conf.json中的identifier直接build会报错。需要修改indentifier，例如com.myapp.dev。</p>
+<p>build脚本执行完后包会在src-tauri/target/release/bundle/{platform}/{app}下就可以找到应用程序安装包。</p>
+<h1 id="tauri-conf-json-">Tauri.conf.json配置</h1>
+<p>tauri.conf.json是tauri init命令生成的文件，该文件位于Tauri应用程序源目录src-tauri中。可以通过修改它来自定义Tauri应用程序。</p>
+<h2 id="-">特定平台配置</h2>
+<p>除了tauri.conf.json外，Tauri还可以从tauri.linux.conf.json、tauri.windows.conf.json、tauri.macos.conf.json中读取特定于平台的配置，并将其与tauri.conf.json主配置合并。</p>
+<h2 id="-">配置结构</h2>
+<h3 id="package">package</h3>
+<p>Package的设置，主要有1、productName:string?  App名称；2、version:string? 版本号，它是semver版本号或包含version字段的package.json文件的路径。</p>
+<h3 id="tauri">tauri</h3>
+<p>pattern：patternKink，要使用的模式。</p>
+<p>windows：WindowConfig[]。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// windowConfig</span>
+<span class="p">{</span>
+    <span class="nx">label</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span><span class="c1">// default null，窗口标识</span>
+    <span class="nx">url</span><span class="o">:</span> <span class="nx">WindowUrl</span><span class="p">,</span><span class="c1">// default view， windows webview url</span>
+    <span class="nx">fileDropEnabled</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">//default true</span>
+    <span class="nx">center</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">//default false</span>
+    <span class="nx">x</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span><span class="c1">// default null, </span>
+    <span class="nx">y</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span><span class="c1">// default null</span>
+    <span class="nx">width</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span><span class="c1">//default 800</span>
+    <span class="nx">height</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span><span class="c1">//default 600</span>
+    <span class="nx">minWidth</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">minHeight</span><span class="o">:</span> <span class="nx">number</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">maxWidth</span><span class="o">:</span><span class="nx">number</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">maxHeight</span><span class="o">:</span><span class="nx">number</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">resizable</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// default true</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span><span class="c1">// </span>
+    <span class="nx">fullscreen</span><span class="o">:</span><span class="kr">boolean</span><span class="p">,</span><span class="c1">// </span>
+    <span class="nx">foucus</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">transparent</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">//false macOS需要使用macos-private-api，使用此API，不能上架App Store</span>
+    <span class="nx">maximized</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// false,</span>
+    <span class="nx">visible</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// true,</span>
+    <span class="nx">decorations</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// true, 是否有border或bars</span>
+    <span class="nx">alwaysOnTop</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">//false</span>
+    <span class="nx">skipTaskbar</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">//是否展示在taskbar中</span>
+    <span class="nx">theme</span><span class="o">:</span> <span class="nx">Theme</span><span class="p">,</span><span class="c1">// 可选值light或dark</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>cli: cliConfig。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nx">description</span><span class="o">?:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// 帮助中展示的信息</span>
+    <span class="nx">longDescription</span><span class="o">?:</span><span class="nx">string</span><span class="p">,</span><span class="c1">// 长信息</span>
+    <span class="nx">beforeHelp</span><span class="o">?:</span><span class="nx">string</span><span class="p">,</span> <span class="c1">//头信息</span>
+    <span class="nx">afterHelp</span><span class="o">?:</span><span class="nx">string</span><span class="p">,</span><span class="c1">// 尾信息</span>
+    <span class="nx">args</span><span class="o">:</span> <span class="nx">array</span><span class="p">,</span><span class="c1">// </span>
+    <span class="nx">subcommands</span><span class="o">:</span> <span class="nx">object</span><span class="c1">// </span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>bundle: BundleConfig。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//</span>
+<span class="p">{</span>
+    <span class="nx">active</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// false，是否需要bundle应用，不bundle只把可执行文件输出</span>
+    <span class="nx">targets</span><span class="o">:</span> <span class="nx">BundleTarget</span><span class="p">,</span><span class="c1">//目前支持[&quot;deb&quot;,&quot;appimage&quot;,&quot;msi&quot;,&quot;app&quot;,&quot;dmg&quot;,&quot;updater&quot;, &quot;all&quot;]</span>
+    <span class="nx">identifier</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// 必须，默认null，全局唯一的值，eg：com.tauri.example</span>
+    <span class="nx">icon</span><span class="o">:</span> <span class="nx">string</span><span class="p">[],</span><span class="c1">// 应用图标</span>
+    <span class="nx">resources</span><span class="o">:</span> <span class="nx">array</span><span class="p">,</span><span class="c1">// null，需要打包的app资源，文件或文件夹，全局通配符也是支持的。</span>
+    <span class="nx">copyright</span><span class="o">:</span><span class="nx">string</span><span class="p">,</span> <span class="c1">// null，</span>
+    <span class="nx">category</span><span class="o">:</span><span class="nx">string</span><span class="p">,</span><span class="c1">// null, Business, DeveloperTool, Education, Entertainment, Finance, Game, ActionGame, AdventureGame, ArcadeGame, BoardGame, CardGame, CasinoGame, DiceGame, EducationalGame, FamilyGame, KidsGame, MusicGame, PuzzleGame, RacingGame, RolePlayingGame, SimulationGame, SportsGame, StrategyGame, TriviaGame, WordGame, GraphicsAndDesign, HealthcareAndFitness, Lifestyle, Medical, Music, News, Photography, Productivity, Reference, SocialNetworking, Sports, Travel, Utility, Video, Weather.</span>
+    <span class="nx">shortDescription</span><span class="o">:</span><span class="nx">string</span><span class="p">,</span><span class="c1">// null </span>
+    <span class="nx">longDescription</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// null</span>
+    <span class="nx">appimage</span><span class="o">:</span> <span class="nx">AppImageConfig</span><span class="p">,</span><span class="c1">// null, {bundleMediaFramework:boolean//默认false}，这会增加15-35M的文件大小。</span>
+    <span class="nx">deb</span><span class="o">:</span> <span class="nx">DebConfig</span><span class="p">,</span> <span class="c1">// </span>
+    <span class="nx">macOS</span><span class="o">:</span> <span class="nx">MacConfig</span><span class="p">,</span> <span class="c1">// </span>
+    <span class="nx">externalBin</span><span class="o">:</span> <span class="nx">array</span><span class="p">,</span> <span class="c1">// 其它的需要包含的二进制文件。会根据平台来查找对应的值。</span>
+    <span class="nx">windows</span><span class="o">:</span> <span class="nx">WindowsConfig</span><span class="p">,</span><span class="c1">// </span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="allowlist">allowList</h3>
+<p>allowList: allowListConfig。</p>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//allowListConfig</span>
+<span class="p">{</span>
+    <span class="nx">all</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// 默认false</span>
+    <span class="nx">fs</span><span class="o">:</span> <span class="nx">FsAllowlistConfig</span><span class="p">,</span> <span class="c1">// </span>
+    <span class="nb">window</span><span class="o">:</span> <span class="nx">WindowAllowListConfig</span><span class="p">,</span> <span class="c1">//</span>
+    <span class="nx">shell</span><span class="o">:</span> <span class="nx">ShellAllowlistConfig</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">dialog</span><span class="o">:</span> <span class="nx">DialogAllowlist</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">http</span><span class="o">:</span> <span class="nx">HttpAllowlistConfig</span><span class="p">,</span> <span class="c1">//</span>
+    <span class="nx">notification</span><span class="o">:</span> <span class="nx">NotificationAllowListConfig</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">globalShortcut</span><span class="o">:</span> <span class="nx">GlobalShortcutAllowlistConfig</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">os</span><span class="o">:</span> <span class="nx">OsAllowlistConifg</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">path</span><span class="o">:</span> <span class="nx">PathAllowlistConifg</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">protocol</span><span class="o">:</span> <span class="nx">ProtocolAllowlistConfig</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">process</span><span class="o">:</span> <span class="nx">ProcessAllowlistConfig</span><span class="p">,</span><span class="c1">//</span>
+    <span class="nx">clipborad</span><span class="o">:</span><span class="nx">ClipboardAllowlistConfig</span><span class="p">,</span><span class="c1">//</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="security">security</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">//security</span>
+<span class="p">{</span>
+    <span class="nx">csp</span><span class="o">:</span> <span class="nx">Csp</span><span class="p">,</span> <span class="c1">// CSP内容，会被注入到所有HTML文件</span>
+    <span class="nx">devScp</span><span class="o">:</span> <span class="nx">Csp</span><span class="p">,</span> <span class="c1">// dev时注入的CSP内容</span>
+    <span class="nx">freezePrototype</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// false</span>
+    <span class="nx">dangerousDisableAssertCspMofification</span><span class="o">:</span> <span class="nx">DisableCspModificationKink</span><span class="p">,</span> <span class="c1">//false，</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="updater">updater</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// updaterConfig</span>
+<span class="p">{</span>
+    <span class="nx">active</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span><span class="c1">// false</span>
+    <span class="nx">dialog</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span> <span class="c1">// true</span>
+    <span class="nx">endPoints</span><span class="o">:</span> <span class="nx">array</span><span class="p">,</span><span class="c1">// </span>
+    <span class="nx">pubKey</span><span class="o">:</span> <span class="nx">string</span> <span class="p">,</span> <span class="c1">// null</span>
+    <span class="nx">windows</span><span class="o">:</span> <span class="nx">updaterWindowConfig</span><span class="p">,</span> <span class="c1">// basicUi, quiet, passive</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="systemtray">systemTray</h3>
+<pre><code class="lang-js"><div class="highlight"><pre><span class="c1">// SystemTrayConfig</span>
+<span class="p">{</span>
+    <span class="nx">iconPath</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// 必须 Linux和mac上强制使用png，windows上使用.ico</span>
+    <span class="nx">iconAsTemplate</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span> <span class="c1">// false, </span>
+    <span class="nx">menuOnLeftClick</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span> <span class="c1">// true</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h3 id="macosprivateapi">macOSPrivateApi</h3>
+<p>macos私有Api设置。</p>
+<h2 id="-">参考文档</h2>
+<p><a href="https://www.zhihu.com/column/c_1519079232848785408">https://www.zhihu.com/column/c_1519079232848785408</a></p>
+</body>
+</html>
