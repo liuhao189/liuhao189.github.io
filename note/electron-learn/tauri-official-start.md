@@ -175,7 +175,7 @@ Tauri依赖于操作系统的Webview，这意味着运行的Webview的版本会�
 
 Tauri使用一种称为异步消息传递的特定进程间通信风格，使用一些简单的数据表示形式交换请求和序列化响应。
 
-消息传递是一种比共享内存内存或直接函数访问更安全的技术，因为接收者可以自由得拒绝或丢弃它认为合适的请求。
+消息传递是一种比共享内存或直接函数访问更安全的技术，因为接收者可以自由得拒绝或丢弃它认为合适的请求。
 
 ### 进程间通信-Events
 
@@ -193,7 +193,7 @@ Tauri在IPC消息之上提供了一个类似外部函数接口的抽象。基础
 
 ### 不兼容性
 
-首先，任何特定浏览器才有的API，可能会工作的不正常。如果该API没有被广泛支持，应该尽量避免使用该API。
+首先，任何在特定浏览器才有的API，可能会工作的不正常。如果该API没有被广泛支持，应该尽量避免使用该API。
 
 第二种不兼容的是，计划添加到Tauri中，但目前还没实现的。eg：Linux上的WebRTC；一些Permissions APIS；Download Links/Blob as URL；Better i18n。
 
@@ -214,11 +214,11 @@ Tauri在IPC消息之上提供了一个类似外部函数接口的抽象。基础
 
 ### 为什么
 
-隔离模式的目的是为开发人员提供一种机制，以帮助帮助其应用程序免受对Tauri Core的不需要的或恶意的前端调用。这是具有很多依赖项的应用程序的常见情况。
+隔离模式的目的是为开发人员提供一种机制，以帮助其应用程序免受对Tauri Core的不需要的或恶意的前端调用。这是具有很多依赖项的应用程序的常见情况。
 
 ### 什么时候使用
 
-tauri强烈推荐在可以使用时尽量使用隔离模式。Tauri还强烈建议您在使用外部Tauri API时锁定您的英语程序。作为开发人员，您可以利用安全隔离应用程序尝试验证IPC输入，已确保它们在预期的参数范围内。
+tauri强烈推荐在可以使用时尽量使用隔离模式。Tauri还强烈建议您在使用外部Tauri API时锁定您的应用程序。作为开发人员，您可以利用安全隔离应用程序尝试验证IPC输入，已确保它们在预期的参数范围内。
 
 ### 怎样实现
 
@@ -229,6 +229,70 @@ Tauri在加载页面时强制执行隔离模式，强制前端应用的IPC调用
 一旦确认消息可以发送到Tauri Core，隔离模式下iframe会使用SubtleCrypto来加密消息并发送会主前端页面，然后发送到Tauri Core，消息会在Tauri Core里解密。
 
 为了确保没有中间人攻击，每次应用程序运行时都会生成新的Key。
+
+### IPC消息的大致流程
+
+1、Tauri IPC处理器接收消息
+
+2、IPC handler传递到Isolation应用
+
+3、sandbox isolation应用检查和修改消息。
+
+4、sandbox 使用运行时生成的key用AES-GCM加密。
+
+5、加密后的消息由Isolation Application发送到IPC handler。
+
+6、加密后的消息由IPC handler发送到Tauri Core。
+
+## 性能影响
+
+即使Isolation Application不做任何事，因为会加密消息，所有会带来一定的性能损耗。
+
+除了对性能敏感的应用程序(为了保持性能足够，它们可能具有精心维护的小型依赖项)之外，大多数应用不应该关注到这块的运行时消耗。
+
+## 限制
+
+隔离模式下有一些因为平台不一致而引起的限制。最重要的限制是在windows系统中，外部文件无法在沙盒的iframe正确加载。
+
+因为这个，我们在编译时将脚本的内容下载下来，并将脚本内容inline到script标签中。
+
+## 建议
+
+由于隔离应用程序的目的是防范开发威胁，因此我们强烈建议使隔离应用程序尽可能简单。这需要尽可能少得引入依赖，同时需要更加仔细地识别依赖。
+
+## 创建Isolation应用
+
+首先配置tauri.conf.json。
+
+```json
+{
+  "tauri": {
+    "pattern": {
+      "use": "isolation",
+      "options": {
+        "dir": "../dist-isolation"
+      }
+    }
+  }
+}
+```
+
+然后，创建dist-isolation/index.html。
+
+```html
+<body>
+  <script src="index.js"></script>
+</body>
+```
+
+创建dist-isolation/index.js。
+
+```js
+window.__TAURI_ISOLATION_HOOK__ = (payload) => {
+  console.log('hook', payload);
+  return payload;
+}
+```
 
 
 
