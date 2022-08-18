@@ -232,13 +232,13 @@ Tauri在加载页面时强制执行隔离模式，强制前端应用的IPC调用
 
 ### IPC消息的大致流程
 
-1、Tauri IPC处理器接收消息
+1、Tauri-IPC处理器接收消息。
 
-2、IPC handler传递到Isolation应用
+2、IPC-handler传递到Isolation应用。
 
-3、sandbox isolation应用检查和修改消息。
+3、sandbox-isolation应用检查和修改消息。
 
-4、sandbox 使用运行时生成的key用AES-GCM加密。
+4、sandbox使用运行时生成的key用AES-GCM加密。
 
 5、加密后的消息由Isolation Application发送到IPC handler。
 
@@ -293,6 +293,109 @@ window.__TAURI_ISOLATION_HOOK__ = (payload) => {
   return payload;
 }
 ```
+
+## 从前端调用Rust
+
+Tauri提供了强大的command系统来让前端调用Rust。Command可以接受参数并返回值，它们还可以返回错误并且是async。
+
+### 基本例子
+
+命令可以在src-tauri/src/main.rs文件中定义。
+
+```
+#[tauri::command]
+fn my_custom_command() {
+  println!("I was invoked from JS!")
+}
+```
+
+需要将command列表传给builder函数。
+
+```
+fn main() {
+  tauri::Builder::default()
+  .invoke_handler(tauri::generate_handler![my_custom_command])
+  .run(tauri::generate_context!())
+  .expect("failed to run app")
+}
+```
+
+```js
+//npm package
+import { invoke } from '@tauri-apps/api/tauri'
+//global
+const invoke = window.__TAURI.invoke
+invoke('my_custom_command')
+```
+
+传递参数
+
+```
+#[tauri::command]
+fn my_custom_command(invoke_message:String) {
+  println!("I was invoked from JS, with this message:{}", invoke_message);
+}
+```
+
+```js
+invoke('my_custom_command', {invokeMessage:'Hello!'})
+```
+
+返回值
+
+```
+#[tauri::command]
+fn my_custom_command() -> String {
+  "Hello from Rust!".into();
+}
+```
+
+```js
+invoke('my_custom_command').then(msg => { console.log(msg); })
+```
+
+错误处理
+
+```
+#[tauri::command]
+fn my_custom_command() -> Result<String,String> {
+  Err("This failed!".into());
+  // if it works
+  Ok("This Worked!".into());
+}
+```
+
+```js
+//error Promise rejected
+invoke("my_custom_command").then(msg=>{ console.log(msg); })
+  .catch(err => {
+    console.error(err);
+  })
+```
+
+## Async Commands
+
+Async的command使用async_runtime::spawn运行在独立的线程中，没有async关键值的Command运行在主线程，除非有#[tauri::command(async)]声明。
+
+```
+#[tauri::command]
+async fn my_custom_command() {
+  let result = some_async_function.await;
+  println!("Result: {}", result);
+}
+```
+
+## Commands中访问Window
+
+Commands可以访问Window实例。
+
+```
+#[tauri::command]
+async fn my_custom_command(window: tauri::Window) {
+  println!("Window: {}",window.label())
+}
+```
+
 
 
 
