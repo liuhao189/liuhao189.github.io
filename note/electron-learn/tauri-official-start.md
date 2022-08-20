@@ -396,8 +396,16 @@ async fn my_custom_command(window: tauri::Window) {
 }
 ```
 
+## Command中访问AppHandler
 
-
+```
+#[tauri::command]
+async fn my_apphandler(app_handler: tauri::AppHandle){
+  let app_dir = app_handler.path_resolver().app_dir();
+  use tauri::GlobalShortcurManager;
+  app_handler.global_shotcur_manager().resister('CTRL + U',move || {});
+}
+```
 
 ## 参考文档
 
