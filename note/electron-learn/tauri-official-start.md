@@ -396,6 +396,65 @@ async fn my_custom_command(window: tauri::Window) {
 }
 ```
 
+## Events
+
+Tauri的事件系统是多生产者多消费者的，允许消息在前端和后端传递的事件系统。它类似于命令系统，它简化了从后端到前端的通信，就像管道一样工作。
+
+一个Tauri引用可以监听和触发全局或指定窗口的事件。
+
+### 前端
+
+#### 全局事件
+
+引入event模块中的emit和listen方法。
+
+```js
+import { emit,listen } from '@tauri-apps/api/event';
+const unlisten = await listen('click',(ev)=>{
+  console.log(ev.event);//eventName
+  console.log(ev.payload);// payload
+});
+
+// 
+emit('click',{
+  theMessage: 'Tauri is awesome!'
+})
+```
+
+#### 指定window的事件
+
+```js
+import { appWindow, WebviewWindow } from '@tauri-apps/api/window';
+// only visible to the current window
+appWindow.emit('event', { message: 'Tauri is awesome!' });
+
+const webView = new WebviewWindow('window');
+// only to the new window
+webView.emit('event');
+```
+
+### 后端
+
+全局事件通道暴露在app的结构上。
+
+```
+use tauri::Manager;
+//payload type should implement Serialize and Clone
+#[derive(Clone,serde::Serialize)]
+struct Payload {
+  message: String;
+}
+
+tauri::Builder::default()
+  .setup(|app| {
+    let id = app.listen_global("event-name",|event| {
+      println!("got event-name with payload {:?}", event.payload());
+    });
+    // app.unlisten(id)
+    app.emit_all("event-name",Payload { message:"Tauri is awesome!".into() }).unwrap();
+    Ok(());
+  })
+```
 
 
 
