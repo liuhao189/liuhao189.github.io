@@ -396,11 +396,22 @@ async fn my_custom_command(window: tauri::Window) {
 }
 ```
 
+## Command中访问AppHandler
+
+```
+#[tauri::command]
+async fn my_apphandler(app_handler: tauri::AppHandle){
+  let app_dir = app_handler.path_resolver().app_dir();
+  use tauri::GlobalShortcurManager;
+  app_handler.global_shotcur_manager().resister('CTRL + U',move || {});
+}
+```
+
 ## Events
 
-Tauri的事件系统是多生产者多消费者的，允许消息在前端和后端传递的事件系统。它类似于命令系统，它简化了从后端到前端的通信，就像管道一样工作。
+Tauri的事件系统是多生产者多消费者的，允许消息在前端和后端相互传递的事件系统，它类似于命令系统，它简化了从后端到前端的通信，就像管道一样工作。
 
-一个Tauri引用可以监听和触发全局或指定窗口的事件。
+一个Tauri应用可以监听和触发全局或指定窗口的事件。
 
 ### 前端
 
@@ -415,10 +426,10 @@ const unlisten = await listen('click',(ev)=>{
   console.log(ev.payload);// payload
 });
 
-// 
+//
 emit('click',{
   theMessage: 'Tauri is awesome!'
-})
+});
 ```
 
 #### 指定window的事件
@@ -456,16 +467,59 @@ tauri::Builder::default()
   })
 ```
 
-## Command中访问AppHandler
+### 指定window的事件
+
+window对象可以通过command handler或get_window方法来获取。
 
 ```
+//只在调用该命令的窗口触发周期事件
 #[tauri::command]
-async fn my_apphandler(app_handler: tauri::AppHandle){
-  let app_dir = app_handler.path_resolver().app_dir();
-  use tauri::GlobalShortcurManager;
-  app_handler.global_shotcur_manager().resister('CTRL + U',move || {});
+fn init_process(window: Window) {
+  std::thread::spawn(move || {
+    loop {
+      window.emit("event-name", Payload { message: "Tauri is awesome!".into() }).unwrap();
+    }
+  });
 }
+//
+.setup(|app| {
+  let main_window = app.get_window("main").unwrap();
+  main_window.listen("event-name", |event| {
+    println!("got window event-name with payload {:?}",event.payload());
+  });
+
+  main_window.emit("event_name", Payload { message: "Tauri is awesome!".into() }).unwrap();
 ```
+
+### 多窗口
+
+#### 创建窗口
+
+窗口可以在Tauri配置文件或运行时创建。
+
+#### 静态窗口
+
+tauri::windows配置是个数组即可。
+
+```json
+  {
+    "label": "external",
+    "title": "lingxi-office",
+    "url": "https://lingxi.office.163.com"
+  }
+```
+
+注意：window的label必须是全局唯一的，因为在运行时需要用label来获取窗口实例。
+
+### 运行时创建窗口
+
+你可以使用Rust层或Tauri API层来在运行时创建窗口。
+
+#### 在Rust中创建窗口
+
+使用WindowBuilder结构来创建窗口，你需要持有一个运行中的App或AppHandle实例。
+
+
 
 ## 参考文档
 
