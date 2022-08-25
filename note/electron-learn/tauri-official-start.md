@@ -519,6 +519,72 @@ tauri::windows配置是个数组即可。
 
 使用WindowBuilder结构来创建窗口，你需要持有一个运行中的App或AppHandle实例。
 
+```
+  tauri::Builder::default()
+      .setup(|app| {
+          tauri::WindowBuilder::new(
+              app,
+              "external-2",
+              tauri::WindowUrl::External("https://www.bing.com/".parse().unwrap())
+          )
+          .build()?;
+          tauri::WindowBuilder::new(
+              app, 
+              "local-3", 
+              tauri::WindowUrl::App("index.html".into()))
+              .build()?;
+          Ok(())
+      })
+      .run(tauri::generate_context!())
+      .expect("error while running tauri application");
+```
+
+使用setup的hook可以确保静态窗口和Tauri的插件初始化完成。也可以在app构建完成后创建页面。
+
+使用AppHandler实例来创建页面。
+
+```
+#[tauri::command]
+async fn open_docs(handler: tauri::AppHandle) {
+    tauri::WindowBuilder::new(
+        &handler,
+        "external-docs",
+        tauri::WindowUrl::External("https://www.bing.com/".parse().unwrap()),
+    )
+    .build()
+    .unwrap();
+}
+```
+
+## 使用JS创建window
+
+使用WebviewWindow可以很轻松的在JS里创建页面。
+
+```js
+import { WebviewWindow } from '@tauri-apps/api/window'
+
+const webview = new WebviewWindow('theUniqueLabel', {
+  url: 'https://lingxi.office.163.com/'
+});
+webview.once('tauri:://created', () => {
+  console.log('successfully created');
+})
+webview.once('tauri:://error', (e) => {
+  console.error(e);
+})
+```
+
+## 运行时获取window实例
+
+rust中使用app.get_window方法，JS中使用WebviewWindow.getByLabel。
+
+```js
+const mainWindow = WebviewWindow.getByLabel('main');
+mainWindow?.onFileDropEvent(ev => {
+  console.log(ev);
+});
+```
+
 
 
 ## 参考文档
