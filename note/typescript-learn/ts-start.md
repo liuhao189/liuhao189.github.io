@@ -160,7 +160,7 @@ user.location;
 const announcement = "Hello World!";
 // How quickly can you spot the typos?
 announcement.toLocaleLowercase();
-announcement.toLocalLowerCase();
+announceemnt.toLocalLowerCase();
 // We probably meant to write this...
 announcement.toLocaleLowerCase();
 // 未调用方法
@@ -255,7 +255,7 @@ string，number，boolean，这些和JS的typeof操作符返回的类型相同�
 
 ### any
 
-当一个类型声明为any，你可以访问它的任意属性。在你不想写出长类型来适应TS时笔记有用。
+当一个类型声明为any，你可以访问它的任意属性。在你不想写出长类型来适应TS时比较有用。
 
 你没有声明类型，且TS无法根据上下文来推断类型，编译器会默认变量为any类型。使用noImplicitAny可以取消这种情况。
 

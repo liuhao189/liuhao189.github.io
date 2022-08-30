@@ -188,6 +188,118 @@ function caclArea(shape: Shape): number {
 当联合体中的每个类型都包含具有文本类型的公共属性时，TS会将其视为区分的联合，可以缩小类型范围。
 
 
+## never类型
+
+当缩窄类型时，你可能移除所有可能得类型，在这些场景中，TS会使用never类型来表示不存在的状态。
+
+## 穷举检查
+
+never类型可以分配给每个类型，但是，没有类型可以分配给never。
+
+```ts
+type Shape = Circle | Square;
+function getArea(shape: Shape) {
+    switch(shape.kink) {
+        case "circle":
+            return Math.PI * shape.radius ** 2;
+        case "square":
+            return shape.sideLength ** 2;
+        default: 
+            const _exhaustiveCheck:never = shape;
+            return _exhaustiveCheck;
+    }
+}
+```
+
+# 函数
+
+## 函数类型表达式
+
+```js
+function greeter(fn:(a:string)=>void) {
+    fn("Hello World")
+}
+```
+
+(a:string)=>void表示函数接收一个参数，没有返回值。如果参数类型没有指定，参数会隐式设为any类型。
+
+当然也可以使用type别名来定义。
+
+```js
+type GreetFunction = (a: string) => void;
+function greeter(fn: GreetFunction) {
+    fn("Hello World");
+}
+```
+
+## 带属性函数签名
+
+在JS中，函数也可以拥有属性。但是，函数类型表达式语法不允许声明属性。如果你想描述有属性的函数，你可以写一个调用签名对象。
+
+```js
+type DescribableFunction = {
+    desc: string;
+    (a: number): boolean;
+}
+
+function doSomeThing(fn: DescribableFunction) {
+    return `${fn.desc} + ${fn(6)}`
+}
+```
+
+## 构造函数签名
+
+在函数签名使用new关键字即可。
+
+```ts
+type SomeConstructor = {
+    new(s: string): SomeConstructor;
+}
+
+function fn(ctor: SomeConstructor) {
+    return new ctor('Hello')
+}
+```
+
+## 泛型函数
+
+考虑一个方法，返回数组的第一个元素。
+
+```ts
+function firstElement(arr: any[]) {
+    return arr[0];
+}
+```
+
+上面的代码会丢失类型信息。返回的类型和参数类型相关，这种时候需要使用泛型。
+
+```ts
+function firstElement<T>(arr: T[]): T | undefined {
+    return arr[0];
+}
+
+const str = firstElement(['one']);
+const num = firstElement([6]);
+```
+
+给函数添加一个类型参数，可以在多个地方使用该类型参数。我们可以在函数输入和输出之间构建联系。
+
+多个类型参数
+
+```ts
+function map<Input, Output>(arr: Input[], func: (arg: Input) => Output): Output[] {
+    return arr.map(func);
+}
+
+const parsed = map([1, 2, 3], n => n * 2);
+```
+
+## 类型约束
+
+
+
+
+
 ## 参考文档
 
 https://www.typescriptlang.org/docs/handbook/2/narrowing.html
