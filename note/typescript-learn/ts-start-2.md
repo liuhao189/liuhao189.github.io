@@ -234,7 +234,7 @@ function greeter(fn: GreetFunction) {
 
 ## 带属性函数签名
 
-在JS中，函数也可以拥有属性。但是，函数类型表达式语法不允许声明属性。如果你想描述有属性的函数，你可以写一个调用签名对象。
+在JS中，函数也可以拥有属性。但是，函数类型表达式语法不允许声明属性。如果你想描述有属性的函数，你可以写一个可调用对象。
 
 ```js
 type DescribableFunction = {
@@ -296,8 +296,70 @@ const parsed = map([1, 2, 3], n => n * 2);
 
 ## 类型约束
 
+上面的泛型函数可以作用于任何类型。有些时候，我们需要限制泛型的类型。这种时候，我们可以添加泛型类型的约束。
 
+```ts
+function longest<Type extends { length: number }>(a: Type, b: Type) {
+    if (a.length > b.length) {
+        return a;
+    }
+    return b;
+}
 
+const longerArr = longest([1, 2], [1, 2, 3]);
+const longerStr = longest('alice', 'bob');
+```
+
+常见的类型约束错误。返回的{length:number}满足了约束。但是返回的不是Type类型，所以返回值的类型会缩小。
+
+```ts
+function minimumLength<Type extends { length: number }>(obj: Type, minimum: number) {
+    if (obj.length >= minimum) {
+        return obj;
+    } else {
+        return {
+            length: minimum
+        }
+    }
+}
+
+const arr = minimumLength([1, 2, 3], 2);
+// no arr.slice now
+```
+
+## 指定泛型类型
+
+TS通常可以根据泛型调用推导出类型，某些情况下无法推导出。
+
+```ts
+function combine<Type>(arr1: Type[], arr2: Type[]): Type[] {
+    return arr1.concat(arr2);
+}
+
+const arr = combine<string | number>([1, 2, 3], ['Hello']);
+```
+
+## 泛型的推荐实践
+
+### 更精准的类型
+
+尽量不要使用类型约束。因为使用了类型约束，TS会解析到约束的类型。
+
+```ts
+//
+function firstElement<Type>(arr: Type[]) {
+    return arr[0];
+}
+
+function firstElement1<Type extends any[]>(arr: Type) {
+    return arr[0];
+}
+
+const a = firstElement([1, 2, 3]);
+//a is number
+const b = firstElement1([1, 2, 3]);
+// b is any
+```
 
 
 ## 参考文档
