@@ -361,6 +361,90 @@ const b = firstElement1([1, 2, 3]);
 // b is any
 ```
 
+### 使用更少的类型参数
+
+虽然filter2也可以工作，但增加了一个类型，且该类型可以通过第一个类型得到。这使得函数更难使用和阅读，而且没有受到任何好处。
+
+```ts
+function filter1<Type>(arr: Type[], func: (arg: Type) => boolean): Type[] {
+    return arr.filter(func);
+}
+
+function filter2<Type, Func extends (arg: Type) => boolean>(arr: Type[], func: Func) {
+    return arr.filter(func);
+}
+
+var res = filter2([1, 2, 3], (num) => { return num > 1 });
+```
+
+### 类型参数需要出现两次
+
+有时候忘记了有些函数不需要泛型。类型参数需要跟多个值的类型相关，如果只出现一次，不使用泛型方法即可。
+
+```ts
+function greet<Str extends string>(s: Str) {
+    console.log("Hello" + s);
+}
+```
+
+## 可选参数
+
+一些JS函数可以取变长参数列表。eg：toFixed方法接收一个可选的number参数。TS中可以通过参数名后添加?来实现。
+
+使用=号可以提供默认值。x的类型会变为number。
+
+
+```ts
+function f(x?: number = 10) {
+    // x is number | undefined
+    // if =10 x is number
+    console.log(x);
+}
+
+f();
+f(10);
+```
+
+## 回调函数中的可选参数
+
+经常犯下面的错误，在JS中，如果你使用更多的参数来调用函数，多余的参数会被忽略。
+
+```ts
+function myForEach<Type>(arr: Type[], callback: (arg: Type, inx?: number) => void) {
+    for (let i = 0; i < arr.length; ++i) {
+        callback(arr[i], i);
+    }
+}
+```
+
+为回调写函数签名时，从不写可选参数，除非你指定某些情况下，不会传递该参数。
+
+
+## 函数重载
+
+一些JS函数可以以多种格式和数量的参数调用。eg：Date，可以传ts，month/day/year。
+
+TS中可以书写函数重载来声明这类函数。前面两行叫函数签名，后面是函数的实现。实现里允许接受两个参数，但是TS不允许这么调用。
+
+```ts
+function makeDate(timestamp: number): Date;
+function makeDate(m: number, d: number, y: number): Date;
+function makeDate(mOrTimestamp: number, d?: number, y?: number): Date {
+    if (d !== undefined && y !== undefined) {
+        return new Date(y, mOrTimestamp, d);
+    } else {
+        return new Date(mOrTimestamp);
+    }
+}
+//
+const d1 = makeDate(12345678);
+const d2 = makeDate(5, 5, 5);
+// const d3 = makeDate(1, 3);
+// error 
+```
+
+
+
 
 ## 参考文档
 

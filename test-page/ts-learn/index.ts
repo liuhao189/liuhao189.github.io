@@ -1,13 +1,16 @@
-//
-function firstElement<Type>(arr: Type[]) {
-    return arr[0];
+
+
+function makeDate(timestamp: number): Date;
+function makeDate(m: number, d: number, y: number): Date;
+function makeDate(mOrTimestamp: number, d?: number, y?: number): Date {
+    if (d !== undefined && y !== undefined) {
+        return new Date(y, mOrTimestamp, d);
+    } else {
+        return new Date(mOrTimestamp);
+    }
 }
 
-function firstElement1<Type extends any[]>(arr: Type) {
-    return arr[0];
-}
-
-const a = firstElement([1, 2, 3]);
-//a is number
-const b = firstElement1([1, 2, 3]);
-// b is any
+const d1 = makeDate(12345678);
+const d2 = makeDate(5, 5, 5);
+// const d3 = makeDate(1, 3);
+// error 
