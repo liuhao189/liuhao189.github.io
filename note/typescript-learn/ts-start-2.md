@@ -443,6 +443,130 @@ const d2 = makeDate(5, 5, 5);
 // error 
 ```
 
+重载函数的实现不允许直接调用，需要按函数签名调用。
+
+### 函数签名和函数实现
+
+很多人不明白下面的代码为啥会报错。
+
+```ts
+function fn(x:string): void;
+function fn() {
+    //...
+}
+
+fn();
+```
+
+再次强调一下，函数的实现对外界是不可见的。
+
+
+### 书写好的函数重载
+
+返回字符串或数组长度的函数。
+
+```ts
+function len(s: string): number;
+function len(arr: any[]): number;
+function len(s: string | any[]): number {
+    return s.length;
+}
+
+len('');//OK
+len([0]);//OK
+len(Math.random() > 0.5 ? "hello" : [0]);// Error
+```
+
+如果每一个重载都有相同个数的参数和相同的返回值类型，我们推荐写一个非重载的函数版本。
+
+```ts
+function len(s: string | any[]): number {
+    return s.length;
+}
+
+len(Math.random() > .5 ? 'Hello' : [1]);
+```
+
+实践：联合类型优于重载。
+
+## 在函数中声明this
+
+TS通过代码流分析来推断this的值，这一般可以适应大部分场景。但是，有些时候，你需要更好地控制this的值以及其类型。
+
+```ts
+interface User {
+    isAdmin: boolean
+}
+
+interface DB {
+    filterUsers(filter: (this: User) => boolean): User[]
+}
+
+function getDB(): DB {
+    return {} as DB;
+}
+
+const db = getDB();
+const admins = db.filterUsers(function (this: User) {
+    return this.isAdmin;
+})
+```
+
+注意：你需要使用function而不是箭头函数来使用this参数。
+
+
+## 其它需要知道的类型
+
+### void
+
+void表示函数没有返回任何值。如果函数没有return语句，或return语句后没有值，函数会被推断为返回void。
+
+注意：void不完全等同于undefined。
+
+### object
+
+object表示不是基础类型的任意类型。这和{}不一样，也和Object不一样。
+
+注意：object不是Object，总是使用object。
+
+### unknown
+
+unknown表示任意类型，和any类似，但比any更加安全，因为unknown不允许一些操作。
+
+```ts
+function f1(a: any) {
+    a.b();// OK
+}
+
+function f2(a: unknown) {
+    a.b();//Error Object is of type 'unknown'.
+}
+```
+
+这对于描述接受任意类型的函数很有用，也可以用来描述函数返回值。
+
+```ts
+function safeParse(s: string): unknown {
+    return JSON.parse(s);
+}
+
+const obj = safeParse('');
+```
+
+### never
+
+一些函数从不返回值。用于返回值时，表示这个函数会抛出一个异常或终止函数的执行。也用于联合类型中，没有任何类型的值的情况。
+
+```ts
+function fail(msg: string): never {
+    throw new Error(msg);
+}
+
+fail('one')
+```
+
+### 
+
 
 
 
