@@ -487,7 +487,7 @@ function len(s: string | any[]): number {
 len(Math.random() > .5 ? 'Hello' : [1]);
 ```
 
-实践：联合类型优于重载。
+实践总结：如果参数个数和返回值类型相同，联合类型优于重载。重载只是在于更加精细控制参数个数&类型，返回值。
 
 ## 在函数中声明this
 
@@ -512,8 +512,7 @@ const admins = db.filterUsers(function (this: User) {
 })
 ```
 
-注意：你需要使用function而不是箭头函数来使用this参数。
-
+注意：你需要使用function而不是箭头函数来使用this参数。因为箭头函数没有this参数。
 
 ## 其它需要知道的类型
 
@@ -562,11 +561,96 @@ function fail(msg: string): never {
     throw new Error(msg);
 }
 
-fail('one')
+fail('one');
+
+function fn(x: string | number) {
+    if (typeof x === 'string') {
+        // x is string
+    } else if (typeof x === 'number') { 
+        // x is number
+    } else {
+        // x is never;
+    }
+}
 ```
 
-### 
+### Function
 
+全局的Function描述了，bind，call，apply等原生属性，同时可被调用，调用的返回为any类型。
+
+这种没有类型的函数调用最好避免，因为不安全的any返回类型和参数类型。()=>void的函数类型更加安全。
+
+```ts
+function doSomething(f: Function) {
+    return f(1, 2, 3);
+}
+//
+function doSomething(fn: () => void) {
+    //
+}
+```
+
+### 剩余参数
+
+为了让函数可以接受可变参数个数，我们可以使用剩余参数语法来声明函数。
+
+```ts
+function multiply(n: number, ...m: number[]) {
+    return m.map(x => x * n);
+}
+
+const a = multiply(10, 1, 2, 3, 4);
+```
+
+剩余参数的类型需要为Array<T>或T[]，默认为 any[]。
+
+### 传递剩余参数
+
+我们可以使用展开操作符来展开一个数组，然后传递给函数。
+
+```ts
+const arr1 = [1, 2];
+const arr2 = [3, 4];
+arr1.push(...arr2);
+//
+const args = [8, 5];
+// Error，推断的type为number[]，并不是只包含两个数字的数组
+const angle = Math.atan2(...args);
+// 最简单的修复方法是转为const
+const args = [8, 5] as const;
+// OK，推断的type为[8,5]，并不是只包含两个数字的数组
+const angle = Math.atan2(...args);
+```
+
+### 参数解构
+
+可以使用解构语法来将参数转为一个或多个在函数体内的局部变量。
+
+```ts
+function sum({ a, b, c }: { a: number, b: number, c: number }) {
+    console.log(a + b + c);
+}
+
+sum({ a: 2, b: 3, c: 4 });
+```
+
+### 返回void
+
+返回类型为void的上下文类型不会强制函数不返回任何值。也就是可以返回任意类型的值。
+
+```ts
+//下面的实现都是合法的
+type voidFunc = () => void;
+
+const f1: voidFunc = () => {
+    return true;
+}
+
+const f2: voidFunc = () => '111';
+const f3: voidFunc = function () {
+    return { age: 111 }
+}
+```
 
 
 
