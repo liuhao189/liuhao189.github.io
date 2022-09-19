@@ -1,13 +1,10 @@
 
 
-type voidFunc = () => void;
-
-const f1: voidFunc = () => {
-    return true;
+interface ReadonlyStringArray {
+    readonly [index: number]: string;
 }
 
-const f2: voidFunc = () => '111';
-const f3: voidFunc = function () {
-    return { age: 111 }
-}
+let myAry: ReadonlyStringArray = {};
 
+myAry[2] = 'Hello';
+//Error ReadonlyStringArray should not reassign

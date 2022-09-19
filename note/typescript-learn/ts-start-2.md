@@ -652,6 +652,14 @@ const f3: voidFunc = function () {
 }
 ```
 
+注意：如果一个函数声明为void的返回类型，这个函数必须不返回值。
+
+```ts
+const f2():void {
+    // @ts-expect-error
+    return true;
+}
+```
 
 
 ## 参考文档
