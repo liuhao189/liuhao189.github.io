@@ -3,10 +3,11 @@
 对象是TS中组织和传递数据的基础。
 
 ```ts
+// 匿名对象类型
 function greet(person: { name: string, age: number }) {
     return "Hello " + person.name;
 }
-
+// 接口类型
 interface Person {
     name: string;
     age: number;
@@ -15,7 +16,7 @@ interface Person {
 function greet2(person: Person) {
     return "Hello " + person.name;
 }
-
+// type类型
 type TPerson = {
     name: string;
     age: number;
@@ -32,7 +33,7 @@ function greet3(person: TPerson) {
 
 ### 可选属性
 
-在属性名后添加?即可指定这些属性是可选的。
+在属性名后添加?即可指定该属性是可选的。
 
 ```ts
 interface PaintOptions {
@@ -118,7 +119,7 @@ console.log(readonlyPerson.age);
 
 ### 属性签名
 
-某些时刻你提前不知道属性的名称，但是你知道属性的类型。在这种情况下，可以使用属性签名。
+某些时刻你不能提前知道属性的名称，但是你知道属性的类型。在这种情况下，可以使用属性签名。
 
 ```ts
 interface StringArray {
@@ -159,3 +160,144 @@ myAry[2] = 'Hello';
 //Error ReadonlyStringArray should not reassign
 ```
 
+## 类型扩展
+
+通常比较好的办法是创造一个基础类型的更具体类型，形成一个继承层次。例如：BasicAddress描述基础的地址。
+
+```ts
+interface BasicAddress {
+    name?: string;
+    street: string;
+    city: string;
+    country: string;
+    postalCode: string;
+}
+```
+
+某些情况下，地址有一个unit number。
+
+```ts
+interface AddressWithUnit {
+    name?: string;
+    street: string;
+    city: string;
+    country: string;
+    postalCode: string;
+    unit: string;
+}
+```
+
+上述代码的缺点是，我们必须重复BasicAddress中的定义。这种情况下，extend基础接口即可。
+
+```ts
+interface AddressWithUnit extends BasicAddress {
+    unit: string;
+}
+```
+
+接口也可以多重继承。
+
+```ts
+interface Colorful {
+    color: string;
+}
+
+interface Circle {
+    radius: number;
+}
+
+interface ColorfulCircle extends Colorful, Circle {}
+```
+
+## 类型联合
+
+接口允许我们扩展其它接口类型来生成新类型。&符号表示联合类型。
+
+```ts
+
+interface Colorful {
+    color: string;
+}
+
+interface Circle {
+    radius: number;
+    color: number;
+}
+
+type ColorfulCircle = Colorful & Circle;
+
+const a: ColorfulCircle = { color: 'red', radius: 10 }
+```
+
+## 接口 VS 联合
+
+两者实现的功能的类似，优先interface。
+
+## 泛型对象类型
+
+想象一个可以装任意类型的盒子。
+
+```ts
+interface Box {
+    contents: any;
+}
+```
+
+也可以用unknown来代替，但是这样使用时需要额外的类型检查或类型转换。
+
+```ts
+interface Box {
+    contents: unknown;
+}
+
+let x: Box = {
+    contents: 'Hello World'
+}
+
+if (typeof x.contents === 'string') {
+    console.log(x.contents.toLowerCase());
+}
+
+console.log((x.contents as string).toLowerCase())
+```
+
+我们可以通过泛型类更好地做到这一点。
+
+```ts
+interface Box<Type> {
+    contents: Type;
+}
+
+const box: Box<string> = {
+    contents: 'Hello World'
+}
+
+console.log(box.contents.toLowerCase());
+```
+
+## 数组类型
+
+泛型对象经常被容器类型包含，容器类型一般不关心它存储的元素类型。
+
+当我们写number[]或string[]时，它们只是Array<number>和Array<string>的简称。
+
+现代的TS提供了其它泛型的数据结构。例如：Map<K,V>，Set<T>，Promise<T>。
+
+### ReadonlyArray
+
+表示只读的数组。
+
+```ts
+const arr: ReadonlyArray<string> = ['Hello'];
+arr.push('World');
+// Error  readonlyArray has no push method
+```
+
+## 元组类型
+
+
+
+
+# 参考文档
+
+https://www.typescriptlang.org/docs/handbook/2/objects.html#readonly-properties

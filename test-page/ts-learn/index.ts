@@ -1,10 +1,5 @@
 
 
-interface ReadonlyStringArray {
-    readonly [index: number]: string;
-}
-
-let myAry: ReadonlyStringArray = {};
-
-myAry[2] = 'Hello';
-//Error ReadonlyStringArray should not reassign
+const arr: ReadonlyArray<string> = ['Hello'];
+arr.push('World');
+// Error  readonlyArray has no push method
