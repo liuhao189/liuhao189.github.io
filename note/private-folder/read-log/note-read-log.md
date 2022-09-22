@@ -124,3 +124,7 @@ https://chromestatus.com/feature/5375472036741120
 https://rxdb.info/slow-indexeddb.html
 
 https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/
+
+
+
+https://seenaburns.com/debugging-electron-memory-usage/

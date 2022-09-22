@@ -162,7 +162,7 @@ myAry[2] = 'Hello';
 
 ## 类型扩展
 
-通常比较好的办法是创造一个基础类型的更具体类型，形成一个继承层次。例如：BasicAddress描述基础的地址。
+通常比较好的办法是创造一个基础类型，然后从该基础类型继承，形成一个继承层次。例如：BasicAddress描述基础的地址。
 
 ```ts
 interface BasicAddress {
