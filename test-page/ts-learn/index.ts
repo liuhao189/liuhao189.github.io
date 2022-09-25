@@ -1,5 +1,8 @@
 
 
-const arr: ReadonlyArray<string> = ['Hello'];
-arr.push('World');
-// Error  readonlyArray has no push method
+
+
+function loggingIdentity<Type>(arg: Type): Type {
+  console.log(arg.length);// Property length does not exist on type 'Type'
+  return arg;
+}

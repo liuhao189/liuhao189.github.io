@@ -295,7 +295,57 @@ arr.push('World');
 
 ## 元组类型
 
+元组是另外一种类型的数组，元组知道数组内有多少个元素，也知道每个位置的元素类型。
 
+```ts
+type StringNumberPair = [string, number];
+
+function doSomeThing(pair: StringNumberPair) {
+  const a = pair[0];//a is string
+  const b = pair[1];//b is number
+}
+```
+
+元组类型在大量基于约定的API中比较有用，每一个元素的含义都是明确的。否则，最好使用object传递数据，因为object有属性名，可以更好地解释含义。
+
+除了长度检查，元组类型跟下面的数组定义很类似。
+
+```ts
+interface StringNumberPairInterface {
+  length: 2,
+  0: string,
+  1: number,
+}
+
+let pair: StringNumberPairInterface = ['1', 2];
+```
+
+元组可以有可选项，可选项只存在在最后一个元素，同时影响length。
+
+```ts
+type TwoOrThree = [number, number, number?];
+
+function setCoordinate(coord: TwoOrThree) {
+  const [x, y, z] = coord;
+  console.log(coord.length); // property length: 2 | 3
+}
+```
+
+元组也可以描述剩余元素。
+
+```ts
+type StringNumberBooleans = [string, number, ...boolean[]];
+type StringBooleansNumber = [string, ...boolean[], number];
+type BooleansStringNumber = [...boolean[], string, number];
+```
+
+## 只读元组类型
+
+```ts
+function doSomeThing(pair: readonly [string, number]) {
+  pair[0] = 'world';// Error
+}
+```
 
 
 # 参考文档
