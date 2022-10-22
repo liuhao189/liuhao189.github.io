@@ -246,7 +246,7 @@ export default Box
 
 如果你使用传统的CSS Modules，需要安装gatsby-plugin-postcss来覆盖默认配置。
 
-下面的代码覆盖了Sass，其它plugins也有相同的cssLoaderOptions属性。
+下面的代码覆盖了sass，其它plugins也有相同的cssLoaderOptions属性。
 
 ```ts
 module.exports = {
@@ -404,7 +404,7 @@ export default Navigation
 
 当使用社区的Gatsby插件时，你可能会在“Building JavaScript”或“Building SSR bundle”阶段，看到[DEP_WEBPACK]的消息。
 
-这通常是因为这些插件跟webpacn5不兼容，需要联系插件的负责人来修复。大部分情况下Gatsby也会正常编译成功。
+这通常是因为这些插件跟webpack5不兼容，需要联系插件的负责人来修复。大部分情况下Gatsby也会正常编译成功。
 
 ### 在SSR中使用fs
 
