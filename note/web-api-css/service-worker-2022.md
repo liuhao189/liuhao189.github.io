@@ -54,7 +54,78 @@ Service Worker可以通过FetchEvent事件去响应请求。通过使用FetchEve
 
 Service worker支持的所有事件：install，activate，message，fetch，sync，push。
 
+## 谈谈代码
 
+```js
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw-test/sw.js', { scope: '/sw-test/' }).then(function(reg) {
+    // registration worked
+    console.log('Registration succeeded. Scope is ' + reg.scope);
+  }).catch(function(error) {
+    // registration failed
+    console.log('Registration failed with ' + error);
+  });
+}
+```
+
+单个service worker可以控制很多页面，需要小心service worker脚本中的全局变量，每个页面不会有自己独有的worker。
+
+### service worker注册失败的原因
+
+1、没有在https下加载页面。
+
+2、service worker文件的地址没有写对，需要相对于origin，而不是app的根目录。
+
+3、service worker在不同的origin而不是你的app中，这是不被允许的。
+
+
+## Cache
+
+Cache接口为缓存request/response对象提供存储机制。一个域可以有多个命名cache对象，你需要再你的脚本中处理缓存更新的方式。
+
+使用CacheStorage.open(cacheName)打开一个Cache对象，再使用Cache对象的方式去处理缓存。
+
+你需要定期地删除缓存条目，因为每个浏览器都硬性限制了一个域下缓存数据的大小。浏览器可能删除一个域下的缓存数据。
+
+备注：使用Cache.put，Cache.add和Cache.addAll只能在GET请求下使用。
+
+
+### 方法
+
+Cache.match(request,options)，resolve的结果是跟Cache对象匹配的第一个已经缓存的请求。
+
+Cache.matchAll(request,options)，resolve的结果是跟Cache对象匹配的所有请求组成的数组。
+
+request参数：如果忽略该参数，将获取到cache中所有response的副本。
+
+options: ignoreSearch，默认false，是否忽略url中的query部分；ignoreMethod，默认false；ignoreVary，默认false，如果设为true，无论Response对象是否包含vary头，都会认为是成功匹配；cacheName：DOMString，代表一个具体的要被搜索的缓存。
+
+Cache.add(request)，抓取这个URL，检索并把返回的response对象添加到给定的Cache对象。等同于调用fetch，然后使用Cache.put将response添加到cache中。
+
+Cache.addAll(requests)，抓取一组URL数组，检索并把返回的response对象添加到给定的Cache对象。
+
+Cache.put(request,response)，将request和response添加到特定的cache中。
+
+Cache.delete(request,options)，搜索key为request的Cache条目，如果找到，则删除Cache条目，并且resolve(true)，没找到则resolve(false)。
+
+Cache.keys(request,options)，resolve的结果是Cache对象key值组成的数组。
+
+
+## CacheStorage
+
+CacheStorage接口表示Cache对象的存储，它提供了一个ServiceWorker、其它类型的worker或window范围内可以访问到的所有命名的cache的主目录。
+
+### 方法
+
+CacheStorage.match，检查给定的Reqquest是否是CacheStorage对象跟踪的任何Cache对象的键。
+
+CacheStorage.has，如果存在cacheName，则resolve(true)。
+
+CacheStorage.open，打开cacheName的Cache。
+
+CacheStorage.delete，查找匹配cacheName的Cache对象，找到，则删除Cache对象并resolve(true)。
+
+CacheStorage.keys，返回一个Promise，它将使用一个包含于CacheStorage追踪的所有命令Cache对象对应的字符串数组来resolve。
 
 
 ## 参考文档
@@ -64,3 +135,5 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API
 https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers
 
 https://web.dev/navigation-preload/#the-problem
+
+https://developer.mozilla.org/zh-CN/docs/Web/API/Cache
