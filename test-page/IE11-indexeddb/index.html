@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IndexedDB</title>
+  <script>
+    var request = (msIndexedDB || indexedDB).open('account111');
+    request.onerror = function(err) {
+      console.error(err);
+    }
+    request.onsuccess = function(ev){
+      console.log(ev);
+    }
+  </script>
+</head>
+
+<body>
+
+</body>
+
+</html>
