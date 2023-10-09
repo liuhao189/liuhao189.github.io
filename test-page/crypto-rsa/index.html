@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subtle-Crypto-RSA-Test</title>
+    <style>
+      p {
+        word-break: break-all;
+      }
+    </style>
+    <script>
+      const memStore = {
+        pairs: null,
+        signBase64: "",
+      };
+
+      async function generateRSAKeyPair() {
+        const keyPair = await crypto.subtle.generateKey(
+          {
+            name: "RSA-PSS",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+            hash: { name: "SHA-256" },
+          },
+          true,
+          ["sign", "verify"]
+        );
+
+        return keyPair;
+      }
+
+      async function exportKeyToFile(key, fileName) {
+        // 导出密钥材料
+        const keyData = await crypto.subtle.exportKey("pkcs8", key);
+
+        // 创建文件
+        const file = new File([keyData], fileName, {
+          type: "application/octet-stream",
+        });
+
+        // 保存文件
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(file);
+        link.download = fileName;
+        link.click();
+      }
+
+      function arrayBufferToBase64(buffer) {
+        let binary = "";
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+
+        return btoa(binary);
+      }
+
+      async function signString(privateKey, plaintext) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(plaintext);
+        // 使用私钥加密数据
+        const encryptedData = await crypto.subtle.sign(
+          {
+            name: "RSA-PSS",
+            saltLength: 32,
+          },
+          privateKey,
+          data
+        );
+        // 将加密后的数据转换为 Base64 格式的字符串
+        const base64Data = arrayBufferToBase64(encryptedData);
+
+        return base64Data;
+      }
+
+      function base64ToArrayBuffer(base64) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes.buffer;
+      }
+
+      function showMsg(msg) {
+        const msgDiv = document.getElementById("msg");
+        let oldmsg = msgDiv.innerHTML;
+        msgDiv.innerHTML = oldmsg + `<p>${new Date()}: ${msg}</p>`;
+      }
+
+      async function verifySignatureWithPublicKey(publicKey, signature, data) {
+        const decoder = new TextDecoder();
+        const signatureData = base64ToArrayBuffer(signature);
+        const dataBuffer = new TextEncoder().encode(data);
+
+        // 使用公钥验证签名
+        const valid = await crypto.subtle.verify(
+          {
+            name: "RSA-PSS",
+            saltLength: 32,
+          },
+          publicKey,
+          signatureData,
+          dataBuffer
+        );
+
+        return valid;
+      }
+
+      window.addEventListener("load", function () {
+        document
+          .getElementById("btnGenerate")
+          .addEventListener("click", async function () {
+            const pairs = await generateRSAKeyPair();
+            memStore.pairs = pairs;
+          });
+
+        //
+        document
+          .getElementById("btnEncrypt")
+          .addEventListener("click", async function () {
+            const content = document.getElementById("txtContent").value;
+            signString(memStore.pairs.privateKey, content).then((data) => {
+              memStore.signBase64 = data;
+              showMsg(`signData is ${data}`);
+            });
+          });
+
+        //
+        document
+          .getElementById("btnExportPrivateKey")
+          .addEventListener("click", function () {
+            const key = memStore.pairs.privateKey;
+            exportKeyToFile(key, "rsa-private-key.pem");
+          });
+
+        //
+        document
+          .getElementById("btnExportPublicKey")
+          .addEventListener("click", function () {
+            const key = memStore.pairs.publicKey;
+            exportKeyToFile(key, "rsa-public-key.pem");
+          });
+
+        document
+          .getElementById("btnDecrypt")
+          .addEventListener("click", function () {
+            const content = document.getElementById("txtContent").value;
+            verifySignatureWithPublicKey(
+              memStore.pairs.publicKey,
+              memStore.signBase64,
+              content
+            ).then((data) => {
+              showMsg(data);
+            });
+          });
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button id="btnGenerate">生成RSA密码</button>
+      <button id="btnExportPrivateKey">导出私有私钥</button>
+      <button id="btnExportPublicKey">导出公共私钥</button>
+    </div>
+    <div>
+      <p>要加密内容：<input type="text" id="txtContent" /></p>
+      <p>
+        <button id="btnEncrypt">加密</button>
+        <button id="btnDecrypt">解密</button>
+      </p>
+    </div>
+    <div id="msg"></div>
+  </body>
+</html>
